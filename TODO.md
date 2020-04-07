@@ -1,4 +1,4 @@
-- [] write own worker class to manage non-iid datasets
-- [] experiment: local 5 epochs during each FL epoch, initially locally train 5-10 epochs first
-- [] add in fairness correlation, see pearcor from sklearn
-- [] implement MLP and CNN models follow the paper
+- [ ] write own worker class to manage non-iid datasets
+- [ ] experiment: local 5 epochs during each FL epoch, initially locally train 5-10 epochs first
+- [ ] add in fairness correlation, see pearcor from sklearn
+- [ ] implement MLP and CNN models follow the paper
