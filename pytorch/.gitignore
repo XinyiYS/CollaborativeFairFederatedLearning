@@ -3,3 +3,5 @@ a.py
 *.pyc
 
 *__pycache__*
+
+*log*
