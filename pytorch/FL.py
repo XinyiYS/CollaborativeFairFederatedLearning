@@ -84,14 +84,14 @@ np.random.seed(1111)
 from utils.dataset_split import random_split
 indices_list = random_split(n_samples=n_samples, m_bins=n_workers, equal=True)
 
-from utils.models import LogisticRegression
+from utils.models import LogisticRegression, MLP_Adult
 workers = init_workers(n_workers, X, y, indices_list, device)
 
 print("Workers init successful")
 
 input_dim, output_dim = X.shape[1], 2
 for worker in workers:
-    model = LogisticRegression(input_dim, output_dim)
+    model = MLP_Adult(input_dim, output_dim)
     optimizer = optim.SGD(model.parameters(), lr=1e-3)
     loss_fn = nn.CrossEntropyLoss()
 
@@ -102,9 +102,52 @@ for worker in workers:
 print("Workers' models and optimizer etc successful")
 
 
-for worker in workers:
-    worker.train_locally(epochs=20)
-    worker.evaluate(test_loader)
 
 
-print("Workers training successful")
+def evaluate(model, eval_loader):
+    model.eval()
+    correct = 0
+    total = 0
+    loss_fn = nn.CrossEntropyLoss()
+    for i, (batch_data, batch_target) in enumerate(eval_loader):
+        batch_data, batch_target = batch_data, batch_target
+        outputs = model(batch_data)
+        loss = loss_fn(outputs, batch_target)
+        _, predicted = torch.max(outputs.data, 1)
+        total += len(batch_target)
+        # for gpu, bring the predicted and labels back to cpu for python
+        # operations to work
+        correct += (predicted == batch_target).sum()
+    accuracy = 1. * correct / total
+    print("Loss: {}. Accuracy: {:.0%}.\n".format(loss, accuracy))
+    return loss, accuracy
+
+
+def pretrain_locally(workers, epochs, test_loader=None):
+	for worker in workers:
+	    worker.train_locally(epochs=epochs)
+	    if test_loader:
+		    worker.evaluate(test_loader)
+	print("Workers training successful")
+	return
+
+from utils.utils import averge_models, average_gradient_updates, add_update_to_model, compute_grad_update
+
+pretrain_locally(workers, 5, test_loader)
+
+models = [worker.model for worker in workers]
+federated_model = averge_models(models)
+
+federated_epochs = 5
+for epoch in range(federated_epochs):
+	grad_updates = []
+	for worker in workers:
+		model_before = copy.deepcopy(worker.model)		
+		worker.train_locally(5)
+		model_after = copy.deepcopy(worker.model)
+		grad_updates.append( compute_grad_update(model_before, model_after))
+
+	averaged_update = average_gradient_updates(grad_updates)
+	federated_model = add_update_to_model(federated_model, averaged_update)
+	evaluate(federated_model, test_loader)
+
