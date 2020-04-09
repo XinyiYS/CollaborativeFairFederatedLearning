@@ -48,3 +48,15 @@ class LogisticRegression(nn.Module):
     def forward(self, x):
         outputs = self.linear(x)
         return outputs
+
+class MLP_Adult(nn.Module):
+    def __init__(self, input_dim, output_dim):
+        super(MLP_Adult, self).__init__()
+        self.fc1 = nn.Linear(input_dim, 32)
+        self.fc2 = nn.Linear(32, output_dim)
+
+        # self.linear = torch.nn.Linear(input_dim, output_dim)
+
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
+        return self.fc2(x)
