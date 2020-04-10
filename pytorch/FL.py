@@ -63,9 +63,10 @@ from utils.models import LogisticRegression, MLP_LogReg
 n_workers = 5
 balanced_datasets=True
 
-n_samples = 10000
+n_samples = 30000
 use_cuda = True
 device = torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu" )
+
 model_fn = LogisticRegression
 
 np.random.seed(1111)
@@ -101,10 +102,14 @@ print("Workers' models and optimizer etc successful")
 
 
 
-def distribute_points(points, marginal_contributions):
+def distribute_points(points, marginal_contributions, epsilon=1e-4):
 	# normalize so that the max is equal to n_workers - 1
-	ratio = (len(points) - 1) / torch.max(marginal_contributions)
-	marginal_contributions *= ratio
+
+	# set small values to 0
+	marginal_contributions[marginal_contributions.abs() < epsilon] = 0
+	if not (marginal_contributions==0).all():
+		ratio = (len(points) - 1) / torch.max(marginal_contributions)
+		marginal_contributions *= ratio
 	print('resized contributions:', marginal_contributions)
 
 	return points + marginal_contributions
@@ -121,8 +126,7 @@ def acquire_update(point, worker, sorted_grad_updates):
 
 from utils.utils import averge_models, average_gradient_updates, \
 	add_update_to_model, compute_grad_update, compare_models,  \
-	pretrain_locally, leave_one_out_evaluate, evaluate
-
+	pretrain_locally, leave_one_out_evaluate, evaluate, compute_shapley
 
 pretrain_epochs = 5
 fl_epochs = 10
@@ -137,6 +141,8 @@ federated_model = averge_models(models, device=device)
 
 points = torch.zeros((n_workers))
 sharing_ledger = torch.zeros((n_workers)) 
+shapley_values = torch.zeros((n_workers)) 
+
 print("\nStart federated learning ")
 
 for epoch in range(fl_epochs):
@@ -151,18 +157,20 @@ for epoch in range(fl_epochs):
 	marginal_contributions = leave_one_out_evaluate(federated_model, grad_updates, val_loader, device)
 	print("Marginal contributions are: ", marginal_contributions)
 
+	shapley_values += compute_shapley(grad_updates, federated_model, test_loader, device)
+
 	points = distribute_points(points, marginal_contributions)
 	sorted_grad_updates = sort_grad_updates(grad_updates, marginal_contributions)
 
-	for i, worker in enumerate(workers):
+	for download_worker_id, worker in enumerate(workers):
 		acquired_updates = []
 		
-		for grad_update, worker_id in sorted_grad_updates:
-			if worker_id != i and points[i] > 1: # not self and sufficient budget
-				points[i] -= 1
+		for grad_update, upload_worker_id in sorted_grad_updates:
+			if upload_worker_id != download_worker_id and points[download_worker_id] > 1: # not self and sufficient budget
+				points[download_worker_id] -= 1
+				points[upload_worker_id] += 1 # paying to this worker
 				acquired_updates.append(grad_update)
-				sharing_ledger[worker_id] += 1
-
+				sharing_ledger[upload_worker_id] += 1
 
 		averaged_acquired_update = average_gradient_updates(acquired_updates)
 		worker.model = add_update_to_model(worker.model, averaged_acquired_update, device=device)
@@ -180,8 +188,18 @@ import scipy.stats
 corrs = scipy.stats.pearsonr(sharing_ledger, worker_model_test_accs)
 print("test_acc vs sharing ledger: ", corrs)
 
-
 worker_model_improvements = [ now-before for now, before in zip(worker_model_test_accs, worker_model_test_accs_before)]
 corrs = scipy.stats.pearsonr(sharing_ledger, worker_model_improvements)
 print("test_acc improvements vs sharing ledger: ", corrs)
- 
+
+corrs = scipy.stats.pearsonr(sharing_ledger, shapley_values)
+print('sharing ledge vs shapley values: ', corrs)
+
+corrs = scipy.stats.pearsonr(shapley_values, worker_model_improvements)
+print('shapley values vs model improvements: ', corrs)
+
+print()
+print('worker_model_test_accs: ', worker_model_test_accs)
+print('worker_model_improvements: ', worker_model_improvements)
+print('sharing ledger: ', sharing_ledger)
+print('shapley values: ', shapley_values)
