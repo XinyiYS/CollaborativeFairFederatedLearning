@@ -49,7 +49,7 @@ class LogisticRegression(nn.Module):
         outputs = self.linear(x)
         return outputs
 
-class MLP_Adult(nn.Module):
+class MLP_LogReg(nn.Module):
     def __init__(self, input_dim, output_dim):
         super(MLP_Adult, self).__init__()
         self.fc1 = nn.Linear(input_dim, 32)

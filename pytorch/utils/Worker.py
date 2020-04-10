@@ -44,6 +44,7 @@ class Worker():
     def train_locally(self, epochs):
         iter = 0
         self.model.train()
+        self.model = self.model.to(self.device)
         for epoch in range(int(epochs)):
             for i, (batch_data, batch_target) in enumerate(self.train_loader):
                 batch_data, batch_target = batch_data.to(
@@ -63,6 +64,9 @@ class Worker():
         """
         unfinished yet
         """
+        if not self.val_loader:
+            print("Worker's own val loader not initialized")
+            return
         self.model.eval()
         correct = 0
         total = 0
@@ -81,29 +85,4 @@ class Worker():
         print("Worker: {} Iteration: {}. Loss: {}. Accuracy: {:.0%}.".format(
             self.id, iter, loss, accuracy))
 
-        return loss, accuracy
-
-    def evaluate(self, test_loader):
-        """
-        unfinished yet
-        """
-        self.model.eval()
-
-        correct = 0
-        total = 0
-        for i, (batch_data, batch_target) in enumerate(test_loader):
-            batch_data, batch_target = batch_data.to(
-                self.device), batch_target.to(self.device)
-
-            outputs = self.model(batch_data)
-            loss = self.loss_fn(outputs, batch_target)
-            _, predicted = torch.max(outputs.data, 1)
-            total += len(batch_target)
-            # for gpu, bring the predicted and labels back to cpu for python
-            # operations to work
-            correct += (predicted == batch_target).sum()
-
-        accuracy = 1. * correct / total
-        print("Test set: Worker: {}. Loss: {}. Accuracy: {:.0%}.\n".format(
-            self.id, loss, accuracy))
         return loss, accuracy
