@@ -20,19 +20,6 @@ from torch import nn, optim
 from torch.utils.data import DataLoader
 from utils.Custom_Dataset import Custom_Dataset
 
-from utils.Worker import Worker
-
-
-def init_workers(n_workers, X, y, indices_list, device):
-    workers = []
-    for i in range(n_workers):
-        indices = indices_list[i]
-        data = X[indices]
-        target = y[indices]
-        device = device
-        worker = Worker(data, target, indices, id=str(i))
-        workers.append(worker)
-    return workers
 
 
 # adult dataset
@@ -53,7 +40,6 @@ def prepare_dataset(name='adult', train_test=True, train=True, test=False):
         else:  # test==True:
             return X_test, y_test
 
-
 train, test = prepare_dataset('adult', train_test=True)
 X, y = train
 X_test, y_test = test
@@ -64,90 +50,127 @@ X_train, y_train = X[:train_val_split_index], y[:train_val_split_index]
 X_val, y_val = X[train_val_split_index:], y[train_val_split_index:]
 
 
-def create_data_loader(X, y, batch_size):
-    dataset = Custom_Dataset(X, y)
-    return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
-
+from utils.utils import create_data_loader
 
 val_loader = create_data_loader(X_val, y_val, batch_size=1000)
 test_loader = create_data_loader(X_test, y_test, batch_size=1000)
-
 print("datasets preparation successful")
 
 
+from utils.models import LogisticRegression, MLP_LogReg
+
+# User set argument
 n_workers = 5
-n_samples = 30000
+balanced_datasets=True
+
+n_samples = 10000
 use_cuda = True
-device = torch.device("cuda" if use_cuda else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu" )
+model_fn = LogisticRegression
 
 np.random.seed(1111)
-from utils.dataset_split import random_split
-indices_list = random_split(n_samples=n_samples, m_bins=n_workers, equal=True)
 
-from utils.models import LogisticRegression, MLP_Adult
+from utils.utils import random_split
+indices_list = random_split(n_samples=n_samples, m_bins=n_workers, equal=balanced_datasets)
+
+
+from utils.Worker import Worker
+def init_workers(n_workers, X, y, indices_list, device):
+    workers = []
+    for i in range(n_workers):
+        indices = indices_list[i]
+        data = X[indices]
+        target = y[indices]
+        worker = Worker(data, target, indices, id=str(i), device=device)
+        workers.append(worker)
+    return workers
+
 workers = init_workers(n_workers, X, y, indices_list, device)
-
 print("Workers init successful")
 
 input_dim, output_dim = X.shape[1], 2
 for worker in workers:
-    model = MLP_Adult(input_dim, output_dim)
+    model = model_fn(input_dim, output_dim)
     optimizer = optim.SGD(model.parameters(), lr=1e-3)
     loss_fn = nn.CrossEntropyLoss()
 
     worker.init_model_optimizer(model, optimizer, loss_fn)
     worker.init_train_loader(batch_size=16)
     worker.val_loader = val_loader
-
 print("Workers' models and optimizer etc successful")
 
 
 
+def distribute_points(points, marginal_contributions):
+	# normalize so that the max is equal to n_workers - 1
+	ratio = (len(points) - 1) / torch.max(marginal_contributions)
+	marginal_contributions *= ratio
+	print('resized contributions:', marginal_contributions)
 
-def evaluate(model, eval_loader):
-    model.eval()
-    correct = 0
-    total = 0
-    loss_fn = nn.CrossEntropyLoss()
-    for i, (batch_data, batch_target) in enumerate(eval_loader):
-        batch_data, batch_target = batch_data, batch_target
-        outputs = model(batch_data)
-        loss = loss_fn(outputs, batch_target)
-        _, predicted = torch.max(outputs.data, 1)
-        total += len(batch_target)
-        # for gpu, bring the predicted and labels back to cpu for python
-        # operations to work
-        correct += (predicted == batch_target).sum()
-    accuracy = 1. * correct / total
-    print("Loss: {}. Accuracy: {:.0%}.\n".format(loss, accuracy))
-    return loss, accuracy
+	return points + marginal_contributions
 
+def sort_grad_updates(grad_updates, marginal_contributions):
+	# sort the grad_updates according to the marginal_contributions in a descending order
+	return [(grad_update, worker_id) for grad_update, marg_contr, worker_id in sorted(zip(grad_updates, marginal_contributions, range(len(grad_updates ) )), key=lambda x:x[1], reverse=True)]
 
-def pretrain_locally(workers, epochs, test_loader=None):
-	for worker in workers:
-	    worker.train_locally(epochs=epochs)
-	    if test_loader:
-		    worker.evaluate(test_loader)
-	print("Workers training successful")
-	return
+def acquire_update(point, worker, sorted_grad_updates):
+	while point > 1:
+		pass
+	
+	return grad_updates
 
-from utils.utils import averge_models, average_gradient_updates, add_update_to_model, compute_grad_update
+from utils.utils import averge_models, average_gradient_updates, \
+	add_update_to_model, compute_grad_update, compare_models,  \
+	pretrain_locally, leave_one_out_evaluate, evaluate
 
-pretrain_locally(workers, 5, test_loader)
+# uncomment for local pretraining
+pretrain_locally(workers, 2, test_loader)
 
 models = [worker.model for worker in workers]
-federated_model = averge_models(models)
+federated_model = averge_models(models, device=device)
 
-federated_epochs = 5
+points = torch.zeros((n_workers))
+
+sharing_ledger = torch.zeros((n_workers)) 
+print("\nStart federated learning ")
+federated_epochs = 2
 for epoch in range(federated_epochs):
 	grad_updates = []
 	for worker in workers:
 		model_before = copy.deepcopy(worker.model)		
-		worker.train_locally(5)
+		worker.train_locally(2)
 		model_after = copy.deepcopy(worker.model)
-		grad_updates.append( compute_grad_update(model_before, model_after))
+		grad_updates.append(compute_grad_update(model_before, model_after, device=device))
 
-	averaged_update = average_gradient_updates(grad_updates)
-	federated_model = add_update_to_model(federated_model, averaged_update)
-	evaluate(federated_model, test_loader)
+	# updates the federated model in function for efficiency
+	marginal_contributions = leave_one_out_evaluate(federated_model, grad_updates, val_loader, device)
+	print("Marginal contributions are: ", marginal_contributions)
 
+	points = distribute_points(points, marginal_contributions)
+	sorted_grad_updates = sort_grad_updates(grad_updates, marginal_contributions)
+
+	for i, worker in enumerate(workers):
+		acquired_updates = []
+		
+		for grad_update, worker_id in sorted_grad_updates:
+			if worker_id != i and points[i] > 1: # not self and sufficient budget
+				points[i] -= 1
+				acquired_updates.append(grad_update)
+				sharing_ledger[worker_id] += 1
+
+
+		averaged_acquired_update = average_gradient_updates(acquired_updates)
+		worker.model = add_update_to_model(worker.model, averaged_acquired_update, device=device)
+
+	# averaged_update = average_gradient_updates(grad_updates, device=device)
+	# federated_model = add_update_to_model(federated_model, averaged_update, device=device)
+	evaluate(federated_model, test_loader, device)
+	print("The number of gradient sharing by workers:", sharing_ledger)
+
+
+
+
+
+
+
+ 
