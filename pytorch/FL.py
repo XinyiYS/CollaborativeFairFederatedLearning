@@ -123,22 +123,27 @@ from utils.utils import averge_models, average_gradient_updates, \
 	add_update_to_model, compute_grad_update, compare_models,  \
 	pretrain_locally, leave_one_out_evaluate, evaluate
 
+
+pretrain_epochs = 5
+fl_epochs = 10
+fl_individual_epochs = 5
+
 # uncomment for local pretraining
-pretrain_locally(workers, 2, test_loader)
+pretrain_locally(workers, pretrain_epochs, test_loader=None)
+worker_model_test_accs_before = [evaluate(worker.model, test_loader, device, verbose=False)[1].tolist() for worker in workers]
 
 models = [worker.model for worker in workers]
 federated_model = averge_models(models, device=device)
 
 points = torch.zeros((n_workers))
-
 sharing_ledger = torch.zeros((n_workers)) 
 print("\nStart federated learning ")
-federated_epochs = 2
-for epoch in range(federated_epochs):
+
+for epoch in range(fl_epochs):
 	grad_updates = []
 	for worker in workers:
 		model_before = copy.deepcopy(worker.model)		
-		worker.train_locally(2)
+		worker.train_locally(fl_individual_epochs)
 		model_after = copy.deepcopy(worker.model)
 		grad_updates.append(compute_grad_update(model_before, model_after, device=device))
 
@@ -165,12 +170,18 @@ for epoch in range(federated_epochs):
 	# averaged_update = average_gradient_updates(grad_updates, device=device)
 	# federated_model = add_update_to_model(federated_model, averaged_update, device=device)
 	evaluate(federated_model, test_loader, device)
-	print("The number of gradient sharing by workers:", sharing_ledger)
 
 
+worker_model_test_accs = [evaluate(worker.model, test_loader, device, verbose=False)[1].tolist() for worker in workers]
+# print("The number of gradient sharing by workers:", sharing_ledger)
+# print(worker_model_test_accs)
+
+import scipy.stats
+corrs = scipy.stats.pearsonr(sharing_ledger, worker_model_test_accs)
+print("test_acc vs sharing ledger: ", corrs)
 
 
-
-
-
+worker_model_improvements = [ now-before for now, before in zip(worker_model_test_accs, worker_model_test_accs_before)]
+corrs = scipy.stats.pearsonr(sharing_ledger, worker_model_improvements)
+print("test_acc improvements vs sharing ledger: ", corrs)
  
