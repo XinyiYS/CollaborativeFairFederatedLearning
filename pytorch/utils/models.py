@@ -41,9 +41,12 @@ class MLP_Net(nn.Module):
 
 
 class LogisticRegression(nn.Module):
-    def __init__(self, input_dim, output_dim):
+    def __init__(self, input_dim=87, output_dim=2):
         super(LogisticRegression, self).__init__()
-        self.linear = torch.nn.Linear(input_dim, output_dim)
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+        self.linear = torch.nn.Linear(self.input_dim, self.output_dim)
+
 
     def forward(self, x):
         outputs = self.linear(x)

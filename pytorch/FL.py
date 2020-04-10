@@ -20,7 +20,7 @@ from torch import nn, optim
 from torch.utils.data import DataLoader
 from utils.Custom_Dataset import Custom_Dataset
 
-
+from torch.utils.data.sampler import SubsetRandomSampler
 
 # adult dataset
 def prepare_dataset(name='adult', train_test=True, train=True, test=False):
@@ -33,6 +33,11 @@ def prepare_dataset(name='adult', train_test=True, train=True, test=False):
         y_train = torch.tensor(train_target.values, requires_grad=False).long()
         X_test = torch.tensor(test_data.values, requires_grad=False).float()
         y_test = torch.tensor(test_target.values, requires_grad=False).long()
+
+        train_set = Custom_Dataset(X_train, y_train)
+        test_set = Custom_Dataset(X_test, y_test)
+
+        return train_set, test_set
         if train_test == True:
             return (X_train, y_train), (X_test, y_test)
         elif train == True:
@@ -40,24 +45,46 @@ def prepare_dataset(name='adult', train_test=True, train=True, test=False):
         else:  # test==True:
             return X_test, y_test
 
-train, test = prepare_dataset('adult', train_test=True)
-X, y = train
-X_test, y_test = test
+    elif name == 'mnist':
+    	from torchvision import datasets, transforms
+
+    	train = datasets.MNIST('datasets/', train=True, transform=transforms.Compose([
+	           transforms.Pad((2,2,2,2)),
+	           transforms.ToTensor(),
+	           transforms.Normalize((0.1307,), (0.3081,))
+    	                   ]))
+    	    
+    	test = datasets.MNIST('datasets/', train=False, transform=transforms.Compose([
+                transforms.Pad((2,2,2,2)),
+    	        transforms.ToTensor(),
+    	        transforms.Normalize((0.1307,), (0.3081,))
+    	    ]))
+    	return train, test
+
+train_dataset, test_dataset = prepare_dataset('mnist', train_test=True)
 
 train_val_split = 0.8
-train_val_split_index = int(len(X) * 0.8)
-X_train, y_train = X[:train_val_split_index], y[:train_val_split_index]
-X_val, y_val = X[train_val_split_index:], y[train_val_split_index:]
+train_val_split_index = int(len(train_dataset) * 0.8)
 
+indices = list(range(len(train_dataset)))
+np.random.seed(1111)
+np.random.shuffle(indices)
 
-from utils.utils import create_data_loader
+train_idx, valid_idx = indices[train_val_split_index:], indices[:train_val_split_index]
+train_sampler = SubsetRandomSampler(train_idx)
+valid_sampler = SubsetRandomSampler(valid_idx)
 
-val_loader = create_data_loader(X_val, y_val, batch_size=1000)
-test_loader = create_data_loader(X_test, y_test, batch_size=1000)
+batch_size = 16
+# train_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=train_sampler,)
+
+valid_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=valid_sampler)
+
+test_batch_size = 1000
+test_loader =  DataLoader(test_dataset, batch_size=batch_size)
 print("datasets preparation successful")
 
 
-from utils.models import LogisticRegression, MLP_LogReg
+from utils.models import LogisticRegression, MLP_LogReg, MLP_Net, CNN_Net
 
 # User set argument
 n_workers = 5
@@ -67,39 +94,34 @@ n_samples = 30000
 use_cuda = True
 device = torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu" )
 
-model_fn = LogisticRegression
+model_fn = MLP_Net
+loss_fn = nn.CrossEntropyLoss()
 
 np.random.seed(1111)
 
 from utils.utils import random_split
-indices_list = random_split(n_samples=n_samples, m_bins=n_workers, equal=balanced_datasets)
+indices_list = random_split(sample_indices=train_idx, m_bins=n_workers, equal=balanced_datasets)
 
 
 from utils.Worker import Worker
-def init_workers(n_workers, X, y, indices_list, device):
-    workers = []
-    for i in range(n_workers):
-        indices = indices_list[i]
-        data = X[indices]
-        target = y[indices]
-        worker = Worker(data, target, indices, id=str(i), device=device)
-        workers.append(worker)
-    return workers
 
-workers = init_workers(n_workers, X, y, indices_list, device)
+def init_workers(n_workers, train_dataset, indices_list, device):
+	workers = []
+	for i in range(n_workers):
+		train_sampler = SubsetRandomSampler(indices_list[i])
+		train_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=train_sampler)
+
+		model = model_fn()
+		optimizer = optim.SGD(model.parameters(), lr=1e-3)
+
+		worker = Worker(train_loader=train_loader, indices=indices, 
+						id=str(i), model=model, optimizer=optimizer, loss_fn = loss_fn,
+						device=device)
+		workers.append(worker)
+	return workers
+
+workers = init_workers(n_workers, train_dataset, indices_list, device)
 print("Workers init successful")
-
-input_dim, output_dim = X.shape[1], 2
-for worker in workers:
-    model = model_fn(input_dim, output_dim)
-    optimizer = optim.SGD(model.parameters(), lr=1e-3)
-    loss_fn = nn.CrossEntropyLoss()
-
-    worker.init_model_optimizer(model, optimizer, loss_fn)
-    worker.init_train_loader(batch_size=16)
-    worker.val_loader = val_loader
-print("Workers' models and optimizer etc successful")
-
 
 
 def distribute_points(points, marginal_contributions, epsilon=1e-4):
@@ -118,19 +140,14 @@ def sort_grad_updates(grad_updates, marginal_contributions):
 	# sort the grad_updates according to the marginal_contributions in a descending order
 	return [(grad_update, worker_id) for grad_update, marg_contr, worker_id in sorted(zip(grad_updates, marginal_contributions, range(len(grad_updates ) )), key=lambda x:x[1], reverse=True)]
 
-def acquire_update(point, worker, sorted_grad_updates):
-	while point > 1:
-		pass
-	
-	return grad_updates
 
 from utils.utils import averge_models, average_gradient_updates, \
 	add_update_to_model, compute_grad_update, compare_models,  \
 	pretrain_locally, leave_one_out_evaluate, evaluate, compute_shapley
 
-pretrain_epochs = 5
-fl_epochs = 10
-fl_individual_epochs = 5
+pretrain_epochs = 1
+fl_epochs = 1
+fl_individual_epochs = 1
 
 # uncomment for local pretraining
 pretrain_locally(workers, pretrain_epochs, test_loader=None)
@@ -154,10 +171,10 @@ for epoch in range(fl_epochs):
 		grad_updates.append(compute_grad_update(model_before, model_after, device=device))
 
 	# updates the federated model in function for efficiency
-	marginal_contributions = leave_one_out_evaluate(federated_model, grad_updates, val_loader, device)
+	marginal_contributions = leave_one_out_evaluate(federated_model, grad_updates, valid_loader, device)
 	print("Marginal contributions are: ", marginal_contributions)
 
-	shapley_values += compute_shapley(grad_updates, federated_model, test_loader, device)
+	# shapley_values += compute_shapley(grad_updates, federated_model, test_loader, device)
 
 	points = distribute_points(points, marginal_contributions)
 	sorted_grad_updates = sort_grad_updates(grad_updates, marginal_contributions)
