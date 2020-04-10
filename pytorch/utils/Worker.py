@@ -21,9 +21,10 @@ class Custom_Dataset(Dataset):
 
 class Worker():
 
-    def __init__(self, data, target, indices=None, model=None, optimizer=None, loss_fn=None, id=None, device=None):
-        self.data = data
-        self.target = target
+    def __init__(self, train_loader, indices=None, model=None, optimizer=None, loss_fn=None, id=None, device=None):
+        # self.data = data
+        # self.target = target
+        self.train_loader = train_loader
         self.indices = indices
         self.model = model
         self.optimizer = optimizer
