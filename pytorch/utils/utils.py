@@ -143,3 +143,34 @@ def random_split(n_samples, m_bins, equal=True):
         indices_list = np.split(all_indices, split_points)
 
     return indices_list
+
+import random
+from itertools import permutations
+
+def compute_shapley(grad_updates, federated_model, test_loader, device, Max_num_sequences=50):
+    num_workers = len(grad_updates)
+    all_sequences = list(permutations(range(num_workers)))
+    if len(all_sequences) > Max_num_sequences:
+        random.shuffle(all_sequences)
+        all_sequences = all_sequences[:Max_num_sequences]
+
+    test_loss_prev, test_acc_prev = evaluate(federated_model, test_loader, device, verbose=False)
+    prev_contribution = test_acc_prev.data
+    
+    marginal_contributions = torch.zeros((num_workers))
+    for sequence in all_sequences:
+        running_model = copy.deepcopy(federated_model)
+        curr_contributions = []
+        for worker_id in sequence:
+            running_model = add_update_to_model(running_model, grad_updates[worker_id])
+            test_loss, test_acc = evaluate(running_model, test_loader, device, verbose=False)
+            contribution = test_acc.data
+
+            if not curr_contributions:
+                marginal_contributions[worker_id] +=  contribution - prev_contribution
+            else:
+                marginal_contributions[worker_id] +=  contribution - curr_contributions[-1]
+
+            curr_contributions.append(contribution)
+
+    return marginal_contributions / len(all_sequences)
