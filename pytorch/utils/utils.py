@@ -60,9 +60,9 @@ def add_update_to_model(model, update, weight=1.0, device=None):
     return model
 
 
-def create_data_loader(X, y, batch_size):
-    dataset = Custom_Dataset(X, y)
-    return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
+# def create_data_loader(X, y, batch_size):
+#     dataset = Custom_Dataset(X, y)
+#     return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
 
 def compare_models(model1, model2):
     for p1, p2 in zip(model1.parameters(), model2.parameters()):
@@ -145,7 +145,6 @@ def random_split(sample_indices, m_bins, equal=True):
 
 
 
-
 import random
 from itertools import permutations
 
@@ -176,3 +175,8 @@ def compute_shapley(grad_updates, federated_model, test_loader, device, Max_num_
             curr_contributions.append(contribution)
 
     return marginal_contributions / len(all_sequences)
+
+
+
+
+
