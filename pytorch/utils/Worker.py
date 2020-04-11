@@ -21,17 +21,14 @@ class Custom_Dataset(Dataset):
 
 class Worker():
 
-    def __init__(self, train_loader, indices=None, model=None, optimizer=None, loss_fn=None, id=None, device=None):
-        # self.data = data
-        # self.target = target
+    def __init__(self, train_loader, model=None, optimizer=None, loss_fn=None, id=None, sharing_lambda=0.1, device=None):
         self.train_loader = train_loader
-        self.indices = indices
         self.model = model
         self.optimizer = optimizer
+        self.sharing_lambda = sharing_lambda
         self.id = id
         self.device = device
         self.loss_fn = loss_fn
-        self.val_loader = None
 
     def init_model_optimizer(self, model, optimizer=None, loss_fn=None):
         self.model = model.to(self.device)
@@ -56,35 +53,5 @@ class Worker():
                 loss = self.loss_fn(outputs, batch_target)
                 loss.backward()
                 self.optimizer.step()
-
                 iter += 1
-                # if iter % 2000 == 0:
-                    # self.evaluate_locally(iter=iter)
         return
-
-    def evaluate_locally(self, iter=None):
-        """
-        unfinished yet
-        """
-        if not self.val_loader:
-            print("Worker's own val loader not initialized")
-            return
-        self.model.eval()
-        correct = 0
-        total = 0
-        for i, (batch_data, batch_target) in enumerate(self.val_loader):
-            batch_data, batch_target = batch_data.to(
-                self.device), batch_target.to(self.device)
-            outputs = self.model(batch_data)
-            loss = self.loss_fn(outputs, batch_target)
-            _, predicted = torch.max(outputs.data, 1)
-            total += len(batch_target)
-            # for gpu, bring the predicted and labels back to cpu for python
-            # operations to work
-            correct += (predicted == batch_target).sum()
-
-        accuracy = 1. * correct / total
-        print("Worker: {} Iteration: {}. Loss: {}. Accuracy: {:.0%}.".format(
-            self.id, iter, loss, accuracy))
-
-        return loss, accuracy
