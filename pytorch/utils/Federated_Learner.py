@@ -25,8 +25,7 @@ class Federated_Learner:
         self.init_workers()
 
     def init_workers(self):
-        n_workers = self.args['n_workers']
-        assert n_workers == len(
+        assert self.n_workers == len(
             self.worker_train_loaders), "Num of workers is not equal to num of loaders"
         model_fn = self.args['model_fn']
         optimizer_fn = self.args['optimizer_fn']
@@ -36,6 +35,8 @@ class Federated_Learner:
         sharing_lambda = self.args['sharing_lambda']
 
         self.workers = []
+        # possible to enumerate through various model_fns, optimizer_fns, lrs,
+        # sharing_lambdas, or even devices
         for i, worker_train_loader in enumerate(self.worker_train_loaders):
             model = model_fn()
             optimizer = optimizer_fn(model.parameters(), lr=lr)
@@ -55,7 +56,6 @@ class Federated_Learner:
         return
 
     def train(self):
-
         print("\nStart local pretraining ")
         self.pretrain_locally(self.args['pretrain_epochs'])
         self.worker_model_test_accs_before = self.evaluate_workers_performance(
@@ -163,13 +163,16 @@ def distribute_points(points, marginal_contributions, epsilon=1e-4):
     # normalize so that the max is equal to n_workers - 1
 
     # set small values to 0
-    # fix the error case when all contributions are negative
     marginal_contributions[marginal_contributions.abs() < epsilon] = 0
     if not (marginal_contributions == 0).all():
-        ratio = (len(points) - 1) / torch.max(marginal_contributions)
+
+        # if all negative
+        if (marginal_contributions < 0).all():
+            ratio = (len(points) - 1) / torch.max(marginal_contributions.abs())
+        else:
+            ratio = (len(points) - 1) / torch.max(marginal_contributions)
         marginal_contributions *= ratio
     print('resized contributions:', marginal_contributions)
-
     return points + marginal_contributions
 
 

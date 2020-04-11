@@ -7,7 +7,6 @@ from utils.Federated_Learner import Federated_Learner
 from utils.models import LogisticRegression, MLP_LogReg, MLP_Net, CNN_Net
 
 
-
 use_cuda = True
 args = {
 
@@ -34,14 +33,12 @@ args = {
 }
 
 if __name__ == '__main__':
-	# init steps
-	data_prep = Data_Prepper(args['dataset'], train_batch_size=16)
-	federated_learner = Federated_Learner(args, data_prep)
+    # init steps
+    data_prep = Data_Prepper(args['dataset'], train_batch_size=16)
+    federated_learner = Federated_Learner(args, data_prep)
 
+    # train
+    federated_learner.train()
 
-	# train
-	federated_learner.train()
-
-
-	# analyze
-	federated_learner.get_fairness_analysis()
+    # analyze
+    federated_learner.get_fairness_analysis()
