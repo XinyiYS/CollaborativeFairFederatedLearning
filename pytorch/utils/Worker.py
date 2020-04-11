@@ -31,6 +31,7 @@ class Worker():
         self.id = id
         self.device = device
         self.loss_fn = loss_fn
+        self.val_loader = None
 
     def init_model_optimizer(self, model, optimizer=None, loss_fn=None):
         self.model = model.to(self.device)
@@ -57,8 +58,8 @@ class Worker():
                 self.optimizer.step()
 
                 iter += 1
-                if iter % 2000 == 0:
-                    self.evaluate_locally(iter=iter)
+                # if iter % 2000 == 0:
+                    # self.evaluate_locally(iter=iter)
         return
 
     def evaluate_locally(self, iter=None):

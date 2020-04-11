@@ -74,7 +74,7 @@ train_idx, valid_idx = indices[train_val_split_index:], indices[:train_val_split
 train_sampler = SubsetRandomSampler(train_idx)
 valid_sampler = SubsetRandomSampler(valid_idx)
 
-batch_size = 16
+batch_size = 10
 # train_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=train_sampler,)
 
 valid_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=valid_sampler)
@@ -87,15 +87,16 @@ print("datasets preparation successful")
 from utils.models import LogisticRegression, MLP_LogReg, MLP_Net, CNN_Net
 
 # User set argument
-n_workers = 5
+n_workers = 3
 balanced_datasets=True
 
-n_samples = 30000
 use_cuda = True
 device = torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu" )
 
 model_fn = MLP_Net
 loss_fn = nn.CrossEntropyLoss()
+loss_fn = nn.NLLLoss()
+lr = 0.15
 
 np.random.seed(1111)
 
@@ -112,7 +113,7 @@ def init_workers(n_workers, train_dataset, indices_list, device):
 		train_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=train_sampler)
 
 		model = model_fn()
-		optimizer = optim.SGD(model.parameters(), lr=1e-3)
+		optimizer = optim.SGD(model.parameters(), lr=lr)
 
 		worker = Worker(train_loader=train_loader, indices=indices, 
 						id=str(i), model=model, optimizer=optimizer, loss_fn = loss_fn,
@@ -145,9 +146,9 @@ from utils.utils import averge_models, average_gradient_updates, \
 	add_update_to_model, compute_grad_update, compare_models,  \
 	pretrain_locally, leave_one_out_evaluate, evaluate, compute_shapley
 
-pretrain_epochs = 1
-fl_epochs = 1
-fl_individual_epochs = 1
+pretrain_epochs = 5
+fl_epochs = 20
+fl_individual_epochs = 5
 
 # uncomment for local pretraining
 pretrain_locally(workers, pretrain_epochs, test_loader=None)
