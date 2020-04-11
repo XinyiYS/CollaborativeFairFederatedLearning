@@ -34,11 +34,12 @@ class Federated_Learner:
 		loss_fn = self.args['loss_fn']
 		sharing_lambda = self.args['sharing_lambda']
 
+		self.federated_model = model_fn()
 		self.workers = []
 		# possible to enumerate through various model_fns, optimizer_fns, lrs,
 		# sharing_lambdas, or even devices
 		for i, worker_train_loader in enumerate(self.worker_train_loaders):
-			model = model_fn()
+			model = copy.deepcopy(self.federated_model)
 			optimizer = optimizer_fn(model.parameters(), lr=lr)
 
 			worker = Worker(train_loader=worker_train_loader,
@@ -63,10 +64,10 @@ class Federated_Learner:
 		self.sharing_ledger = torch.zeros((self.n_workers))
 		self.shapley_values = torch.zeros((self.n_workers))
 
-		federated_model = averge_models(
-			[worker.model for worker in self.workers])
+		self.federated_model = averge_models([worker.model for worker in self.workers])
 		print("Performance of an average model of the pretrained local models")
-		evaluate(federated_model, self.test_loader, self.args['device'], loss_fn=self.args['loss_fn'], verbose=True)
+		evaluate(self.federated_model, self.test_loader, self.args['device'], loss_fn=self.args['loss_fn'], verbose=True)
+
 
 		points = torch.zeros((self.n_workers))
 
@@ -86,7 +87,7 @@ class Federated_Learner:
 
 			# updates the federated model in function for efficiency
 			marginal_contributions = leave_one_out_evaluate(
-				federated_model, grad_updates, self.valid_loader, device)
+				self.federated_model, grad_updates, self.valid_loader, device)
 			print("Marginal contributions are: ", marginal_contributions)
 
 			# self.shapley_values += compute_shapley(grad_updates, federated_model, test_loader, device)
@@ -109,10 +110,9 @@ class Federated_Learner:
 					acquired_updates)
 				worker.model = add_update_to_model(
 					worker.model, averaged_acquired_update, device=device)
-			evaluate(federated_model, self.test_loader, self.args['device'], loss_fn=self.args['loss_fn'])
+			evaluate(self.federated_model, self.test_loader, self.args['device'], loss_fn=self.args['loss_fn'])
 
 		self.worker_model_test_accs_after = self.evaluate_workers_performance(self.test_loader)
-		self.federated_model = federated_model
 		return
 
 	def get_fairness_analysis(self):
@@ -132,16 +132,19 @@ class Federated_Learner:
 		corrs = scipy.stats.pearsonr(sharing_ledger, worker_model_improvements)
 		print("test_acc improvements vs sharing ledger: ", corrs)
 
-		corrs = scipy.stats.pearsonr(sharing_ledger, shapley_values)
-		print('sharing ledge vs shapley values: ', corrs)
 
-		corrs = scipy.stats.pearsonr(shapley_values, worker_model_improvements)
-		print('shapley values vs model improvements: ', corrs)
+		if not (shapley_values ==0).all():
+			corrs = scipy.stats.pearsonr(sharing_ledger, shapley_values)
+			print('sharing ledge vs shapley values: ', corrs)
+
+			corrs = scipy.stats.pearsonr(shapley_values, worker_model_improvements)
+			print('shapley values vs model improvements: ', corrs)
 
 		print('worker_model_test_accs_after: ', worker_model_test_accs_after)
 		print('worker_model_improvements: ', worker_model_improvements)
 		print('sharing ledger: ', sharing_ledger)
-		print('shapley values: ', shapley_values)
+		if not (shapley_values ==0).all():
+			print('shapley values: ', shapley_values)
 		return
 
 	def evaluate_workers_performance(self, eval_loader):
