@@ -16,25 +16,26 @@ args = {
 
 	# setting parameters
 	'dataset': 'mnist',
-	'n_workers': 3,
+	'n_workers': 5,
 	'balanced': True,
 	'sharing_lambda': 0.1,
+	'batch_size' : 10,
 
 	# model parameters
 	'model_fn': MLP_Net,
 	'optimizer_fn': optim.SGD,
-	'loss_fn': nn.NLLLoss(),
+	'loss_fn': nn.CrossEntropyLoss(),
 	'lr': 0.15,
 
 	# training parameters
-	'pretrain_epochs': 3,
+	'pretrain_epochs': 5,
 	'fl_epochs': 5,
-	'fl_individual_epochs': 3,
+	'fl_individual_epochs': 5,
 }
 
 if __name__ == '__main__':
 	# init steps
-	data_prep = Data_Prepper(args['dataset'], train_batch_size=16)
+	data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'])
 	federated_learner = Federated_Learner(args, data_prep)
 
 	# train
