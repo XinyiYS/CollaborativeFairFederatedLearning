@@ -55,34 +55,34 @@ class Data_Prepper:
 
 
 	def prepare_dataset(self, name='adult'):
-	    if name == 'adult':
-	        from utils.load_adult import get_train_test
-	        from utils.Custom_Dataset import Custom_Dataset
-	        import torch
+		if name == 'adult':
+			from utils.load_adult import get_train_test
+			from utils.Custom_Dataset import Custom_Dataset
+			import torch
 
-	        train_data, train_target, test_data, test_target = get_train_test()
+			train_data, train_target, test_data, test_target = get_train_test()
 
-	        X_train = torch.tensor(train_data.values, requires_grad=False).float()
-	        y_train = torch.tensor(train_target.values, requires_grad=False).long()
-	        X_test = torch.tensor(test_data.values, requires_grad=False).float()
-	        y_test = torch.tensor(test_target.values, requires_grad=False).long()
+			X_train = torch.tensor(train_data.values, requires_grad=False).float()
+			y_train = torch.tensor(train_target.values, requires_grad=False).long()
+			X_test = torch.tensor(test_data.values, requires_grad=False).float()
+			y_test = torch.tensor(test_target.values, requires_grad=False).long()
 
-	        train_set = Custom_Dataset(X_train, y_train)
-	        test_set = Custom_Dataset(X_test, y_test)
+			train_set = Custom_Dataset(X_train, y_train)
+			test_set = Custom_Dataset(X_test, y_test)
 
-	        return train_set, test_set
-	    elif name == 'mnist':
-	        from torchvision import datasets, transforms
+			return train_set, test_set
+		elif name == 'mnist':
+			from torchvision import datasets, transforms
 
-	        train = datasets.MNIST('datasets/', train=True, transform=transforms.Compose([
-	               transforms.Pad((2,2,2,2)),
-	               transforms.ToTensor(),
-	               transforms.Normalize((0.1307,), (0.3081,))
-	                           ]))
-	            
-	        test = datasets.MNIST('datasets/', train=False, transform=transforms.Compose([
-	                transforms.Pad((2,2,2,2)),
-	                transforms.ToTensor(),
-	                transforms.Normalize((0.1307,), (0.3081,))
-	            ]))
-	        return train, test
+			train = datasets.MNIST('datasets/', train=True, transform=transforms.Compose([
+				   transforms.Pad((2,2,2,2)),
+				   transforms.ToTensor(),
+				   transforms.Normalize((0.1307,), (0.3081,))
+							   ]))
+				
+			test = datasets.MNIST('datasets/', train=False, transform=transforms.Compose([
+					transforms.Pad((2,2,2,2)),
+					transforms.ToTensor(),
+					transforms.Normalize((0.1307,), (0.3081,))
+				]))
+			return train, test
