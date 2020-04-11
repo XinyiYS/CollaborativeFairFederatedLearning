@@ -27,9 +27,9 @@ args = {
     'lr': 0.15,
 
     # training parameters
-    'pretrain_epochs': 2,
-    'fl_epochs': 2,
-    'fl_individual_epochs': 2,
+    'pretrain_epochs': 3,
+    'fl_epochs': 5,
+    'fl_individual_epochs': 3,
 }
 
 if __name__ == '__main__':
@@ -39,6 +39,5 @@ if __name__ == '__main__':
 
     # train
     federated_learner.train()
-
     # analyze
     federated_learner.get_fairness_analysis()

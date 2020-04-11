@@ -3,8 +3,7 @@ from torch.utils.data import DataLoader
 
 
 from torch.utils.data import Dataset
-
-
+import utils
 class Custom_Dataset(Dataset):
 
     def __init__(self, X, y):
@@ -40,7 +39,9 @@ class Worker():
         self.train_loader = DataLoader(
             dataset=self.dataset, batch_size=batch_size, shuffle=True)
 
-    def train_locally(self, epochs):
+    def train_locally(self, epochs, grad_update=False):
+        if grad_update:
+            model_before = copy.deepcopy(self.model)
         iter = 0
         self.model.train()
         self.model = self.model.to(self.device)
@@ -54,4 +55,7 @@ class Worker():
                 loss.backward()
                 self.optimizer.step()
                 iter += 1
-        return
+
+        if grad_update:
+            grad_update = utils.compute_grad_update(model_before, self.model, device=self.device)
+            return grad_update

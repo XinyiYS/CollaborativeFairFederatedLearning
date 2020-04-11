@@ -48,20 +48,18 @@ class Federated_Learner:
             self.workers.append(worker)
         return
 
-    def pretrain_locally(self, epochs, test=False):
+    def pretrain_locally(self, epochs, test=False, parallelize=True):        
         for worker in self.workers:
             worker.train_locally(epochs=epochs)
             if test:
                 evaluate(worker.model, self.test_loader, worker.device)
         return
 
+
     def train(self):
         print("\nStart local pretraining ")
         self.pretrain_locally(self.args['pretrain_epochs'])
-        self.worker_model_test_accs_before = self.evaluate_workers_performance(
-            mode='test')
-        print("Workers Local pretraining successful")
-
+        self.worker_model_test_accs_before = self.evaluate_workers_performance(self.test_loader)
         self.sharing_ledger = torch.zeros((self.n_workers))
         self.shapley_values = torch.zeros((self.n_workers))
 
@@ -112,8 +110,7 @@ class Federated_Learner:
 
             evaluate(federated_model, self.test_loader, device)
 
-        self.worker_model_test_accs_after = self.evaluate_workers_performance(
-            mode='test')
+        self.worker_model_test_accs_after = self.evaluate_workers_performance(self.test_loader)
         self.federated_model = federated_model
         return
 
@@ -146,16 +143,8 @@ class Federated_Learner:
         print('shapley values: ', shapley_values)
         return
 
-    def evaluate_workers_performance(self, mode='test'):
-        assert mode in ['validation',
-                        'test'], "Mode accepts \'validation\' or \'test\'"
-
-        if mode == 'validation':
-            eval_loader = self.valid_loader
-        else:
-            eval_loader = self.test_loader
+    def evaluate_workers_performance(self, eval_loader):
         device = self.args['device']
-
         return [evaluate(worker.model, eval_loader, device, verbose=False)[1].tolist() for worker in self.workers]
 
 

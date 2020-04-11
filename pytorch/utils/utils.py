@@ -59,25 +59,11 @@ def add_update_to_model(model, update, weight=1.0, device=None):
         param_model.data += weight * param_update.data
     return model
 
-
-# def create_data_loader(X, y, batch_size):
-#     dataset = Custom_Dataset(X, y)
-#     return DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
-
 def compare_models(model1, model2):
     for p1, p2 in zip(model1.parameters(), model2.parameters()):
         if p1.data.ne(p2.data).sum() > 0:
             return False # two models have different weights
     return True
-
-
-def pretrain_locally(workers, epochs, test_loader=None):
-    for worker in workers:
-        worker.train_locally(epochs=epochs)
-        if test_loader:
-            evaluate(worker.model, test_loader, worker.device)
-    print("Workers Local pretraining successful")
-    return
 
 
 def evaluate(model, eval_loader, device, loss_fn=nn.CrossEntropyLoss(),verbose=True):
@@ -142,7 +128,6 @@ def random_split(sample_indices, m_bins, equal=True):
         indices_list = np.split(sample_indices, split_points)
 
     return indices_list
-
 
 
 import random
