@@ -1,3 +1,4 @@
+import sys
 import torch
 
 from torch import nn, optim
@@ -27,18 +28,25 @@ args = {
 	'model_fn': LogisticRegression,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.CrossEntropyLoss(),
-	'lr': 0.001,
+	'lr': 0.0001,
 
 	# training parameters
 	'pretrain_epochs': 1,
-	'fl_epochs': 3,
-	'fl_individual_epochs': 3,
+	'fl_epochs': 5,
+	'fl_individual_epochs': 5,
 }
 
 if __name__ == '__main__':
 	# init steps
+
+	log = open("logs/experiment.log", "a")
+	sys.stdout = log
+
+	print("Experimental settings are: ", args)
+	
 	data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'], train_val_split_ratio=args['train_val_split_ratio'])
 	federated_learner = Federated_Learner(args, data_prep)
+
 
 	# train
 	federated_learner.train()
