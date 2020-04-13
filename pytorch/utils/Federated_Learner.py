@@ -1,4 +1,6 @@
 import copy
+from collections import defaultdict
+
 import torch
 from torch import nn, optim
 
@@ -25,6 +27,7 @@ class Federated_Learner:
 			self.args['n_workers'], self.args['split'])
 		self.shard_sizes = [len(worker_train_loader) * worker_train_loader.batch_size for worker_train_loader in self.worker_train_loaders]
 		self.init_workers()
+		self.performance_dict = defaultdict(list)
 
 	def init_workers(self):
 		assert self.n_workers == len(
@@ -80,18 +83,23 @@ class Federated_Learner:
 		print("Start local pretraining ")
 		self.train_locally(self.args['pretrain_epochs'])
 		self.worker_model_test_accs_before = self.evaluate_workers_performance(self.test_loader)
-		self.sharing_ledger = torch.zeros((self.n_workers))
-		self.shapley_values = torch.zeros((self.n_workers))
+
+		self.performance_dict['worker_model_test_accs_before'] = self.worker_model_test_accs_before
+		# self.sharing_ledger = torch.zeros((self.n_workers))
+		# self.shapley_values = torch.zeros((self.n_workers))
 
 		self.federated_model = averge_models([worker.model for worker in self.workers])
 		print("Performance of an average model of the pretrained local models")
-		evaluate(self.federated_model, self.test_loader, self.args['device'], loss_fn=self.args['loss_fn'], verbose=True)
+		_, acc = evaluate(self.federated_model, self.test_loader, self.args['device'], loss_fn=self.args['loss_fn'], verbose=True)
+		self.performance_dict['test_acc_avg_model_after_pretrain'] = acc
 
+		self.performance_dict['shard_sizesd'].append(self.shard_sizes)
 
 		# param_count = sum([p.numel() for p in self.federated_model.parameters()])
 		points = torch.tensor([ worker.sharing_lambda * worker.param_count * (self.n_workers - 1) for worker in self.workers])
 		credits = torch.ones((self.n_workers)) / self.n_workers
 		credit_threshold = 1. / (self.n_workers) * (2. / 3.)
+
 
 		param_frequency = [torch.zeros(param.shape).to(self.device) for param in self.federated_model.parameters()]
 
@@ -102,6 +110,7 @@ class Federated_Learner:
 		print("Start federated learning \n")
 		for epoch in range(fl_epochs):
 			print('Epoch {}:'.format(epoch+1))
+
 
 			# 1. training locally, return updates, and filter the updates
 			grad_updates = self.train_locally(fl_individual_epochs, requires_update=True)
@@ -117,29 +126,60 @@ class Federated_Learner:
 			federated_val_acc, loo_val_accs = leave_one_out_evaluate(self.federated_model, grad_updates, self.valid_loader, device)
 			print("Federated model validation accuracy : {:.4%}".format(federated_val_acc))
 			print("Leave-one-out validation accuracies : ", ["{:.4%}".format(loo_val_acc) for loo_val_acc in loo_val_accs]   )
-			credits = compute_credits(credits, federated_val_acc, loo_val_accs, credit_threshold=credit_threshold)
 			decay = 1
-			credit_threshold *= decay
+			credit_threshold *= 1. / torch.sum(credits > credit_threshold) * (2. / 3.)
+			credits = compute_credits(credits, federated_val_acc, loo_val_accs, credit_threshold=credit_threshold)
 			print("Computed and normalized credits: ", credits.data)
 
 
 			# self.shapley_values += compute_shapley(grad_updates, federated_model, test_loader, device)
-
 			# 3. gradient downloads and uploads according to the points and sharing_lambdas 
-			self.assign_updates( credits, param_frequency, aggregated_gradient_updates)
+			# self.assign_updates(credits, param_frequency, aggregated_gradient_updates)
 			# self.trade_gradients(points, sorted_grad_updates)
+			self.assign_parameters(credits, param_frequency)
+
 
 			# 4. evaluate the federated_model at the end of each epoch
 			self.performance_summary()
+			
+
+			self.performance_dict['credits'].append(credits)
+			self.performance_dict['federated_val_acc'].append(federated_val_acc)
+			self.performance_dict['credit_threshold'].append(credit_threshold)
+
+
+
 			print()
 
 		self.worker_model_test_accs_after = self.evaluate_workers_performance(self.test_loader)
 		self.worker_standalone_test_accs = self.evaluate_workers_performance(self.test_loader, standalone_model=True)
 		return
 
+
+	def assign_parameters(self, credits, param_frequency):
+
+		"""
+		download the most frequently updated <credits[i] * num_param> parameters from the server
+		and replace the corresponding parameters in the local model
+		server needs to keep track of a parameter update frequency mapping
+		"""
+
+		freqs = torch.cat( [freq.data.view(-1) for freq in param_frequency])
+		for i, (credit, worker) in enumerate( zip(credits, self.workers)):
+
+			num_param_downloads = int(credit * worker.param_count)
+			topk, _ = torch.topk(freqs, num_param_downloads)
+			target_freq = topk[-1]
+
+			for worker_param, federated_param, param_freq in zip(worker.model.parameters(), self.federated_model.parameters(), param_frequency):
+				downloading_indices = param_freq > target_freq
+				worker_param.data[downloading_indices] = federated_param.data[downloading_indices]
+
+		return
+
 	def assign_updates(self, credits, param_frequency, aggregated_gradient_updates):
 		
-		# download the most frequently updated <credits[i] * num_param> parameters from the server
+		# download the most frequently updated <credits[i] * num_param> parameters' updates from the aggregated update
 		# server needs to keep track of a parameter update frequency mapping
 
 		freqs = torch.cat( [freq.data.view(-1) for freq in param_frequency])
@@ -150,7 +190,6 @@ class Federated_Learner:
 			target_freq = topk[-1]
 			for freq, update in zip(param_frequency, grad_update):
 				update.data[freq < target_freq] = 0
-
 			add_update_to_model(worker.model, grad_update)
 		return
 
@@ -187,7 +226,8 @@ class Federated_Learner:
 
 	def performance_summary(self):
 		print("Federated model performance: ", end='')
-		evaluate(self.federated_model, self.test_loader, self.args['device'], loss_fn=self.args['loss_fn'])
+		self.loss, self.test_acc = evaluate(self.federated_model, self.test_loader, self.args['device'], loss_fn=self.args['loss_fn'])
+
 		self.worker_standalone_test_accs = self.evaluate_workers_performance(self.test_loader, standalone_model=True)
 		self.worker_model_test_accs_after = self.evaluate_workers_performance(self.test_loader)
 		self.worker_model_improvements = torch.tensor(self.worker_model_test_accs_after) - torch.tensor(self.worker_model_test_accs_before)
@@ -197,7 +237,12 @@ class Federated_Learner:
 		print('Workers federated accuracies: ', ["{:.3%}".format(acc_aft) for acc_aft in self.worker_model_test_accs_after])
 		print('Workers improved  accuracies: ', ["{:.3%}".format(acc_impro) for acc_impro in self.worker_model_improvements])
 		print('Workers shard sizes: ', self.shard_sizes)
-		
+
+		self.performance_dict['federated_model_test_acc'].append(self.test_acc)
+		self.performance_dict['worker_standalone_test_accs'].append(self.worker_standalone_test_accs)
+		self.performance_dict['worker_model_test_accs_after'].append(self.worker_model_test_accs_after)
+		self.performance_dict['worker_model_improvements'].append(self.worker_model_improvements)
+
 		return
 
 	def get_fairness_analysis(self):
@@ -208,13 +253,28 @@ class Federated_Learner:
 
 		self.performance_summary()
 
-		print('Workers sharing_contributions : ', sharing_contributions)				
-		import scipy.stats
-		corrs = scipy.stats.pearsonr(self.worker_model_test_accs_after, sharing_contributions,)
-		print("Correlation between test_acc & sharing contributions: ", corrs)
+		print('Workers sharing_contributions : ', sharing_contributions)
+		from scipy.stats import pearsonr
 
-		corrs = scipy.stats.pearsonr(sharing_contributions, self.worker_model_improvements)
+		corrs = pearsonr(self.worker_standalone_test_accs, self.test_acc + torch.rand((self.n_workers)) / 1e6 )
+		print("Correlation between stand alone test acc & perturbed federated test acc: ", corrs)
+		self.performance_dict['standalone_vs_federated_perturbed_corr'].append(corrs[0])
+
+		corrs = pearsonr(self.worker_standalone_test_accs, self.worker_model_test_accs_after)
+		print("Correlation between stand alone test acc & collaborative final model acc: ", corrs)
+		self.performance_dict['standalone_vs_final_corr'].append(corrs[0])
+
+		corrs = pearsonr(sharing_contributions, self.worker_model_test_accs_after)
+		print("Correlation between test_acc & sharing contributions: ", corrs)
+		self.performance_dict['sharingcontribution_vs_final_corr'].append(corrs[0])
+
+		corrs = pearsonr(sharing_contributions, self.worker_model_improvements)
 		print("Correlation between test_acc improvements & sharing_contributions: ", corrs)
+		self.performance_dict['sharingcontribution_vs_improvements_corr'].append(corrs[0])
+
+		self.performance_dict['standalone_best_worker'] = max(self.worker_standalone_test_accs)
+		self.performance_dict['CFFL_best_worker'] = max(self.worker_model_test_accs_after)
+		self.performance_dict['federated_final_performance'] = self.test_acc
 
 
 		# shapley_values = self.shapley_values
@@ -234,8 +294,6 @@ class Federated_Learner:
 			return [evaluate(worker.standalone_model, eval_loader, device, verbose=False)[1].tolist() for worker in self.workers]
 		else:
 			return [evaluate(worker.model, eval_loader, device, verbose=False)[1].tolist() for worker in self.workers]
-
-
 
 def credit_curve(x):
 	from math import exp
