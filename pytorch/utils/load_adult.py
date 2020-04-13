@@ -67,6 +67,7 @@ def get_train_test(train_dir='datasets/adult.data', test_dir='datasets/adult.tes
 	negatives = original[original['Target']==0][:len(positives)]
 
 	original  = pd.concat([positives, negatives])
+	original = original.sample(frac=1).reset_index(drop=True)
 
 	labels = original['Target'].astype('float')
 

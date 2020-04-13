@@ -4,9 +4,9 @@ from torch.utils.data.sampler import SubsetRandomSampler
 
 
 class Data_Prepper:
-	def __init__(self, name, train_batch_size, test_batch_size=1000, valid_batch_size=None, train_val_split_ratio=0.8,):
+	def __init__(self, name, train_batch_size, sample_size_cap=-1, test_batch_size=1000, valid_batch_size=None, train_val_split_ratio=0.8,):
 		self.name = name
-		self.train_dataset, self.test_dataset = self.prepare_dataset(name)
+		self.train_dataset, self.test_dataset = self.prepare_dataset(name, sample_size_cap)
 		self.train_val_split_ratio = train_val_split_ratio
 
 		self.init_batch_size(train_batch_size, test_batch_size, valid_batch_size)
@@ -74,7 +74,7 @@ class Data_Prepper:
 		return worker_train_loaders
 
 
-	def prepare_dataset(self, name='adult'):
+	def prepare_dataset(self, name='adult', sample_size_cap=-1):
 		if name == 'adult':
 			from utils.load_adult import get_train_test
 			from utils.Custom_Dataset import Custom_Dataset
@@ -82,8 +82,8 @@ class Data_Prepper:
 
 			train_data, train_target, test_data, test_target = get_train_test()
 
-			X_train = torch.tensor(train_data.values, requires_grad=False).float()
-			y_train = torch.tensor(train_target.values, requires_grad=False).long()
+			X_train = torch.tensor(train_data.values, requires_grad=False).float()[:sample_size_cap]
+			y_train = torch.tensor(train_target.values, requires_grad=False).long()[:sample_size_cap]
 			X_test = torch.tensor(test_data.values, requires_grad=False).float()
 			y_test = torch.tensor(test_target.values, requires_grad=False).long()
 

@@ -41,7 +41,7 @@ class MLP_Net(nn.Module):
 
 
 class LogisticRegression(nn.Module):
-	def __init__(self, input_dim=87, output_dim=2):
+	def __init__(self, input_dim=86, output_dim=2):
 		super(LogisticRegression, self).__init__()
 		self.input_dim = input_dim
 		self.output_dim = output_dim
@@ -53,7 +53,7 @@ class LogisticRegression(nn.Module):
 		return outputs
 
 class MLP_LogReg(nn.Module):
-	def __init__(self, input_dim=87, output_dim=2):
+	def __init__(self, input_dim=86, output_dim=2):
 		super(MLP_LogReg, self).__init__()
 		self.fc1 = nn.Linear(input_dim, 128)
 		self.fc2 = nn.Linear(128, 64)
