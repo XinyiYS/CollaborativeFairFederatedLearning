@@ -18,6 +18,7 @@ def split_and_transform(original, labels, train_test_ratio):
 	num_train = int(train_test_ratio * len(original))
 	
 	original = data_transform(original)
+
 	train_data = original[:num_train]
 	train_labels = labels[:num_train]
 
@@ -26,7 +27,7 @@ def split_and_transform(original, labels, train_test_ratio):
 
 	return train_data, train_labels, test_data, test_labels
 
-def get_train_test(train_dir='datasets/adult.data', test_dir='datasets/adult.test', train_test_ratio=0.66667):
+def get_train_test(train_dir='datasets/adult.data', test_dir='datasets/adult.test', train_test_ratio=0.8):
 
 	features = ["Age", "Workclass", "fnlwgt", "Education", "Education-Num", "Martial Status",
 			"Occupation", "Relationship", "Race", "Sex", "Capital Gain", "Capital Loss",
@@ -53,10 +54,21 @@ def get_train_test(train_dir='datasets/adult.data', test_dir='datasets/adult.tes
 								engine='python', na_values="?", skiprows=1)
 
 	original = pd.concat([original_train, original_test])
-	labels = original['Target']
-	labels = labels.replace('<=50K', 0).replace('>50K', 1)
-	labels = labels.replace('<=50K.', 0).replace('>50K.', 1)
-	labels = labels.astype('float')
+
+	original['Target'] = original['Target'].replace('<=50K', 0).replace('>50K', 1)
+	original['Target'] = original['Target'].replace('<=50K.', 0).replace('>50K.', 1)
+
+	# labels = original['Target']
+	# labels = labels.replace('<=50K', 0).replace('>50K', 1)
+	# labels = labels.replace('<=50K.', 0).replace('>50K.', 1)
+	# labels = labels.astype('float')
+
+	positives = original[original['Target']==1]
+	negatives = original[original['Target']==0][:len(positives)]
+
+	original  = pd.concat([positives, negatives])
+
+	labels = original['Target'].astype('float')
 
 	# Redundant column
 	# there is an Education-Num column that captures the info in Education

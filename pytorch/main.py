@@ -22,7 +22,7 @@ args = {
 	'split': 'power_law',
 	'sharing_lambda': 0.1,  # privacy level -> at most (sharing_lambda * num_of_parameters) updates
 	'batch_size' : 16,
-	'train_val_split_ratio': 0.05,
+	'train_val_split_ratio': 0.9,
 
 	# model parameters
 	'model_fn': LogisticRegression,
@@ -39,12 +39,13 @@ args = {
 if __name__ == '__main__':
 	# init steps
 
-	log = open("logs/experiment.log", "a")
-	sys.stdout = log
+	# log = open("logs/experiment.log", "a")
+	# sys.stdout = log
 
-	print("Experimental settings are: ", args)
+	# print("Experimental settings are: ", args)
 	
 	data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'], train_val_split_ratio=args['train_val_split_ratio'])
+
 	federated_learner = Federated_Learner(args, data_prep)
 
 
