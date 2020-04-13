@@ -23,7 +23,6 @@ class Data_Prepper:
 	def init_train_valid_idx(self, shuffle=True):
 		self.train_idx, self.valid_idx = self.get_train_valid_indices(self.train_dataset, self.train_val_split_ratio, shuffle=shuffle)
 
-
 	def init_valid_loader(self):
 		self.valid_loader = DataLoader(self.train_dataset, batch_size=self.valid_batch_size, sampler=SubsetRandomSampler(self.valid_idx))
 
@@ -43,14 +42,35 @@ class Data_Prepper:
 			np.random.seed(1111)
 			np.random.shuffle(indices)
 
-		return indices[train_val_split_index:], indices[:train_val_split_index]
+		return  indices[:train_val_split_index], indices[train_val_split_index:]
 
-	def get_train_loaders(self, n_workers, balanced=True, batch_size=None):
+	def get_train_loaders(self, n_workers, split='power_law', batch_size=None):
 		if not batch_size:
 			batch_size = self.train_batch_size
-		from utils.utils import random_split
-		indices_list = random_split(sample_indices=self.train_idx, m_bins=n_workers, equal=balanced)
+
+		if split == 'power_law':
+			from scipy.stats import powerlaw
+			import math
+			a = 1.65911332899
+			party_size = int(len(self.train_idx) / n_workers)
+			b = np.linspace(powerlaw.ppf(0.01, a), powerlaw.ppf(0.99, a), n_workers)
+			shard_sizes = list(map(math.ceil, b/sum(b)*party_size*n_workers))
+			indices_list = []
+			accessed = 0
+			for worker_id in range(n_workers):
+				indices_list.append(self.train_idx[accessed:accessed + shard_sizes[worker_id]])
+				accessed += shard_sizes[worker_id]
+
+		elif split in ['balanced','equal']:
+			from utils.utils import random_split
+			indices_list = random_split(sample_indices=self.train_idx, m_bins=n_workers, equal=True)
+		
+		elif split == 'random':
+			from utils.utils import random_split
+			indices_list = random_split(sample_indices=self.train_idx, m_bins=n_workers, equal=False)
+
 		worker_train_loaders = [DataLoader(self.train_dataset, batch_size=batch_size, sampler=SubsetRandomSampler(indices)) for indices in indices_list]
+
 		return worker_train_loaders
 
 

@@ -1,4 +1,5 @@
 import torch
+
 from torch import nn, optim
 
 from utils.Worker import Worker
@@ -15,27 +16,28 @@ args = {
 
 
 	# setting parameters
-	'dataset': 'mnist',
+	'dataset': 'adult',
 	'n_workers': 5,
-	'balanced': True,
-	'sharing_lambda': 0.1,
-	'batch_size' : 10,
+	'split': 'power_law',
+	'sharing_lambda': 0.1,  # privacy level -> at most (sharing_lambda * num_of_parameters) updates
+	'batch_size' : 16,
+	'train_val_split_ratio': 0.05,
 
 	# model parameters
-	'model_fn': MLP_Net,
+	'model_fn': LogisticRegression,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.CrossEntropyLoss(),
-	'lr': 0.15,
+	'lr': 0.001,
 
 	# training parameters
-	'pretrain_epochs': 5,
-	'fl_epochs': 5,
-	'fl_individual_epochs': 5,
+	'pretrain_epochs': 1,
+	'fl_epochs': 3,
+	'fl_individual_epochs': 3,
 }
 
 if __name__ == '__main__':
 	# init steps
-	data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'])
+	data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'], train_val_split_ratio=args['train_val_split_ratio'])
 	federated_learner = Federated_Learner(args, data_prep)
 
 	# train

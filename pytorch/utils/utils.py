@@ -10,7 +10,7 @@ def averge_models(models, device=None):
 		models = [model.to(device) for model in models]
 		final_model = final_model.to(device)
 
-	averaged_parameters = average_gradient_updates([list(model.parameters()) for model in models])
+	averaged_parameters = aggregate_gradient_updates([list(model.parameters()) for model in models], mode='mean')
 	
 	for param, avg_param in zip(final_model.parameters(), averaged_parameters):
 		param.data = avg_param.data
@@ -30,7 +30,7 @@ def add_gradient_updates(grad_update_1, grad_update_2):
 	return [grad_update_1[i] + grad_update_2[i] for i in range(len(grad_update_1))]
 
 
-def average_gradient_updates(grad_updates, device=None):
+def aggregate_gradient_updates(grad_updates, device=None, mode='sum'):
 	if grad_updates:
 		len_first = len(grad_updates[0])
 		assert all(len(i) == len_first for i in grad_updates), "Different shapes of parameters. Cannot take average."
@@ -41,13 +41,17 @@ def average_gradient_updates(grad_updates, device=None):
 		for i, grad_update in enumerate(grad_updates):
 			grad_updates[i] = [param.to(device) for param in grad_update]
 
-	averaged_gradient_updates = []
+	aggregated_gradient_updates = []
+	if mode=='mean':
+		for i in range(len(grad_updates[0])):
+			aggregated_gradient_updates.append(torch.stack(
+				[grad_update[i] for grad_update in grad_updates]).mean(dim=0))
+	elif mode =='sum':
+		for i in range(len(grad_updates[0])):
+			aggregated_gradient_updates.append(torch.stack(
+				[grad_update[i] for grad_update in grad_updates]).sum(dim=0))
 
-	for i in range(len(grad_updates[0])):
-		averaged_gradient_updates.append(torch.stack(
-			[grad_update[i] for grad_update in grad_updates]).mean(dim=0))
-	return averaged_gradient_updates
-
+	return aggregated_gradient_updates
 
 def add_update_to_model(model, update, weight=1.0, device=None):
 	if not update: return model
@@ -82,7 +86,7 @@ def evaluate(model, eval_loader, device, loss_fn=nn.CrossEntropyLoss(),verbose=T
 		correct += (predicted == batch_target).sum()
 	accuracy = 1. * correct / total
 	if verbose:
-		print("Loss: {}. Accuracy: {:.0%}.\n".format(loss, accuracy))
+		print("Loss: {:.6f}. Accuracy: {:.4%}.".format(loss, accuracy))
 	return loss, accuracy
 
 
@@ -92,26 +96,26 @@ def leave_one_out_evaluate(federated_model, grad_updates, eval_loader, device, u
 		# Seems to be some issue with this flag, use default True until fully investigated and fixed
 		federated_model = copy.deepcopy(federated_model)
 
-	averaged_gradient_updates = average_gradient_updates(grad_updates, device)
-	federated_model = add_update_to_model(federated_model, averaged_gradient_updates, device=device)
+	aggregated_gradient_updates = aggregate_gradient_updates(grad_updates, device)
+	federated_model = add_update_to_model(federated_model, aggregated_gradient_updates, device=device)
 	_, curr_val_acc = evaluate(federated_model, eval_loader, device, verbose=False)
 
 	loo_model = copy.deepcopy(federated_model)
 	loo_losses, loo_val_accs = [], []
 	for grad_update in grad_updates:
-		loo_model = add_update_to_model(loo_model, grad_update, weight = -1./len(grad_updates), device=device)
+		loo_model = add_update_to_model(loo_model, grad_update, weight = 1.0, device=device)
 		loss, val_acc = evaluate(loo_model, eval_loader, device, verbose=False)
 		loo_losses.append(loss)
 		loo_val_accs.append(val_acc)
-		loo_model = add_update_to_model(loo_model, grad_update, weight = 1./len(grad_updates), device=device)
+		loo_model = add_update_to_model(loo_model, grad_update, weight = 1.0, device=device)
 
 	del loo_model
-	del averaged_gradient_updates
+	del aggregated_gradient_updates
 
 	# scalar - 1D torch tensor subtraction -> 1D torch tensor
-	marginal_contributions = curr_val_acc - torch.tensor(loo_val_accs) 
+	# marginal_contributions = curr_val_acc - torch.tensor(loo_val_accs) 
 
-	return marginal_contributions
+	return curr_val_acc, loo_val_accs
 
 import numpy as np
 np.random.seed(1111)
