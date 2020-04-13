@@ -91,7 +91,7 @@ class Federated_Learner:
 		# param_count = sum([p.numel() for p in self.federated_model.parameters()])
 		points = torch.tensor([ worker.sharing_lambda * worker.param_count * (self.n_workers - 1) for worker in self.workers])
 		credits = torch.ones((self.n_workers)) / self.n_workers
-		credit_threshold = 1. / (self.n_workers * 5)
+		credit_threshold = 1. / (self.n_workers) * (2. / 3.)
 
 		param_frequency = [torch.zeros(param.shape).to(self.device) for param in self.federated_model.parameters()]
 
@@ -118,7 +118,7 @@ class Federated_Learner:
 			print("Federated model validation accuracy : {:.4%}".format(federated_val_acc))
 			print("Leave-one-out validation accuracies : ", ["{:.4%}".format(loo_val_acc) for loo_val_acc in loo_val_accs]   )
 			credits = compute_credits(credits, federated_val_acc, loo_val_accs, credit_threshold=credit_threshold)
-			decay = 0.999
+			decay = 1
 			credit_threshold *= decay
 			print("Computed and normalized credits: ", credits.data)
 
@@ -241,7 +241,7 @@ def credit_curve(x):
 	from math import exp
 	return 1. / (1 + exp(-15 * (x - 0.5)))
 
-def compute_credits(credits, federated_val_acc, leave_one_out_val_accs, credit_threshold, credit_fade=1):
+def compute_credits(credits, federated_val_acc, leave_one_out_val_accs, credit_threshold, credit_fade=0):
 	for i, credit in enumerate(credits):
 		gain = federated_val_acc / (federated_val_acc + leave_one_out_val_accs[i])
 		if credit >= credit_threshold:
