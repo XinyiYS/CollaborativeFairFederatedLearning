@@ -7,3 +7,5 @@
 - [X] fix the training of MLP and CNN on MNIST to achieve normal test accuracy (96+%)
 - [ ] find out why the federated averaging produces model with low val/test acc
 - [ ] implement gradient sharing, up/downloading and points
+
+
