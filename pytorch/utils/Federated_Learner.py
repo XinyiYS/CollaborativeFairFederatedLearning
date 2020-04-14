@@ -118,7 +118,7 @@ class Federated_Learner:
 			grad_updates = filter_grad_updates(grad_updates)
 
 			aggregated_gradient_updates = aggregate_gradient_updates(grad_updates, device=self.device)
-			param_frequency = [freq + (update>0).float()  for freq, update in zip(param_frequency, aggregated_gradient_updates) ]
+			param_frequency = [freq + (update.abs()>0).float()  for freq, update in zip(param_frequency, aggregated_gradient_updates) ]
 
 
 			# 2. compute the marginal contributions to update the latest points (budgets)
@@ -136,25 +136,68 @@ class Federated_Learner:
 			# 3. gradient downloads and uploads according to the points and sharing_lambdas 
 			# self.assign_updates(credits, param_frequency, aggregated_gradient_updates)
 			# self.trade_gradients(points, sorted_grad_updates)
-			self.assign_parameters(credits, param_frequency)
+
+			# self.assign_parameters(credits, param_frequency)
+			self.assign_updates_with_filter(credits, param_frequency, aggregated_gradient_updates, grad_updates)
 
 
 			# 4. evaluate the federated_model at the end of each epoch
 			self.performance_summary()
 			
-
 			self.performance_dict['credits'].append(credits)
 			self.performance_dict['federated_val_acc'].append(federated_val_acc)
 			self.performance_dict['credit_threshold'].append(credit_threshold)
-
-
-
 			print()
 
 		self.worker_model_test_accs_after = self.evaluate_workers_performance(self.test_loader)
 		self.worker_standalone_test_accs = self.evaluate_workers_performance(self.test_loader, standalone_model=True)
 		return
 
+
+
+	def assign_updates_with_filter(self, credits, param_frequency, aggregated_gradient_updates, grad_updates):
+
+		"""
+		download the most frequently updated <credits[i] * num_param> parameters from the server
+		and replace the corresponding parameters in the local model
+		server needs to keep track of a parameter update frequency mapping
+		"""
+
+		freqs = torch.cat( [freq.data.view(-1) for freq in param_frequency])
+
+		for i, (credit, worker, worker_update) in enumerate( zip(credits, self.workers, grad_updates)):
+			agg_grad_update = copy.deepcopy(aggregated_gradient_updates)
+			num_param_downloads = int(credit * worker.param_count)
+			topk, _ = torch.topk(freqs, num_param_downloads)
+			target_freq = topk[-1]
+
+			for freq, res_param_update, worker_param_update in zip(param_frequency, agg_grad_update, worker_update):
+				# mask the irrelevant updates to 0
+				res_param_update.data[freq < target_freq] = 0
+
+				# filter out and remove the updates from itself
+				filter_indices = (res_param_update.abs() > 0)  & (worker_param_update.abs() > 0)
+				res_param_update.data[filter_indices] -= worker_param_update.data[filter_indices]
+			add_update_to_model(worker.model, agg_grad_update)
+		return
+
+
+		freqs = torch.cat( [freq.data.view(-1) for freq in param_frequency])
+		for i, (credit, worker, grad_update) in enumerate( zip(credits, self.workers, grad_updates)):
+
+			num_param_downloads = int(credit * worker.param_count)
+			topk, _ = torch.topk(freqs, num_param_downloads)
+			target_freq = topk[-1]
+
+			for worker_param, federated_param, param_freq, worker_param_update in zip(worker.model.parameters(), self.federated_model.parameters(), param_frequency, grad_update):
+				downloading_indices = param_freq > target_freq 
+				worker_param.data[downloading_indices] = federated_param.data[downloading_indices]
+
+
+				filter_indices = (federated_param.abs() > 0) & (worker_param_update.abs() > 0)
+				worker_param.data[filter_indices] -= worker_param_update.data[filter_indices]
+
+		return
 
 	def assign_parameters(self, credits, param_frequency):
 
@@ -177,51 +220,51 @@ class Federated_Learner:
 
 		return
 
-	def assign_updates(self, credits, param_frequency, aggregated_gradient_updates):
+	# def assign_updates(self, credits, param_frequency, aggregated_gradient_updates):
 		
-		# download the most frequently updated <credits[i] * num_param> parameters' updates from the aggregated update
-		# server needs to keep track of a parameter update frequency mapping
+	# 	# download the most frequently updated <credits[i] * num_param> parameters' updates from the aggregated update
+	# 	# server needs to keep track of a parameter update frequency mapping
 
-		freqs = torch.cat( [freq.data.view(-1) for freq in param_frequency])
-		for i, (credit, worker) in enumerate( zip(credits, self.workers)):
-			grad_update = copy.deepcopy(aggregated_gradient_updates)
-			num_param_downloads = int(credit * worker.param_count)
-			topk, _ = torch.topk(freqs, num_param_downloads)
-			target_freq = topk[-1]
-			for freq, update in zip(param_frequency, grad_update):
-				update.data[freq < target_freq] = 0
-			add_update_to_model(worker.model, grad_update)
-		return
+	# 	freqs = torch.cat( [freq.data.view(-1) for freq in param_frequency])
+	# 	for i, (credit, worker) in enumerate( zip(credits, self.workers)):
+	# 		grad_update = copy.deepcopy(aggregated_gradient_updates)
+	# 		num_param_downloads = int(credit * worker.param_count)
+	# 		topk, _ = torch.topk(freqs, num_param_downloads)
+	# 		target_freq = topk[-1]
+	# 		for freq, update in zip(param_frequency, grad_update):
+	# 			update.data[freq < target_freq] = 0
+	# 		add_update_to_model(worker.model, grad_update)
+	# 	return
 
 
-	def trade_gradients(self, points, sorted_grad_updates):
-		"""
-		Follows the Point Update step in Algorithm 2 in TFDP
+	# def trade_gradients(self, points, sorted_grad_updates):
+	# 	"""
+	# 	Follows the Point Update step in Algorithm 2 in TFDP
 
-		"""
-		for download_worker_id, worker in enumerate(self.workers):
-			downloaded_updates = []
-			for grad_update, upload_worker_id in sorted_grad_updates:
-				# skip itself
-				if upload_worker_id != download_worker_id:
+	# 	"""
+	# 	for download_worker_id, worker in enumerate(self.workers):
+	# 		downloaded_updates = []
+	# 		for grad_update, upload_worker_id in sorted_grad_updates:
+	# 			# skip itself
+	# 			if upload_worker_id != download_worker_id:
 
-					upload_worker = self.workers[upload_worker_id]
-					upload_threshold = upload_worker.sharing_lambda * upload_worker.param_count
+	# 				upload_worker = self.workers[upload_worker_id]
+	# 				upload_threshold = upload_worker.sharing_lambda * upload_worker.param_count
 
-					download_budget = points[download_worker_id]
+	# 				download_budget = points[download_worker_id]
 
-					trade_count = int(min(upload_threshold, download_budget))
+	# 				trade_count = int(min(upload_threshold, download_budget))
 
-					points[download_worker_id] -= trade_count
-					points[upload_worker_id] += trade_count
+	# 				points[download_worker_id] -= trade_count
+	# 				points[upload_worker_id] += trade_count
 
-					downloaded_updates.append(mask_grad_update_by_order(grad_update, trade_count))
-					self.sharing_ledger[upload_worker_id] += trade_count
+	# 				downloaded_updates.append(mask_grad_update_by_order(grad_update, trade_count))
+	# 				self.sharing_ledger[upload_worker_id] += trade_count
 
-			averaged_downloaded_update = aggreagate_gradient_updates(downloaded_updates, device=worker.device, mode='mean')
-			# print(averaged_downloaded_update)
-			backup_model = copy.deepcopy(worker.model)
-			worker.model = add_update_to_model(worker.model, averaged_downloaded_update, device=worker.device)
+	# 		averaged_downloaded_update = aggreagate_gradient_updates(downloaded_updates, device=worker.device, mode='mean')
+	# 		# print(averaged_downloaded_update)
+	# 		backup_model = copy.deepcopy(worker.model)
+	# 		worker.model = add_update_to_model(worker.model, averaged_downloaded_update, device=worker.device)
 		return
 
 	def performance_summary(self):

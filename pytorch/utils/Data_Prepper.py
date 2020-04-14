@@ -44,11 +44,11 @@ class Data_Prepper:
 
 		return  indices[:train_val_split_index], indices[train_val_split_index:]
 
-	def get_train_loaders(self, n_workers, split='power_law', batch_size=None):
+	def get_train_loaders(self, n_workers, split='powerlaw', batch_size=None):
 		if not batch_size:
 			batch_size = self.train_batch_size
 
-		if split == 'power_law':
+		if split == 'powerlaw':
 			from scipy.stats import powerlaw
 			import math
 			a = 1.65911332899
