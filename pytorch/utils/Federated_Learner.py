@@ -83,7 +83,6 @@ class Federated_Learner:
 		print("Start local pretraining ")
 		self.train_locally(self.args['pretrain_epochs'])
 		self.worker_model_test_accs_before = self.evaluate_workers_performance(self.test_loader)
-
 		self.performance_dict['worker_model_test_accs_before'] = self.worker_model_test_accs_before
 		# self.sharing_ledger = torch.zeros((self.n_workers))
 		# self.shapley_values = torch.zeros((self.n_workers))
@@ -91,9 +90,9 @@ class Federated_Learner:
 		self.federated_model = averge_models([worker.model for worker in self.workers])
 		print("Performance of an average model of the pretrained local models")
 		_, acc = evaluate(self.federated_model, self.test_loader, self.args['device'], loss_fn=self.args['loss_fn'], verbose=True)
-		self.performance_dict['test_acc_avg_model_after_pretrain'] = acc
+		self.performance_dict['test_acc_avg_model_after_pretrain'] = acc.item()
 
-		self.performance_dict['shard_sizesd'].append(self.shard_sizes)
+		self.performance_dict['shard_sizes'] = self.shard_sizes
 
 		# param_count = sum([p.numel() for p in self.federated_model.parameters()])
 		points = torch.tensor([ worker.sharing_lambda * worker.param_count * (self.n_workers - 1) for worker in self.workers])
@@ -115,7 +114,7 @@ class Federated_Learner:
 			# 1. training locally, return updates, and filter the updates
 			grad_updates = self.train_locally(fl_individual_epochs, requires_update=True)
 
-			grad_updates = filter_grad_updates(grad_updates)
+			grad_updates = filter_grad_updates(grad_updates, [worker.sharing_lambda for worker in self.workers] )
 
 			aggregated_gradient_updates = aggregate_gradient_updates(grad_updates, device=self.device)
 			param_frequency = [freq + (update.abs()>0).float()  for freq, update in zip(param_frequency, aggregated_gradient_updates) ]
@@ -144,9 +143,9 @@ class Federated_Learner:
 			# 4. evaluate the federated_model at the end of each epoch
 			self.performance_summary()
 			
-			self.performance_dict['credits'].append(credits)
-			self.performance_dict['federated_val_acc'].append(federated_val_acc)
-			self.performance_dict['credit_threshold'].append(credit_threshold)
+			self.performance_dict['credits'].append(credits.tolist())
+			self.performance_dict['federated_val_acc'].append(federated_val_acc.item())
+			self.performance_dict['credit_threshold'].append(credit_threshold.item())
 			print()
 
 		self.worker_model_test_accs_after = self.evaluate_workers_performance(self.test_loader)
@@ -281,10 +280,10 @@ class Federated_Learner:
 		print('Workers improved  accuracies: ', ["{:.3%}".format(acc_impro) for acc_impro in self.worker_model_improvements])
 		print('Workers shard sizes: ', self.shard_sizes)
 
-		self.performance_dict['federated_model_test_acc'].append(self.test_acc)
+		self.performance_dict['federated_model_test_acc'].append(self.test_acc.item())
 		self.performance_dict['worker_standalone_test_accs'].append(self.worker_standalone_test_accs)
 		self.performance_dict['worker_model_test_accs_after'].append(self.worker_model_test_accs_after)
-		self.performance_dict['worker_model_improvements'].append(self.worker_model_improvements)
+		self.performance_dict['worker_model_improvements'].append(self.worker_model_improvements.tolist())
 
 		return
 
@@ -317,7 +316,7 @@ class Federated_Learner:
 
 		self.performance_dict['standalone_best_worker'] = max(self.worker_standalone_test_accs)
 		self.performance_dict['CFFL_best_worker'] = max(self.worker_model_test_accs_after)
-		self.performance_dict['federated_final_performance'] = self.test_acc
+		self.performance_dict['federated_final_performance'] = self.test_acc.item()
 
 
 		# shapley_values = self.shapley_values
@@ -356,12 +355,12 @@ def compute_credits(credits, federated_val_acc, leave_one_out_val_accs, credit_t
 
 
 
-def filter_grad_updates(grad_updates):
+def filter_grad_updates(grad_updates, sharing_lambdas):
 	"""
 	Filter the grad_updates by the largest magnitude criterion top m%
 
 	"""
-	return [mask_grad_update_by_order(grad_update, mask_order=None, mask_percentile=0.1) for grad_update in grad_updates]
+	return [mask_grad_update_by_order(grad_update, mask_order=None, mask_percentile=sharing_lambda) for grad_update, sharing_lambda in zip(grad_updates,sharing_lambdas) ]
 
 def sort_grad_updates(grad_updates, marginal_contributions):
 	# sort the grad_updates by marginal_contributions (descending order)
