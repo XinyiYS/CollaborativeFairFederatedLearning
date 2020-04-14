@@ -14,30 +14,30 @@ from utils.Federated_Learner import Federated_Learner
 from utils.models import LogisticRegression, MLP_LogReg, MLP_Net, CNN_Net
 
 
-use_cuda = False
-args_space = {
-	# system parameters
-	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
-	# setting parameters
-	'dataset': 'adult',
-	'sample_size_cap': [5000, 10000, 15000],
-	'n_workers': [5, 10, 20],
-	'split': 'powerlaw',
-	'sharing_lambda': 0.1,  # privacy level -> at most (sharing_lambda * num_of_parameters) updates
-	'batch_size' : 16,
-	'train_val_split_ratio': 0.9,
+use_cuda = True
+# args_space = {
+# 	# system parameters
+# 	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
+# 	# setting parameters
+# 	'dataset': 'adult',
+# 	'sample_size_cap': [5000, 10000, 15000],
+# 	'n_workers': [5, 10, 20],
+# 	'split': 'powerlaw',
+# 	'sharing_lambda': 0.1,  # privacy level -> at most (sharing_lambda * num_of_parameters) updates
+# 	'batch_size' : 16,
+# 	'train_val_split_ratio': 0.9,
 
-	# model parameters
-	'model_fn': LogisticRegression,
-	'optimizer_fn': optim.SGD,
-	'loss_fn': nn.CrossEntropyLoss(),
-	'lr': 0.0001,
+# 	# model parameters
+# 	'model_fn': LogisticRegression,
+# 	'optimizer_fn': optim.SGD,
+# 	'loss_fn': nn.CrossEntropyLoss(),
+# 	'lr': 0.0001,
 
-	# training parameters
-	'pretrain_epochs': 5,
-	'fl_epochs': [10, 20],
-	'fl_individual_epochs': 5,
-}
+# 	# training parameters
+# 	'pretrain_epochs': 5,
+# 	'fl_epochs': [10, 20],
+# 	'fl_individual_epochs': 5,
+# }
 
 
 args = {
@@ -53,10 +53,10 @@ args = {
 	'train_val_split_ratio': 0.9,
 
 	# model parameters
-	'model_fn': LogisticRegression,
+	'model_fn': MLP_LogReg,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.CrossEntropyLoss(),
-	'lr': 0.0001,
+	'lr': 0.001,
 
 	# training parameters
 	'pretrain_epochs': 10,
@@ -68,9 +68,11 @@ args = {
 def run_experiments(args, repeat=5):
 	# init steps
 	logs_dir = 'logs'
-	subdir = "{}_p{}_e{}-{}-{}_b{}_size{}_lr{}".format(args['split'],args['n_workers'], 
+	model_name = str(args['model_fn']).split('.')[-1][:-2]
+	subdir = "{}_p{}_e{}-{}-{}_b{}_size{}_lr{}_{}".format(args['split'],args['n_workers'], 
 							args['pretrain_epochs'], args['fl_epochs'], args['fl_individual_epochs'],
-							args['batch_size'], args['sample_size_cap'], args['lr'])
+							args['batch_size'], args['sample_size_cap'], args['lr'], model_name
+							)
 	logdir = os.path.join(logs_dir, subdir)
 	try:
 		os.mkdir(logdir)
@@ -133,11 +135,13 @@ if __name__ == '__main__':
 	[[5, 5000, 50],[10, 10000, 50],[20, 15000, 50]]
 
 	# for n_workers, sample_size_cap, fl_epochs in product(n_workers_space, sample_size_cap_space, fl_epochs_space):
-	for n_workers, sample_size_cap, fl_epochs in [[5, 5000, 50],[10, 10000, 50],[20, 15000, 50]]:
+	# for n_workers, sample_size_cap, fl_epochs in [[5, 5000, 20],[10, 10000, 20],[20, 15000, 20]]:
+	for n_workers, sample_size_cap, fl_epochs in [[5, 5000, 100]]:
+
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap
 		args['fl_epochs'] = fl_epochs
 
-		run_experiments(args)
+		run_experiments(args, 5)
 
 
