@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 fmt_styles = ['', '--','-.', 'o-', 'v-',
-			 '^-', '<','>', '1-','2-',
+			 '^-', '<-','>-', '1-','2-',
 			 '3-','4-','s-','p-','*-',
 			 'h-', 'H-', '+-', 'X-','D-']
 def plot(df, save_dir=None,show=False):

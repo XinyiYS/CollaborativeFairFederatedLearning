@@ -30,7 +30,7 @@ for folder in os.listdir(dirname):
         
         n_workers = int(folder.split('_')[1][1:])
         fl_epochs = int(folder.split('-')[1])
-        if fl_epochs != 100:
+        if fl_epochs != 100 or "MLP" in folder:
             continue
         try:
             with open(os.path.join(dirname, folder, 'aggregate_dict.txt')) as dict_log:
@@ -48,9 +48,12 @@ for folder in os.listdir(dirname):
 shorthand_f_keys = ['Distriubted', 'CFFL' ,'contri_v_final' ]
 df = pd.DataFrame(fairness_rows, columns=[' '] + shorthand_f_keys).set_index(' ')
 print(df.to_string())
+df.to_csv('adult_LogReg_b16_e10-100-5_lr0.0001_fairness.csv')
 
 shorthand_p_keys = ['Distributed', 'Standalone', 'CFFL']
 pd.options.display.float_format = '{:,.2f}'.format
 df = pd.DataFrame(performance_rows, columns=[' '] + shorthand_p_keys).set_index(' ').T
 print(df.to_string())
+df.to_csv('adult_LogReg_b16_e10-100-5_lr0.0001_performance.csv')
+
 
