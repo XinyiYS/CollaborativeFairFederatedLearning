@@ -35,7 +35,7 @@ args = {
 
 	# training parameters
 	'pretrain_epochs': 5,
-	'fl_epochs': 20,
+	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 }
 
