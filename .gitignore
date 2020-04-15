@@ -1,5 +1,14 @@
 .vscode
+
 a.py
+
+*.pyc
+
+*__pycache__*
 
 *Paper*
 *pytorch/datasets/MNIST*
+
+
+
+
