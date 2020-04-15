@@ -80,42 +80,50 @@ class Federated_Learner:
 
 
 	def train(self):
+		points = torch.tensor([ worker.plevel * worker.param_count * (self.n_workers - 1) for worker in self.workers])
+		credits = torch.ones((self.n_workers)) / self.n_workers
+		credit_threshold = 1. / (self.n_workers) * (2. / 3.)
+
+		# param_frequency = [torch.zeros(param.shape).to(self.device) for param in self.federated_model.parameters()]
+
+		fl_epochs = self.args['fl_epochs']
+		device = self.args['device']
+		fl_individual_epochs = self.args['fl_individual_epochs']
+		self.performance_dict['shard_sizes'] = self.shard_sizes
+
 		print("Start local pretraining ")
-		self.train_locally(self.args['pretrain_epochs'])
+		grad_updates =  self.train_locally(self.args['pretrain_epochs'], requires_update=True)
 		self.worker_model_test_accs_before = self.evaluate_workers_performance(self.test_loader)
 		self.performance_dict['worker_model_test_accs_before'] = self.worker_model_test_accs_before
 		# self.sharing_ledger = torch.zeros((self.n_workers))
 		# self.shapley_values = torch.zeros((self.n_workers))
 
-		self.federated_model = averge_models([worker.model for worker in self.workers])
-		print("Performance of an average model of the pretrained local models")
-		_, acc = evaluate(self.federated_model, self.test_loader, self.args['device'], loss_fn=self.args['loss_fn'], verbose=True)
-		self.performance_dict['test_acc_avg_model_after_pretrain'] = acc.item()
-
-		self.performance_dict['shard_sizes'] = self.shard_sizes
-
-		# param_count = sum([p.numel() for p in self.federated_model.parameters()])
-		points = torch.tensor([ worker.plevel * worker.param_count * (self.n_workers - 1) for worker in self.workers])
-		credits = torch.ones((self.n_workers)) / self.n_workers
-		credit_threshold = 1. / (self.n_workers) * (2. / 3.)
+		# init the federated_model by a round of communication
+		# grad_updates = filter_grad_updates(grad_updates, [worker.plevel for worker in self.workers] )
+		# aggregated_gradient_updates = aggregate_gradient_updates(grad_updates, device=self.device)
+		# self.federated_model = add_update_to_model(self.federated_model, aggregated_gradient_updates, device=device)
+		# print("Performance of federated after pretraining of local models")
+		# _, acc = evaluate(self.federated_model, self.test_loader, self.args['device'], loss_fn=self.args['loss_fn'], verbose=True)
+		# self.performance_dict['fede_test_acc_after_pretrain'] = acc.item()
 
 
-		param_frequency = [torch.zeros(param.shape).to(self.device) for param in self.federated_model.parameters()]
+		# worker_val_accs = one_on_one_evaluate(self.workers, self.federated_model, grad_updates, self.valid_loader, device)
+		# print("One-on-one validation accuracies : ", ["{:.4%}".format(val_acc) for val_acc in worker_val_accs] )
+		# decay = 1
+		# credit_threshold *= 1. / torch.sum(credits > credit_threshold) * (2. / 3.)
+		# credits = compute_credits_sinh(credits, worker_val_accs, credit_threshold=credit_threshold, alpha=5,)			
+		# print("Computed and normalized credits: ", credits.data)
 
-		fl_epochs = self.args['fl_epochs']
-		device = self.args['device']
-		fl_individual_epochs = self.args['fl_individual_epochs']
 
-		print("Start federated learning \n")
+		print("\nStart federated learning \n")
 		for epoch in range(fl_epochs):
 			print('Epoch {}:'.format(epoch+1))
 
 			# 1. training locally, return updates, and filter the updates
 			grad_updates = self.train_locally(fl_individual_epochs, requires_update=True)
 			grad_updates = filter_grad_updates(grad_updates, [worker.plevel for worker in self.workers] )
-
 			aggregated_gradient_updates = aggregate_gradient_updates(grad_updates, device=self.device)
-			param_frequency = [freq + (update.abs()>0).float()  for freq, update in zip(param_frequency, aggregated_gradient_updates) ]
+			# param_frequency = [freq + (update.abs()>0).float()  for freq, update in zip(param_frequency, aggregated_gradient_updates) ]
 
 			# 2. update the federated_model
 			self.federated_model = add_update_to_model(self.federated_model, aggregated_gradient_updates, device=device)
@@ -123,7 +131,6 @@ class Federated_Learner:
 			print("Federated model validation accuracy : {:.4%}".format(federated_val_acc))
 
 			# 3. compute the marginal contributions to update the latest points (budgets)			
-			
 			loo_val_accs = leave_one_out_evaluate(self.federated_model, grad_updates, self.valid_loader, device)
 			print("Leave-one-out validation accuracies : ", ["{:.4%}".format(loo_val_acc) for loo_val_acc in loo_val_accs]   )
 			
@@ -135,7 +142,7 @@ class Federated_Learner:
 			decay = 1
 			credit_threshold *= 1. / torch.sum(credits > credit_threshold) * (2. / 3.)
 			# credits = compute_credits(credits, federated_val_acc, loo_val_accs, credit_threshold=credit_threshold)
-			credits = compute_credits_sihn(credits, worker_val_accs, credit_threshold=credit_threshold, alpha=5,)			
+			credits = compute_credits_sinh(credits, worker_val_accs, credit_threshold=credit_threshold, alpha=5,)			
 			print("Computed and normalized credits: ", credits.data)
 
 
@@ -145,7 +152,7 @@ class Federated_Learner:
 			# self.trade_gradients(points, sorted_grad_updates)
 
 			# self.assign_parameters(credits, param_frequency)
-			self.assign_updates_with_filter(credits, param_frequency, aggregated_gradient_updates, grad_updates)
+			self.assign_updates_with_filter(credits, aggregated_gradient_updates, grad_updates)
 
 
 			# 5. evaluate the federated_model at the end of each epoch
@@ -161,49 +168,37 @@ class Federated_Learner:
 		return
 
 
-
-	def assign_updates_with_filter(self, credits, param_frequency, aggregated_gradient_updates, grad_updates):
+	def assign_updates_with_filter(self, credits, aggregated_gradient_updates, grad_updates):
 
 		"""
-		download the most frequently updated <credits[i] * num_param> parameters from the server
-		and replace the corresponding parameters in the local model
-		server needs to keep track of a parameter update frequency mapping
-		"""
+		download the largest magnitude updates <credits[i] * num_param> from the server
+		and filter out its own updates in the local model
+		and apply to its local model
 
-		freqs = torch.cat( [freq.data.view(-1) for freq in param_frequency])
+		UNused
+		# freqs = torch.cat( [freq.data.view(-1) for freq in param_frequency])
+		"""
 
 		for i, (credit, worker, worker_update) in enumerate( zip(credits, self.workers, grad_updates)):
 			agg_grad_update = copy.deepcopy(aggregated_gradient_updates)
 			num_param_downloads = int(credit * worker.param_count)
-			topk, _ = torch.topk(freqs, num_param_downloads)
-			target_freq = topk[-1]
+			# topk, _ = torch.topk(freqs, num_param_downloads)
+			# target_freq = topk[-1]
+			# for freq, res_param_update, worker_param_update in zip(param_frequency, agg_grad_update, worker_update):
+			# 	# mask the irrelevant updates to 0
+			# 	res_param_update.data[freq < target_freq] = 0
 
-			for freq, res_param_update, worker_param_update in zip(param_frequency, agg_grad_update, worker_update):
-				# mask the irrelevant updates to 0
-				res_param_update.data[freq < target_freq] = 0
+			# 	# filter out and remove the updates from itself
+			# 	filter_indices = (res_param_update.abs() > 0)  & (worker_param_update.abs() > 0)
+			# 	res_param_update.data[filter_indices] -= worker_param_update.data[filter_indices]
+
+			allocated_grad = mask_grad_update_by_order(agg_grad_update, num_param_downloads)
+			for res_param_update, worker_param_update in zip(allocated_grad, worker_update):
 
 				# filter out and remove the updates from itself
 				filter_indices = (res_param_update.abs() > 0)  & (worker_param_update.abs() > 0)
 				res_param_update.data[filter_indices] -= worker_param_update.data[filter_indices]
 			add_update_to_model(worker.model, agg_grad_update)
-		return
-
-
-		freqs = torch.cat( [freq.data.view(-1) for freq in param_frequency])
-		for i, (credit, worker, grad_update) in enumerate( zip(credits, self.workers, grad_updates)):
-
-			num_param_downloads = int(credit * worker.param_count)
-			topk, _ = torch.topk(freqs, num_param_downloads)
-			target_freq = topk[-1]
-
-			for worker_param, federated_param, param_freq, worker_param_update in zip(worker.model.parameters(), self.federated_model.parameters(), param_frequency, grad_update):
-				downloading_indices = param_freq > target_freq 
-				worker_param.data[downloading_indices] = federated_param.data[downloading_indices]
-
-
-				filter_indices = (federated_param.abs() > 0) & (worker_param_update.abs() > 0)
-				worker_param.data[filter_indices] -= worker_param_update.data[filter_indices]
-
 		return
 
 	def assign_parameters(self, credits, param_frequency):
@@ -348,7 +343,7 @@ class Federated_Learner:
 			return [evaluate(worker.model, eval_loader, device, verbose=False)[1].tolist() for worker in self.workers]
 
 
-def compute_credits_sihn(credits, val_accs, credit_threshold, alpha=5, credit_fade=0):
+def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fade=0):
 	total = sum(val_accs)
 	for i, (credit, val_acc) in enumerate(zip(credits, val_accs)):
 		credit_epoch = val_acc / total
