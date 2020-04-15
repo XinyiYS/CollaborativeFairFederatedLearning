@@ -20,10 +20,10 @@ args = {
 	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
 	# setting parameters
 	'dataset': 'adult',
-	'sample_size_cap': 15000,
-	'n_workers': 20,
+	'sample_size_cap': 5000,
+	'n_workers': 5,
 	'split': 'powerlaw',
-	'plevel': 0.1,  # privacy level -> at most (plevel * num_of_parameters) updates
+	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
 	'batch_size' : 16, # use this batch_size
 	'train_val_split_ratio': 0.9,
 
@@ -59,8 +59,8 @@ def run_experiments(args, repeat=1):
 
 		performance_dicts.append(federated_learner.performance_dict)
 	
-	keys = ['standalone_vs_final_corr', 'sharingcontribution_vs_final_corr', 'standalone_vs_federated_perturbed_corr',
-			'federated_final_performance', 'CFFL_best_worker', 'standalone_best_worker' ]
+	keys = ['standalone_vs_final_corr', 'sharingcontribution_vs_final_corr', 'standlone_vs_rrdssgd',
+			'rr_dssgd_avg', 'CFFL_best_worker', 'standalone_best_worker' ]
 	
 	aggregate_dict = {}
 	for key in keys:
