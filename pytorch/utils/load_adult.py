@@ -58,15 +58,13 @@ def get_train_test(train_dir='datasets/adult.data', test_dir='datasets/adult.tes
 	original['Target'] = original['Target'].replace('<=50K', 0).replace('>50K', 1)
 	original['Target'] = original['Target'].replace('<=50K.', 0).replace('>50K.', 1)
 
-	# labels = original['Target']
-	# labels = labels.replace('<=50K', 0).replace('>50K', 1)
-	# labels = labels.replace('<=50K.', 0).replace('>50K.', 1)
-	# labels = labels.astype('float')
 
+	# create equal number of positive nad negative cases
 	positives = original[original['Target']==1]
 	negatives = original[original['Target']==0][:len(positives)]
 
 	original  = pd.concat([positives, negatives])
+	# shuffle the data set
 	original = original.sample(frac=1).reset_index(drop=True)
 
 	labels = original['Target'].astype('float')

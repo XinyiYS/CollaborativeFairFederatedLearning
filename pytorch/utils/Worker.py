@@ -20,13 +20,13 @@ class Custom_Dataset(Dataset):
 
 class Worker():
 
-	def __init__(self, train_loader, model=None, optimizer=None, standalone_model=None, standalone_optimizer=None, loss_fn=None, id=None, sharing_lambda=0.1, device=None):
+	def __init__(self, train_loader, model=None, optimizer=None, standalone_model=None, standalone_optimizer=None, loss_fn=None, id=None, plevel=0.1, device=None):
 		self.train_loader = train_loader
 		self.model = model
 		self.optimizer = optimizer
 		self.standalone_model = standalone_model
 		self.standalone_optimizer = standalone_optimizer
-		self.sharing_lambda = sharing_lambda
+		self.plevel = plevel
 		self.id = id
 		self.device = device
 		self.loss_fn = loss_fn

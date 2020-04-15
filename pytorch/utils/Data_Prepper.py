@@ -87,6 +87,16 @@ class Data_Prepper:
 			X_test = torch.tensor(test_data.values, requires_grad=False).float()
 			y_test = torch.tensor(test_target.values, requires_grad=False).long()
 
+
+			print("X train shape: ", X_train.shape)
+			print("y train shape: ", y_train.shape)
+			pos, neg =(y_train==1).sum().item() , (y_train==0).sum().item()
+			print("Train set Positive counts: {}".format(pos),"Negative counts: {}.".format(neg), 'Split: {:.2%} - {:.2%}'.format(1. * pos/len(X_train), 1.*neg/len(X_train)))
+			print("X test shape: ", X_test.shape)
+			print("y test shape: ", y_test.shape)
+			pos, neg =(y_test==1).sum().item() , (y_test==0).sum().item()
+			print("Test set Positive counts: {}".format(pos),"Negative counts: {}.".format(neg), 'Split: {:.2%} - {:.2%}'.format(1. * pos/len(X_test), 1.*neg/len(X_test)))
+
 			train_set = Custom_Dataset(X_train, y_train)
 			test_set = Custom_Dataset(X_test, y_test)
 

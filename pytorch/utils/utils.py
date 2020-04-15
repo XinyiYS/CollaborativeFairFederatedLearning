@@ -90,32 +90,35 @@ def evaluate(model, eval_loader, device, loss_fn=nn.CrossEntropyLoss(),verbose=T
 	return loss, accuracy
 
 
-def leave_one_out_evaluate(federated_model, grad_updates, eval_loader, device, update=True):
-	if not update:
-		# by using this flag, the federated_model in the main training logic is NOT updated
-		# Seems to be some issue with this flag, use default True until fully investigated and fixed
-		federated_model = copy.deepcopy(federated_model)
 
-	aggregated_gradient_updates = aggregate_gradient_updates(grad_updates, device)
-	federated_model = add_update_to_model(federated_model, aggregated_gradient_updates, device=device)
-	_, curr_val_acc = evaluate(federated_model, eval_loader, device, verbose=False)
+def one_on_one_evaluate(workers, federated_model, grad_updates, eval_loader, device):
 
+	val_accs = []
+	for grad_update, worker in zip(grad_updates, workers):
+		if worker.plevel == 1:
+			_, val_acc = evaluate(worker.model, eval_loader, device, verbose=False)
+		else:
+			backup = copy.deepcopy(federated_model)
+			_, val_acc = evaluate(add_update_to_model(backup, grad_update), eval_loader, device, verbose=False)
+		
+		val_accs.append(val_acc)
+	return val_accs
+
+
+def leave_one_out_evaluate(federated_model, grad_updates, eval_loader, device):
 	loo_model = copy.deepcopy(federated_model)
 	loo_losses, loo_val_accs = [], []
 	for grad_update in grad_updates:
-		loo_model = add_update_to_model(loo_model, grad_update, weight = 1.0, device=device)
+		loo_model = add_update_to_model(loo_model, grad_update, weight = -1.0, device=device)
 		loss, val_acc = evaluate(loo_model, eval_loader, device, verbose=False)
 		loo_losses.append(loss)
 		loo_val_accs.append(val_acc)
 		loo_model = add_update_to_model(loo_model, grad_update, weight = 1.0, device=device)
 
-	del loo_model
-	del aggregated_gradient_updates
-
 	# scalar - 1D torch tensor subtraction -> 1D torch tensor
 	# marginal_contributions = curr_val_acc - torch.tensor(loo_val_accs) 
 
-	return curr_val_acc, loo_val_accs
+	return  loo_val_accs
 
 import numpy as np
 np.random.seed(1111)
