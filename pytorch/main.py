@@ -23,7 +23,7 @@ use_cuda = True
 # 	'sample_size_cap': [5000, 10000, 15000],
 # 	'n_workers': [5, 10, 20],
 # 	'split': 'powerlaw',
-# 	'plevel': 0.1,  # privacy level -> at most (plevel * num_of_parameters) updates
+# 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
 # 	'batch_size' : 16,
 # 	'train_val_split_ratio': 0.9,
 
@@ -48,7 +48,7 @@ args = {
 	'sample_size_cap': 15000,
 	'n_workers': 5,
 	'split': 'powerlaw',
-	'plevel': 0.1,  # privacy level -> at most (plevel * num_of_parameters) updates
+	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
 	'batch_size' : 1,
 	'train_val_split_ratio': 0.9,
 

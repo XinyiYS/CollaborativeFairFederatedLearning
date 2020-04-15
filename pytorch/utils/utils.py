@@ -95,11 +95,12 @@ def one_on_one_evaluate(workers, federated_model, grad_updates, eval_loader, dev
 
 	val_accs = []
 	for grad_update, worker in zip(grad_updates, workers):
-		if worker.plevel == 1:
+		if worker.theta == 1:
 			_, val_acc = evaluate(worker.model, eval_loader, device, verbose=False)
 		else:
 			backup = copy.deepcopy(federated_model)
 			_, val_acc = evaluate(add_update_to_model(backup, grad_update), eval_loader, device, verbose=False)
+			del backup
 		
 		val_accs.append(val_acc)
 	return val_accs
