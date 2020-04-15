@@ -1,0 +1,1214 @@
+Experimental settings are:  {'device': device(type='cpu'), 'dataset': 'adult', 'sample_size_cap': 5000, 'n_workers': 5, 'split': 'powerlaw', 'sharing_lambda': 0.1, 'batch_size': 32, 'train_val_split_ratio': 0.9, 'model_fn': <class 'utils.models.MLP_LogReg'>, 'optimizer_fn': <class 'torch.optim.sgd.SGD'>, 'loss_fn': CrossEntropyLoss(), 'lr': 0.001, 'pretrain_epochs': 10, 'fl_epochs': 20, 'fl_individual_epochs': 5}
+Experiment : No.1/5
+reading from datasets/adult.data datasets/adult.test
+Start local pretraining 
+Performance of an average model of the pretrained local models
+Loss: 0.690880. Accuracy: 53.7968%.
+Start federated learning 
+
+Epoch 1:
+Federated model validation accuracy : 67.4000%
+Leave-one-out validation accuracies :  ['63.0000%', '54.2000%', '50.4000%', '50.8000%', '53.8000%']
+Computed and normalized credits:  tensor([0.1717, 0.2010, 0.2131, 0.2119, 0.2023])
+Federated model performance: Loss: 0.669491. Accuracy: 67.3797%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['49.968%', '54.845%', '55.701%', '65.348%', '68.813%']
+Workers federated accuracies:  ['53.134%', '55.187%', '68.663%', '61.091%', '58.652%']
+Workers improved  accuracies:  ['3.037%', '1.305%', '14.995%', '1.519%', '-5.070%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 2:
+Federated model validation accuracy : 56.2000%
+Leave-one-out validation accuracies :  ['59.0000%', '62.4000%', '56.8000%', '50.8000%', '50.4000%']
+Computed and normalized credits:  tensor([0.1768, 0.1706, 0.1985, 0.2274, 0.2267])
+Federated model performance: Loss: 0.671145. Accuracy: 55.6364%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['50.032%', '53.690%', '58.203%', '70.053%', '71.465%']
+Workers federated accuracies:  ['50.417%', '61.604%', '55.230%', '63.936%', '67.936%']
+Workers improved  accuracies:  ['0.321%', '7.722%', '1.561%', '4.364%', '4.214%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 3:
+Federated model validation accuracy : 53.0000%
+Leave-one-out validation accuracies :  ['50.6000%', '50.0000%', '50.0000%', '50.0000%', '50.0000%']
+Computed and normalized credits:  tensor([0.1915, 0.1928, 0.2002, 0.2079, 0.2077])
+Federated model performance: Loss: 0.649979. Accuracy: 52.7059%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['50.032%', '53.497%', '63.444%', '71.337%', '72.749%']
+Workers federated accuracies:  ['64.086%', '50.845%', '53.348%', '51.936%', '51.615%']
+Workers improved  accuracies:  ['13.989%', '-3.037%', '-0.321%', '-7.636%', '-12.107%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 4:
+Federated model validation accuracy : 50.2000%
+Leave-one-out validation accuracies :  ['50.2000%', '50.0000%', '50.0000%', '50.0000%', '50.0000%']
+Computed and normalized credits:  tensor([0.1967, 0.1982, 0.2003, 0.2025, 0.2024])
+Federated model performance: Loss: 0.764447. Accuracy: 50.1390%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['50.460%', '53.604%', '64.684%', '72.941%', '73.348%']
+Workers federated accuracies:  ['49.947%', '50.139%', '50.139%', '50.118%', '50.160%']
+Workers improved  accuracies:  ['-0.150%', '-3.743%', '-3.529%', '-9.455%', '-13.561%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 5:
+Federated model validation accuracy : 50.0000%
+Leave-one-out validation accuracies :  ['50.0000%', '50.0000%', '50.0000%', '50.0000%', '50.0000%']
+Computed and normalized credits:  tensor([0.1991, 0.1995, 0.2001, 0.2007, 0.2007])
+Federated model performance: Loss: 0.927469. Accuracy: 50.0535%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['52.214%', '53.711%', '68.856%', '73.668%', '74.139%']
+Workers federated accuracies:  ['50.053%', '50.053%', '50.053%', '50.053%', '50.053%']
+Workers improved  accuracies:  ['-0.043%', '-3.829%', '-3.615%', '-9.519%', '-13.668%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 6:
+Federated model validation accuracy : 50.0000%
+Leave-one-out validation accuracies :  ['50.0000%', '50.0000%', '50.0000%', '50.0000%', '50.0000%']
+Computed and normalized credits:  tensor([0.1997, 0.1998, 0.2000, 0.2002, 0.2002])
+Federated model performance: Loss: 1.805191. Accuracy: 49.9465%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['52.706%', '54.160%', '70.952%', '74.139%', '74.481%']
+Workers federated accuracies:  ['49.947%', '49.947%', '49.947%', '49.947%', '49.947%']
+Workers improved  accuracies:  ['-0.150%', '-3.936%', '-3.722%', '-9.626%', '-13.775%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 7:
+Federated model validation accuracy : 50.0000%
+Leave-one-out validation accuracies :  ['50.0000%', '50.0000%', '50.0000%', '50.0000%', '50.0000%']
+Computed and normalized credits:  tensor([0.1999, 0.2000, 0.2000, 0.2001, 0.2001])
+Federated model performance: Loss: 2.376868. Accuracy: 50.0535%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['52.791%', '54.717%', '71.615%', '74.588%', '74.631%']
+Workers federated accuracies:  ['50.053%', '50.053%', '50.053%', '50.053%', '50.053%']
+Workers improved  accuracies:  ['-0.043%', '-3.829%', '-3.615%', '-9.519%', '-13.668%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 8:
+Federated model validation accuracy : 50.0000%
+Leave-one-out validation accuracies :  ['50.0000%', '50.0000%', '50.0000%', '50.0000%', '50.0000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.861790. Accuracy: 49.9465%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['53.690%', '55.230%', '72.471%', '74.695%', '75.059%']
+Workers federated accuracies:  ['49.947%', '49.947%', '49.947%', '49.947%', '49.947%']
+Workers improved  accuracies:  ['-0.150%', '-3.936%', '-3.722%', '-9.626%', '-13.775%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 9:
+Federated model validation accuracy : 50.0000%
+Leave-one-out validation accuracies :  ['50.0000%', '50.0000%', '50.0000%', '50.0000%', '50.0000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.308130. Accuracy: 50.0535%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['53.262%', '55.722%', '73.070%', '75.037%', '75.209%']
+Workers federated accuracies:  ['50.053%', '50.053%', '50.053%', '50.053%', '50.053%']
+Workers improved  accuracies:  ['-0.043%', '-3.829%', '-3.615%', '-9.519%', '-13.668%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 10:
+Federated model validation accuracy : 50.0000%
+Leave-one-out validation accuracies :  ['50.0000%', '50.0000%', '50.0000%', '50.0000%', '50.0000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.542014. Accuracy: 49.9465%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['54.481%', '56.364%', '74.845%', '75.059%', '75.358%']
+Workers federated accuracies:  ['49.947%', '49.947%', '49.947%', '49.947%', '49.947%']
+Workers improved  accuracies:  ['-0.150%', '-3.936%', '-3.722%', '-9.626%', '-13.775%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 11:
+Federated model validation accuracy : 50.0000%
+Leave-one-out validation accuracies :  ['50.0000%', '50.0000%', '50.0000%', '50.0000%', '50.0000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.050176. Accuracy: 50.0535%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['55.230%', '57.198%', '74.481%', '75.102%', '75.465%']
+Workers federated accuracies:  ['50.053%', '50.053%', '50.053%', '50.053%', '50.053%']
+Workers improved  accuracies:  ['-0.043%', '-3.829%', '-3.615%', '-9.519%', '-13.668%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 12:
+Federated model validation accuracy : 50.0000%
+Leave-one-out validation accuracies :  ['50.0000%', '50.0000%', '50.0000%', '50.0000%', '50.0000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.176848. Accuracy: 49.9465%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['55.850%', '58.973%', '75.037%', '75.316%', '75.594%']
+Workers federated accuracies:  ['49.947%', '49.947%', '49.947%', '49.947%', '49.947%']
+Workers improved  accuracies:  ['-0.150%', '-3.936%', '-3.722%', '-9.626%', '-13.775%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 13:
+Federated model validation accuracy : 50.0000%
+Leave-one-out validation accuracies :  ['50.0000%', '50.0000%', '50.0000%', '50.0000%', '50.0000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 1.620371. Accuracy: 50.0749%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['56.299%', '60.749%', '75.529%', '75.551%', '75.743%']
+Workers federated accuracies:  ['50.096%', '50.075%', '50.118%', '50.118%', '50.118%']
+Workers improved  accuracies:  ['0.000%', '-3.807%', '-3.551%', '-9.455%', '-13.604%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 14:
+Federated model validation accuracy : 53.0000%
+Leave-one-out validation accuracies :  ['51.2000%', '50.0000%', '50.0000%', '50.0000%', '50.0000%']
+Computed and normalized credits:  tensor([0.1953, 0.2012, 0.2012, 0.2012, 0.2012])
+Federated model performance: Loss: 1.580624. Accuracy: 51.5936%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['57.989%', '61.027%', '75.829%', '75.636%', '75.936%']
+Workers federated accuracies:  ['50.610%', '52.214%', '52.278%', '53.198%', '53.818%']
+Workers improved  accuracies:  ['0.513%', '-1.668%', '-1.390%', '-6.374%', '-9.904%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 15:
+Federated model validation accuracy : 54.6000%
+Leave-one-out validation accuracies :  ['53.0000%', '50.0000%', '50.0000%', '50.0000%', '50.0000%']
+Computed and normalized credits:  tensor([0.1876, 0.2031, 0.2031, 0.2031, 0.2031])
+Federated model performance: Loss: 1.081583. Accuracy: 54.2032%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['58.289%', '62.631%', '76.021%', '75.743%', '76.086%']
+Workers federated accuracies:  ['55.765%', '54.032%', '55.850%', '55.914%', '55.936%']
+Workers improved  accuracies:  ['5.668%', '0.150%', '2.182%', '-3.658%', '-7.786%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 16:
+Federated model validation accuracy : 69.6000%
+Leave-one-out validation accuracies :  ['67.2000%', '59.8000%', '50.0000%', '50.0000%', '50.0000%']
+Computed and normalized credits:  tensor([0.1604, 0.1873, 0.2174, 0.2174, 0.2174])
+Federated model performance: Loss: 0.992897. Accuracy: 69.6684%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['59.080%', '62.995%', '76.064%', '75.914%', '76.193%']
+Workers federated accuracies:  ['66.845%', '71.037%', '71.037%', '72.342%', '72.834%']
+Workers improved  accuracies:  ['16.749%', '17.155%', '17.369%', '12.770%', '9.112%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 17:
+Federated model validation accuracy : 69.2000%
+Leave-one-out validation accuracies :  ['66.8000%', '58.2000%', '50.2000%', '50.0000%', '50.0000%']
+Computed and normalized credits:  tensor([0.1542, 0.1876, 0.2190, 0.2196, 0.2196])
+Federated model performance: Loss: 0.730941. Accuracy: 68.6845%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['59.636%', '64.278%', '76.342%', '75.936%', '76.385%']
+Workers federated accuracies:  ['70.567%', '68.449%', '70.011%', '69.647%', '69.690%']
+Workers improved  accuracies:  ['20.471%', '14.567%', '16.342%', '10.075%', '5.968%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 18:
+Federated model validation accuracy : 75.8000%
+Leave-one-out validation accuracies :  ['75.4000%', '72.0000%', '63.2000%', '50.2000%', '50.0000%']
+Computed and normalized credits:  tensor([0.1511, 0.1687, 0.2024, 0.2386, 0.2391])
+Federated model performance: Loss: 0.696076. Accuracy: 77.1337%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['59.765%', '65.283%', '76.599%', '76.000%', '76.406%']
+Workers federated accuracies:  ['76.406%', '77.476%', '77.433%', '77.583%', '77.647%']
+Workers improved  accuracies:  ['26.310%', '23.594%', '23.765%', '18.011%', '13.925%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 19:
+Federated model validation accuracy : 72.8000%
+Leave-one-out validation accuracies :  ['73.0000%', '67.2000%', '56.0000%', '50.6000%', '50.0000%']
+Computed and normalized credits:  tensor([0.1476, 0.1691, 0.2115, 0.2350, 0.2367])
+Federated model performance: Loss: 0.603494. Accuracy: 73.2406%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['60.963%', '66.203%', '76.642%', '76.150%', '76.471%']
+Workers federated accuracies:  ['75.209%', '73.048%', '74.053%', '73.904%', '73.797%']
+Workers improved  accuracies:  ['25.112%', '19.166%', '20.385%', '14.332%', '10.075%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 20:
+Federated model validation accuracy : 78.0000%
+Leave-one-out validation accuracies :  ['77.6000%', '76.2000%', '70.8000%', '60.8000%', '50.6000%']
+Computed and normalized credits:  tensor([0.1566, 0.1659, 0.1924, 0.2286, 0.2565])
+Federated model performance: Loss: 0.589753. Accuracy: 77.9037%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['61.818%', '67.273%', '76.556%', '76.299%', '76.513%']
+Workers federated accuracies:  ['77.455%', '78.053%', '78.011%', '78.053%', '78.053%']
+Workers improved  accuracies:  ['27.358%', '24.171%', '24.342%', '18.481%', '14.332%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Performance and Fairness analysis: 
+Federated model performance: Loss: 0.589753. Accuracy: 77.9037%.
+Workers before    accuracies:  ['50.096%', '53.882%', '53.668%', '59.572%', '63.722%']
+Workers standlone accuracies:  ['61.818%', '67.273%', '76.556%', '76.299%', '76.513%']
+Workers federated accuracies:  ['77.455%', '78.053%', '78.011%', '78.053%', '78.053%']
+Workers improved  accuracies:  ['27.358%', '24.171%', '24.342%', '18.481%', '14.332%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+Workers sharing_contributions :  tensor([ 25.6000, 102.4000, 185.6000, 262.4000, 339.2000])
+Correlation between stand alone test acc & perturbed federated test acc:  (0.11981213310906995, 0.8478162175669414)
+Correlation between stand alone test acc & collaborative final model acc:  (0.7949945118202371, 0.10793309503206368)
+Correlation between test_acc & sharing contributions:  (0.7172790866835411, 0.17259833465496446)
+Correlation between test_acc improvements & sharing_contributions:  (-0.9544840887616787, 0.011576871532051555)
+Experiment : No.2/5
+reading from datasets/adult.data datasets/adult.test
+Start local pretraining 
+Performance of an average model of the pretrained local models
+Loss: 0.683899. Accuracy: 60.3636%.
+Start federated learning 
+
+Epoch 1:
+Federated model validation accuracy : 70.6000%
+Leave-one-out validation accuracies :  ['69.0000%', '69.0000%', '71.0000%', '73.6000%', '76.0000%']
+Computed and normalized credits:  tensor([0.2103, 0.2103, 0.2025, 0.1927, 0.1841])
+Federated model performance: Loss: 0.670229. Accuracy: 68.1711%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['52.599%', '59.551%', '65.241%', '67.080%', '66.460%']
+Workers federated accuracies:  ['57.561%', '66.845%', '70.096%', '70.524%', '69.519%']
+Workers improved  accuracies:  ['4.492%', '8.663%', '8.278%', '6.759%', '6.802%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 2:
+Federated model validation accuracy : 75.0000%
+Leave-one-out validation accuracies :  ['75.2000%', '75.6000%', '76.0000%', '76.0000%', '76.0000%']
+Computed and normalized credits:  tensor([0.2050, 0.2036, 0.1999, 0.1970, 0.1945])
+Federated model performance: Loss: 0.656101. Accuracy: 72.2781%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['51.807%', '60.813%', '66.267%', '68.877%', '69.647%']
+Workers federated accuracies:  ['70.738%', '71.786%', '71.807%', '72.128%', '73.754%']
+Workers improved  accuracies:  ['17.668%', '13.604%', '9.989%', '8.364%', '11.037%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 3:
+Federated model validation accuracy : 75.6000%
+Leave-one-out validation accuracies :  ['74.6000%', '70.2000%', '68.8000%', '65.6000%', '65.6000%']
+Computed and normalized credits:  tensor([0.1826, 0.1967, 0.2004, 0.2105, 0.2098])
+Federated model performance: Loss: 0.643474. Accuracy: 72.5775%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['51.529%', '62.225%', '68.364%', '69.989%', '71.615%']
+Workers federated accuracies:  ['64.963%', '72.257%', '74.182%', '74.289%', '73.283%']
+Workers improved  accuracies:  ['11.893%', '14.075%', '12.364%', '10.524%', '10.567%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 4:
+Federated model validation accuracy : 73.8000%
+Leave-one-out validation accuracies :  ['74.8000%', '70.2000%', '57.2000%', '50.2000%', '48.4000%']
+Computed and normalized credits:  tensor([0.1527, 0.1694, 0.2100, 0.2318, 0.2361])
+Federated model performance: Loss: 0.629532. Accuracy: 71.4225%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['51.380%', '63.337%', '69.775%', '71.016%', '73.219%']
+Workers federated accuracies:  ['72.513%', '70.631%', '68.556%', '69.455%', '72.791%']
+Workers improved  accuracies:  ['19.444%', '12.449%', '6.738%', '5.690%', '10.075%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 5:
+Federated model validation accuracy : 63.0000%
+Leave-one-out validation accuracies :  ['60.6000%', '54.0000%', '52.6000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.1652, 0.1942, 0.2092, 0.2152, 0.2162])
+Federated model performance: Loss: 0.633387. Accuracy: 60.5134%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['51.294%', '64.642%', '70.545%', '71.872%', '73.925%']
+Workers federated accuracies:  ['54.118%', '60.021%', '64.086%', '64.791%', '62.888%']
+Workers improved  accuracies:  ['1.048%', '1.840%', '2.267%', '1.027%', '0.171%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 6:
+Federated model validation accuracy : 48.4000%
+Leave-one-out validation accuracies :  ['48.0000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1885, 0.1988, 0.2030, 0.2047, 0.2050])
+Federated model performance: Loss: 0.668319. Accuracy: 50.3316%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['51.166%', '65.455%', '71.209%', '72.706%', '74.503%']
+Workers federated accuracies:  ['50.567%', '50.246%', '50.267%', '50.332%', '50.888%']
+Workers improved  accuracies:  ['-2.503%', '-7.936%', '-11.551%', '-13.433%', '-11.829%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 7:
+Federated model validation accuracy : 52.4000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.1967, 0.1997, 0.2009, 0.2013, 0.2014])
+Federated model performance: Loss: 0.878997. Accuracy: 50.0321%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['50.995%', '66.738%', '71.358%', '72.984%', '74.824%']
+Workers federated accuracies:  ['50.032%', '50.032%', '50.032%', '50.032%', '50.032%']
+Workers improved  accuracies:  ['-3.037%', '-8.150%', '-11.786%', '-13.733%', '-12.684%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 8:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1991, 0.1999, 0.2002, 0.2004, 0.2004])
+Federated model performance: Loss: 1.421702. Accuracy: 49.9679%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['51.209%', '67.551%', '72.128%', '73.540%', '75.251%']
+Workers federated accuracies:  ['49.968%', '49.968%', '49.968%', '49.968%', '49.968%']
+Workers improved  accuracies:  ['-3.102%', '-8.214%', '-11.850%', '-13.797%', '-12.749%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 9:
+Federated model validation accuracy : 52.4000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.1997, 0.2000, 0.2001, 0.2001, 0.2001])
+Federated model performance: Loss: 2.318308. Accuracy: 50.0321%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['51.102%', '68.214%', '72.599%', '74.011%', '75.508%']
+Workers federated accuracies:  ['50.032%', '50.032%', '50.032%', '50.032%', '50.032%']
+Workers improved  accuracies:  ['-3.037%', '-8.150%', '-11.786%', '-13.733%', '-12.684%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 10:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1999, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.522983. Accuracy: 49.9679%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['51.230%', '68.941%', '73.027%', '74.374%', '75.722%']
+Workers federated accuracies:  ['49.968%', '49.968%', '49.968%', '49.968%', '49.968%']
+Workers improved  accuracies:  ['-3.102%', '-8.214%', '-11.850%', '-13.797%', '-12.749%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 11:
+Federated model validation accuracy : 52.4000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.478039. Accuracy: 50.0321%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['51.016%', '69.711%', '73.283%', '74.695%', '75.807%']
+Workers federated accuracies:  ['50.032%', '50.032%', '50.032%', '50.032%', '50.032%']
+Workers improved  accuracies:  ['-3.037%', '-8.150%', '-11.786%', '-13.733%', '-12.684%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 12:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.141367. Accuracy: 49.9679%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['51.059%', '70.545%', '73.690%', '74.930%', '75.872%']
+Workers federated accuracies:  ['49.968%', '49.968%', '49.968%', '49.968%', '49.968%']
+Workers improved  accuracies:  ['-3.102%', '-8.214%', '-11.850%', '-13.797%', '-12.749%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 13:
+Federated model validation accuracy : 52.4000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.109065. Accuracy: 50.0321%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['51.102%', '71.187%', '73.968%', '75.166%', '75.979%']
+Workers federated accuracies:  ['50.032%', '50.032%', '50.032%', '50.032%', '50.032%']
+Workers improved  accuracies:  ['-3.037%', '-8.150%', '-11.786%', '-13.733%', '-12.684%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 14:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 1.717847. Accuracy: 49.9679%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['51.422%', '71.636%', '73.968%', '75.444%', '76.043%']
+Workers federated accuracies:  ['49.968%', '49.968%', '49.968%', '49.968%', '50.011%']
+Workers improved  accuracies:  ['-3.102%', '-8.214%', '-11.850%', '-13.797%', '-12.706%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 15:
+Federated model validation accuracy : 52.8000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 1.576620. Accuracy: 50.7166%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['51.187%', '71.765%', '74.631%', '75.529%', '76.128%']
+Workers federated accuracies:  ['50.396%', '50.781%', '51.102%', '51.358%', '51.444%']
+Workers improved  accuracies:  ['-2.674%', '-7.401%', '-10.717%', '-12.406%', '-11.273%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 16:
+Federated model validation accuracy : 49.8000%
+Leave-one-out validation accuracies :  ['49.4000%', '47.8000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1927, 0.2010, 0.2021, 0.2021, 0.2021])
+Federated model performance: Loss: 1.131291. Accuracy: 51.7433%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['51.059%', '72.214%', '74.781%', '75.594%', '76.086%']
+Workers federated accuracies:  ['51.765%', '51.829%', '52.150%', '52.492%', '53.198%']
+Workers improved  accuracies:  ['-1.305%', '-6.353%', '-9.668%', '-11.273%', '-9.519%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 17:
+Federated model validation accuracy : 69.8000%
+Leave-one-out validation accuracies :  ['66.2000%', '57.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.1665, 0.1966, 0.2123, 0.2123, 0.2123])
+Federated model performance: Loss: 0.966825. Accuracy: 68.1497%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['51.166%', '72.578%', '74.460%', '75.658%', '76.171%']
+Workers federated accuracies:  ['66.995%', '68.535%', '69.861%', '70.396%', '70.396%']
+Workers improved  accuracies:  ['13.925%', '10.353%', '8.043%', '6.631%', '7.679%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 18:
+Federated model validation accuracy : 65.0000%
+Leave-one-out validation accuracies :  ['62.8000%', '52.8000%', '47.8000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1553, 0.1960, 0.2158, 0.2164, 0.2164])
+Federated model performance: Loss: 0.715379. Accuracy: 67.4652%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['50.995%', '72.813%', '74.481%', '75.658%', '76.235%']
+Workers federated accuracies:  ['67.743%', '67.765%', '67.914%', '68.620%', '69.455%']
+Workers improved  accuracies:  ['14.674%', '9.583%', '6.096%', '4.856%', '6.738%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 19:
+Federated model validation accuracy : 79.2000%
+Leave-one-out validation accuracies :  ['79.2000%', '74.2000%', '61.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.1481, 0.1710, 0.2117, 0.2346, 0.2346])
+Federated model performance: Loss: 0.634950. Accuracy: 76.1497%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['51.166%', '72.963%', '74.738%', '75.786%', '76.406%']
+Workers federated accuracies:  ['75.979%', '76.235%', '76.642%', '76.791%', '76.727%']
+Workers improved  accuracies:  ['22.909%', '18.053%', '14.824%', '13.027%', '14.011%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 20:
+Federated model validation accuracy : 72.2000%
+Leave-one-out validation accuracies :  ['71.8000%', '65.8000%', '53.8000%', '48.0000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1457, 0.1689, 0.2144, 0.2350, 0.2360])
+Federated model performance: Loss: 0.562508. Accuracy: 72.8342%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['51.358%', '73.176%', '74.781%', '75.914%', '76.406%']
+Workers federated accuracies:  ['73.412%', '72.770%', '73.390%', '73.305%', '73.947%']
+Workers improved  accuracies:  ['20.342%', '14.588%', '11.572%', '9.540%', '11.230%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Performance and Fairness analysis: 
+Federated model performance: Loss: 0.562508. Accuracy: 72.8342%.
+Workers before    accuracies:  ['53.070%', '58.182%', '61.818%', '63.765%', '62.717%']
+Workers standlone accuracies:  ['51.358%', '73.176%', '74.781%', '75.914%', '76.406%']
+Workers federated accuracies:  ['73.412%', '72.770%', '73.390%', '73.305%', '73.947%']
+Workers improved  accuracies:  ['20.342%', '14.588%', '11.572%', '9.540%', '11.230%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+Workers sharing_contributions :  tensor([ 25.6000, 102.4000, 185.6000, 262.4000, 339.2000])
+Correlation between stand alone test acc & perturbed federated test acc:  (0.3183662352310631, 0.6015992171581057)
+Correlation between stand alone test acc & collaborative final model acc:  (0.040889076885018125, 0.9479529211087171)
+Correlation between test_acc & sharing contributions:  (0.6089554575159419, 0.2756736181067492)
+Correlation between test_acc improvements & sharing_contributions:  (-0.8671378258239761, 0.056962062620670405)
+Experiment : No.3/5
+reading from datasets/adult.data datasets/adult.test
+Start local pretraining 
+Performance of an average model of the pretrained local models
+Loss: 0.682106. Accuracy: 52.2567%.
+Start federated learning 
+
+Epoch 1:
+Federated model validation accuracy : 65.4000%
+Leave-one-out validation accuracies :  ['60.6000%', '53.6000%', '52.8000%', '53.0000%', '54.0000%']
+Computed and normalized credits:  tensor([0.1794, 0.2043, 0.2071, 0.2064, 0.2029])
+Federated model performance: Loss: 0.667683. Accuracy: 64.1497%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['49.176%', '56.770%', '63.209%', '64.684%', '65.775%']
+Workers federated accuracies:  ['61.305%', '64.342%', '62.588%', '61.198%', '58.353%']
+Workers improved  accuracies:  ['11.829%', '14.481%', '5.390%', '-1.390%', '-4.299%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 2:
+Federated model validation accuracy : 49.2000%
+Leave-one-out validation accuracies :  ['51.6000%', '55.0000%', '48.6000%', '48.0000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1857, 0.1759, 0.2102, 0.2134, 0.2147])
+Federated model performance: Loss: 0.660155. Accuracy: 50.4813%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['49.561%', '62.332%', '64.877%', '65.925%', '67.722%']
+Workers federated accuracies:  ['49.968%', '50.011%', '51.551%', '54.610%', '63.722%']
+Workers improved  accuracies:  ['0.492%', '0.150%', '-5.647%', '-7.979%', '1.070%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 3:
+Federated model validation accuracy : 54.0000%
+Leave-one-out validation accuracies :  ['52.8000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.1945, 0.1938, 0.2032, 0.2041, 0.2044])
+Federated model performance: Loss: 0.666463. Accuracy: 52.3422%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['54.631%', '62.545%', '65.690%', '67.316%', '69.091%']
+Workers federated accuracies:  ['58.225%', '52.599%', '51.701%', '51.230%', '50.781%']
+Workers improved  accuracies:  ['8.749%', '2.738%', '-5.497%', '-11.358%', '-11.872%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 4:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1984, 0.1982, 0.2009, 0.2012, 0.2013])
+Federated model performance: Loss: 0.760516. Accuracy: 49.9679%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['57.861%', '62.802%', '66.973%', '68.428%', '70.225%']
+Workers federated accuracies:  ['49.968%', '49.968%', '49.968%', '49.968%', '49.968%']
+Workers improved  accuracies:  ['0.492%', '0.107%', '-7.230%', '-12.620%', '-12.684%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 5:
+Federated model validation accuracy : 52.4000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.1996, 0.1995, 0.2003, 0.2003, 0.2004])
+Federated model performance: Loss: 1.082354. Accuracy: 50.0321%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['58.182%', '63.529%', '67.914%', '69.155%', '71.059%']
+Workers federated accuracies:  ['50.032%', '50.032%', '50.032%', '50.032%', '50.032%']
+Workers improved  accuracies:  ['0.556%', '0.171%', '-7.166%', '-12.556%', '-12.620%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 6:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1999, 0.1999, 0.2001, 0.2001, 0.2001])
+Federated model performance: Loss: 1.875251. Accuracy: 49.9679%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['57.112%', '63.829%', '68.578%', '69.754%', '72.021%']
+Workers federated accuracies:  ['49.968%', '49.968%', '49.968%', '49.968%', '49.968%']
+Workers improved  accuracies:  ['0.492%', '0.107%', '-7.230%', '-12.620%', '-12.684%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 7:
+Federated model validation accuracy : 52.4000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.648585. Accuracy: 50.0321%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['56.471%', '64.791%', '69.305%', '70.289%', '72.856%']
+Workers federated accuracies:  ['50.032%', '50.032%', '50.032%', '50.032%', '50.032%']
+Workers improved  accuracies:  ['0.556%', '0.171%', '-7.166%', '-12.556%', '-12.620%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 8:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.593088. Accuracy: 49.9679%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['55.337%', '65.412%', '69.754%', '71.380%', '73.390%']
+Workers federated accuracies:  ['49.968%', '49.968%', '49.968%', '49.968%', '49.968%']
+Workers improved  accuracies:  ['0.492%', '0.107%', '-7.230%', '-12.620%', '-12.684%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 9:
+Federated model validation accuracy : 52.4000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.447916. Accuracy: 50.0321%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['55.230%', '66.160%', '69.882%', '71.551%', '73.840%']
+Workers federated accuracies:  ['50.032%', '50.032%', '50.032%', '50.032%', '50.032%']
+Workers improved  accuracies:  ['0.556%', '0.171%', '-7.166%', '-12.556%', '-12.620%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 10:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.353373. Accuracy: 49.9679%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['55.080%', '66.717%', '70.567%', '71.957%', '74.182%']
+Workers federated accuracies:  ['49.968%', '49.968%', '49.968%', '49.968%', '49.968%']
+Workers improved  accuracies:  ['0.492%', '0.107%', '-7.230%', '-12.620%', '-12.684%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 11:
+Federated model validation accuracy : 52.4000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.173155. Accuracy: 50.0321%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['55.080%', '66.930%', '71.059%', '73.027%', '74.652%']
+Workers federated accuracies:  ['50.032%', '50.032%', '50.032%', '50.032%', '50.032%']
+Workers improved  accuracies:  ['0.556%', '0.171%', '-7.166%', '-12.556%', '-12.620%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 12:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 1.955516. Accuracy: 49.9679%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['54.203%', '67.251%', '71.401%', '73.283%', '74.973%']
+Workers federated accuracies:  ['49.968%', '49.968%', '49.968%', '49.968%', '49.968%']
+Workers improved  accuracies:  ['0.492%', '0.107%', '-7.230%', '-12.620%', '-12.684%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 13:
+Federated model validation accuracy : 52.4000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 1.728672. Accuracy: 50.0321%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['53.540%', '67.572%', '71.422%', '73.455%', '75.059%']
+Workers federated accuracies:  ['50.032%', '50.032%', '50.032%', '50.032%', '50.032%']
+Workers improved  accuracies:  ['0.556%', '0.171%', '-7.166%', '-12.556%', '-12.620%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 14:
+Federated model validation accuracy : 47.8000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 1.422509. Accuracy: 50.0321%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['53.861%', '67.936%', '71.893%', '73.818%', '75.209%']
+Workers federated accuracies:  ['49.968%', '50.032%', '50.075%', '50.160%', '50.332%']
+Workers improved  accuracies:  ['0.492%', '0.171%', '-7.123%', '-12.428%', '-12.321%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 15:
+Federated model validation accuracy : 61.4000%
+Leave-one-out validation accuracies :  ['58.8000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.1799, 0.2050, 0.2050, 0.2050, 0.2050])
+Federated model performance: Loss: 1.179136. Accuracy: 59.4011%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['53.668%', '68.171%', '72.150%', '74.160%', '75.508%']
+Workers federated accuracies:  ['60.599%', '59.850%', '60.642%', '60.877%', '60.856%']
+Workers improved  accuracies:  ['11.123%', '9.989%', '3.444%', '-1.711%', '-1.797%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 16:
+Federated model validation accuracy : 55.2000%
+Leave-one-out validation accuracies :  ['53.8000%', '48.0000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1735, 0.2053, 0.2071, 0.2071, 0.2071])
+Federated model performance: Loss: 0.886560. Accuracy: 58.3743%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['53.840%', '68.492%', '72.364%', '74.545%', '75.807%']
+Workers federated accuracies:  ['55.508%', '58.759%', '60.471%', '61.775%', '63.358%']
+Workers improved  accuracies:  ['6.032%', '8.898%', '3.273%', '-0.813%', '0.706%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 17:
+Federated model validation accuracy : 77.0000%
+Leave-one-out validation accuracies :  ['74.4000%', '65.8000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.1536, 0.1846, 0.2206, 0.2206, 0.2206])
+Federated model performance: Loss: 0.735232. Accuracy: 73.2834%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['53.668%', '68.963%', '72.770%', '74.802%', '75.872%']
+Workers federated accuracies:  ['73.925%', '73.519%', '73.775%', '74.203%', '74.182%']
+Workers improved  accuracies:  ['24.449%', '23.658%', '16.578%', '11.615%', '11.529%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 18:
+Federated model validation accuracy : 67.6000%
+Leave-one-out validation accuracies :  ['66.2000%', '60.4000%', '49.0000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1508, 0.1767, 0.2214, 0.2255, 0.2255])
+Federated model performance: Loss: 0.617727. Accuracy: 70.0963%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['53.733%', '69.455%', '72.963%', '75.016%', '75.936%']
+Workers federated accuracies:  ['68.150%', '70.289%', '71.102%', '71.807%', '72.513%']
+Workers improved  accuracies:  ['18.674%', '20.428%', '13.904%', '9.219%', '9.861%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 19:
+Federated model validation accuracy : 79.6000%
+Leave-one-out validation accuracies :  ['79.0000%', '77.4000%', '67.4000%', '55.0000%', '52.4000%']
+Computed and normalized credits:  tensor([0.1528, 0.1632, 0.2026, 0.2376, 0.2438])
+Federated model performance: Loss: 0.546717. Accuracy: 76.7059%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['54.225%', '69.754%', '73.176%', '75.166%', '76.043%']
+Workers federated accuracies:  ['76.898%', '76.834%', '76.791%', '76.963%', '77.091%']
+Workers improved  accuracies:  ['27.422%', '26.973%', '19.594%', '14.374%', '14.438%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 20:
+Federated model validation accuracy : 74.6000%
+Leave-one-out validation accuracies :  ['74.0000%', '68.4000%', '59.0000%', '48.8000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1480, 0.1667, 0.2036, 0.2387, 0.2429])
+Federated model performance: Loss: 0.525167. Accuracy: 73.9679%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['54.118%', '70.160%', '73.241%', '75.251%', '76.150%']
+Workers federated accuracies:  ['72.193%', '74.139%', '74.759%', '75.016%', '75.594%']
+Workers improved  accuracies:  ['22.717%', '24.278%', '17.561%', '12.428%', '12.941%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Performance and Fairness analysis: 
+Federated model performance: Loss: 0.525167. Accuracy: 73.9679%.
+Workers before    accuracies:  ['49.476%', '49.861%', '57.198%', '62.588%', '62.652%']
+Workers standlone accuracies:  ['54.118%', '70.160%', '73.241%', '75.251%', '76.150%']
+Workers federated accuracies:  ['72.193%', '74.139%', '74.759%', '75.016%', '75.594%']
+Workers improved  accuracies:  ['22.717%', '24.278%', '17.561%', '12.428%', '12.941%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+Workers sharing_contributions :  tensor([ 25.6000, 102.4000, 185.6000, 262.4000, 339.2000])
+Correlation between stand alone test acc & perturbed federated test acc:  (0.003316573327406619, 0.9957772154280907)
+Correlation between stand alone test acc & collaborative final model acc:  (0.9847106089673489, 0.0022642303843723155)
+Correlation between test_acc & sharing contributions:  (0.9277412175991802, 0.023062465739859504)
+Correlation between test_acc improvements & sharing_contributions:  (-0.9159171128926726, 0.02889619036515809)
+Experiment : No.4/5
+reading from datasets/adult.data datasets/adult.test
+Start local pretraining 
+Performance of an average model of the pretrained local models
+Loss: 0.702964. Accuracy: 36.1711%.
+Start federated learning 
+
+Epoch 1:
+Federated model validation accuracy : 58.6000%
+Leave-one-out validation accuracies :  ['54.8000%', '53.0000%', '53.4000%', '53.8000%', '53.8000%']
+Computed and normalized credits:  tensor([0.1955, 0.2033, 0.2016, 0.1998, 0.1998])
+Federated model performance: Loss: 0.684743. Accuracy: 55.5294%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['36.513%', '36.171%', '48.171%', '49.112%', '57.775%']
+Workers federated accuracies:  ['53.925%', '55.380%', '54.203%', '54.995%', '53.262%']
+Workers improved  accuracies:  ['11.337%', '20.578%', '15.487%', '14.503%', '-0.021%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 2:
+Federated model validation accuracy : 48.0000%
+Leave-one-out validation accuracies :  ['47.2000%', '48.6000%', '47.8000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.2018, 0.1963, 0.2002, 0.2008, 0.2008])
+Federated model performance: Loss: 0.671548. Accuracy: 51.0802%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['33.027%', '42.995%', '51.701%', '57.369%', '62.888%']
+Workers federated accuracies:  ['50.139%', '50.888%', '51.636%', '51.786%', '60.193%']
+Workers improved  accuracies:  ['7.551%', '16.086%', '12.920%', '11.294%', '6.909%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 3:
+Federated model validation accuracy : 53.8000%
+Leave-one-out validation accuracies :  ['53.4000%', '52.6000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.1968, 0.1992, 0.2012, 0.2014, 0.2014])
+Federated model performance: Loss: 0.669790. Accuracy: 50.3957%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['35.765%', '48.235%', '58.182%', '63.893%', '66.738%']
+Workers federated accuracies:  ['51.358%', '50.374%', '50.267%', '50.396%', '50.246%']
+Workers improved  accuracies:  ['8.770%', '15.572%', '11.551%', '9.904%', '-3.037%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 4:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1991, 0.1998, 0.2004, 0.2004, 0.2004])
+Federated model performance: Loss: 0.721115. Accuracy: 49.9679%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['43.594%', '50.417%', '62.888%', '68.342%', '70.952%']
+Workers federated accuracies:  ['49.968%', '49.968%', '49.968%', '49.968%', '49.968%']
+Workers improved  accuracies:  ['7.380%', '15.166%', '11.251%', '9.476%', '-3.316%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 5:
+Federated model validation accuracy : 52.4000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.1997, 0.1999, 0.2001, 0.2001, 0.2001])
+Federated model performance: Loss: 0.956054. Accuracy: 50.0321%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['48.086%', '53.134%', '64.620%', '71.294%', '72.706%']
+Workers federated accuracies:  ['50.032%', '50.032%', '50.032%', '50.032%', '50.032%']
+Workers improved  accuracies:  ['7.444%', '15.230%', '11.316%', '9.540%', '-3.251%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 6:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1999, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 1.634954. Accuracy: 49.9679%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['49.241%', '55.444%', '67.594%', '72.620%', '73.861%']
+Workers federated accuracies:  ['49.968%', '49.968%', '49.968%', '49.968%', '49.968%']
+Workers improved  accuracies:  ['7.380%', '15.166%', '11.251%', '9.476%', '-3.316%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 7:
+Federated model validation accuracy : 52.4000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.559290. Accuracy: 50.0321%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['50.439%', '57.476%', '70.032%', '73.369%', '74.888%']
+Workers federated accuracies:  ['50.032%', '50.032%', '50.032%', '50.032%', '50.032%']
+Workers improved  accuracies:  ['7.444%', '15.230%', '11.316%', '9.540%', '-3.251%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 8:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.668776. Accuracy: 49.9679%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['50.802%', '58.289%', '71.743%', '73.989%', '75.358%']
+Workers federated accuracies:  ['49.968%', '49.968%', '49.968%', '49.968%', '49.968%']
+Workers improved  accuracies:  ['7.380%', '15.166%', '11.251%', '9.476%', '-3.316%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 9:
+Federated model validation accuracy : 52.4000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.596676. Accuracy: 50.0321%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['50.759%', '59.765%', '72.599%', '74.845%', '75.807%']
+Workers federated accuracies:  ['50.032%', '50.032%', '50.032%', '50.032%', '50.032%']
+Workers improved  accuracies:  ['7.444%', '15.230%', '11.316%', '9.540%', '-3.251%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 10:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.348956. Accuracy: 49.9679%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['50.481%', '60.898%', '73.070%', '75.080%', '76.406%']
+Workers federated accuracies:  ['49.968%', '49.968%', '49.968%', '49.968%', '49.968%']
+Workers improved  accuracies:  ['7.380%', '15.166%', '11.251%', '9.476%', '-3.316%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 11:
+Federated model validation accuracy : 52.4000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.328521. Accuracy: 50.0321%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['50.503%', '62.866%', '74.139%', '75.444%', '76.535%']
+Workers federated accuracies:  ['50.032%', '50.032%', '50.032%', '50.032%', '50.032%']
+Workers improved  accuracies:  ['7.444%', '15.230%', '11.316%', '9.540%', '-3.251%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 12:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.040339. Accuracy: 49.9679%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['50.695%', '64.257%', '74.524%', '75.701%', '76.898%']
+Workers federated accuracies:  ['49.968%', '49.968%', '49.968%', '49.968%', '49.968%']
+Workers improved  accuracies:  ['7.380%', '15.166%', '11.251%', '9.476%', '-3.316%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 13:
+Federated model validation accuracy : 52.4000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 1.917076. Accuracy: 50.0321%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['50.631%', '65.112%', '74.845%', '75.914%', '77.048%']
+Workers federated accuracies:  ['50.032%', '50.032%', '50.032%', '50.032%', '50.032%']
+Workers improved  accuracies:  ['7.444%', '15.230%', '11.316%', '9.540%', '-3.251%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 14:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 1.533210. Accuracy: 49.9679%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['50.588%', '66.267%', '74.738%', '76.021%', '77.155%']
+Workers federated accuracies:  ['49.968%', '49.968%', '50.032%', '50.032%', '50.032%']
+Workers improved  accuracies:  ['7.380%', '15.166%', '11.316%', '9.540%', '-3.251%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 15:
+Federated model validation accuracy : 57.8000%
+Leave-one-out validation accuracies :  ['55.2000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.1902, 0.2024, 0.2024, 0.2024, 0.2024])
+Federated model performance: Loss: 1.330085. Accuracy: 54.6952%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['50.567%', '67.337%', '75.166%', '76.000%', '77.198%']
+Workers federated accuracies:  ['55.016%', '54.909%', '55.529%', '55.893%', '56.278%']
+Workers improved  accuracies:  ['12.428%', '20.107%', '16.813%', '15.401%', '2.995%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 16:
+Federated model validation accuracy : 52.0000%
+Leave-one-out validation accuracies :  ['50.8000%', '48.0000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1853, 0.2022, 0.2042, 0.2042, 0.2042])
+Federated model performance: Loss: 0.964923. Accuracy: 55.2299%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['50.481%', '68.749%', '75.102%', '76.150%', '77.219%']
+Workers federated accuracies:  ['53.091%', '55.316%', '56.642%', '57.519%', '58.695%']
+Workers improved  accuracies:  ['10.503%', '20.513%', '17.925%', '17.027%', '5.412%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 17:
+Federated model validation accuracy : 77.2000%
+Leave-one-out validation accuracies :  ['74.4000%', '63.0000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.1552, 0.1904, 0.2181, 0.2181, 0.2181])
+Federated model performance: Loss: 0.802432. Accuracy: 73.2834%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['50.374%', '70.053%', '75.230%', '76.150%', '77.283%']
+Workers federated accuracies:  ['73.583%', '73.326%', '73.604%', '73.968%', '74.011%']
+Workers improved  accuracies:  ['30.995%', '38.524%', '34.888%', '33.476%', '20.727%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 18:
+Federated model validation accuracy : 66.4000%
+Leave-one-out validation accuracies :  ['64.8000%', '58.0000%', '48.2000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1519, 0.1824, 0.2207, 0.2225, 0.2225])
+Federated model performance: Loss: 0.637364. Accuracy: 69.5401%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['50.225%', '70.717%', '75.380%', '76.128%', '77.390%']
+Workers federated accuracies:  ['68.342%', '69.733%', '70.503%', '70.866%', '71.508%']
+Workers improved  accuracies:  ['25.754%', '34.930%', '31.786%', '30.374%', '18.225%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 19:
+Federated model validation accuracy : 81.4000%
+Leave-one-out validation accuracies :  ['81.0000%', '79.0000%', '66.8000%', '54.2000%', '52.4000%']
+Computed and normalized credits:  tensor([0.1505, 0.1628, 0.2057, 0.2385, 0.2425])
+Federated model performance: Loss: 0.564700. Accuracy: 77.1123%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['50.396%', '71.123%', '75.358%', '76.235%', '77.390%']
+Workers federated accuracies:  ['77.219%', '77.198%', '77.005%', '77.241%', '77.219%']
+Workers improved  accuracies:  ['34.631%', '42.396%', '38.289%', '36.749%', '23.936%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 20:
+Federated model validation accuracy : 73.2000%
+Leave-one-out validation accuracies :  ['72.6000%', '66.6000%', '57.0000%', '48.0000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1472, 0.1679, 0.2066, 0.2382, 0.2401])
+Federated model performance: Loss: 0.536397. Accuracy: 73.6898%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['50.439%', '71.914%', '75.465%', '76.278%', '77.390%']
+Workers federated accuracies:  ['72.834%', '73.861%', '74.246%', '74.824%', '75.166%']
+Workers improved  accuracies:  ['30.246%', '39.059%', '35.529%', '34.332%', '21.882%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Performance and Fairness analysis: 
+Federated model performance: Loss: 0.536397. Accuracy: 73.6898%.
+Workers before    accuracies:  ['42.588%', '34.802%', '38.717%', '40.492%', '53.283%']
+Workers standlone accuracies:  ['50.439%', '71.914%', '75.465%', '76.278%', '77.390%']
+Workers federated accuracies:  ['72.834%', '73.861%', '74.246%', '74.824%', '75.166%']
+Workers improved  accuracies:  ['30.246%', '39.059%', '35.529%', '34.332%', '21.882%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+Workers sharing_contributions :  tensor([ 25.6000, 102.4000, 185.6000, 262.4000, 339.2000])
+Correlation between stand alone test acc & perturbed federated test acc:  (-0.4031342771896953, 0.5009767895917593)
+Correlation between stand alone test acc & collaborative final model acc:  (0.9112408564673699, 0.03131736906195787)
+Correlation between test_acc & sharing contributions:  (0.9786175795044103, 0.0037412893572362706)
+Correlation between test_acc improvements & sharing_contributions:  (-0.5128194607913041, 0.37692783648043)
+Experiment : No.5/5
+reading from datasets/adult.data datasets/adult.test
+Start local pretraining 
+Performance of an average model of the pretrained local models
+Loss: 0.670736. Accuracy: 57.4973%.
+Start federated learning 
+
+Epoch 1:
+Federated model validation accuracy : 70.2000%
+Leave-one-out validation accuracies :  ['65.2000%', '55.4000%', '53.0000%', '53.0000%', '54.0000%']
+Computed and normalized credits:  tensor([0.1715, 0.2024, 0.2097, 0.2097, 0.2067])
+Federated model performance: Loss: 0.655403. Accuracy: 69.5615%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['50.118%', '66.695%', '70.652%', '71.807%', '71.914%']
+Workers federated accuracies:  ['58.374%', '68.791%', '65.968%', '65.198%', '60.235%']
+Workers improved  accuracies:  ['8.364%', '12.984%', '0.278%', '-3.572%', '-10.053%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 2:
+Federated model validation accuracy : 50.2000%
+Leave-one-out validation accuracies :  ['52.2000%', '55.0000%', '49.2000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1816, 0.1766, 0.2083, 0.2172, 0.2163])
+Federated model performance: Loss: 0.651724. Accuracy: 52.5134%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['51.401%', '69.561%', '71.444%', '72.663%', '73.176%']
+Workers federated accuracies:  ['49.968%', '52.021%', '54.930%', '56.599%', '65.818%']
+Workers improved  accuracies:  ['-0.043%', '-3.786%', '-10.759%', '-12.171%', '-4.471%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 3:
+Federated model validation accuracy : 53.8000%
+Leave-one-out validation accuracies :  ['52.8000%', '52.6000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.1935, 0.1931, 0.2029, 0.2053, 0.2051])
+Federated model performance: Loss: 0.659368. Accuracy: 51.9572%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['54.759%', '69.818%', '72.385%', '73.455%', '74.053%']
+Workers federated accuracies:  ['61.262%', '51.594%', '51.380%', '51.337%', '50.952%']
+Workers improved  accuracies:  ['11.251%', '-4.214%', '-14.310%', '-17.433%', '-19.337%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 4:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1981, 0.1980, 0.2008, 0.2015, 0.2015])
+Federated model performance: Loss: 0.790630. Accuracy: 49.9679%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['58.011%', '70.160%', '72.684%', '73.904%', '74.545%']
+Workers federated accuracies:  ['49.968%', '49.968%', '49.968%', '49.968%', '49.968%']
+Workers improved  accuracies:  ['-0.043%', '-5.840%', '-15.722%', '-18.802%', '-20.321%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 5:
+Federated model validation accuracy : 52.4000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.1995, 0.1994, 0.2002, 0.2004, 0.2004])
+Federated model performance: Loss: 1.149986. Accuracy: 50.0321%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['64.086%', '70.289%', '73.198%', '74.225%', '74.952%']
+Workers federated accuracies:  ['50.032%', '50.032%', '50.032%', '50.032%', '50.032%']
+Workers improved  accuracies:  ['0.021%', '-5.775%', '-15.658%', '-18.738%', '-20.257%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 6:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1998, 0.1998, 0.2001, 0.2001, 0.2001])
+Federated model performance: Loss: 2.032109. Accuracy: 49.9679%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['68.214%', '70.909%', '73.305%', '74.802%', '75.273%']
+Workers federated accuracies:  ['49.968%', '49.968%', '49.968%', '49.968%', '49.968%']
+Workers improved  accuracies:  ['-0.043%', '-5.840%', '-15.722%', '-18.802%', '-20.321%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 7:
+Federated model validation accuracy : 52.4000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.677969. Accuracy: 50.0321%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['67.765%', '71.144%', '73.690%', '75.016%', '75.487%']
+Workers federated accuracies:  ['50.032%', '50.032%', '50.032%', '50.032%', '50.032%']
+Workers improved  accuracies:  ['0.021%', '-5.775%', '-15.658%', '-18.738%', '-20.257%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 8:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.545444. Accuracy: 49.9679%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['66.310%', '71.636%', '73.861%', '75.380%', '75.615%']
+Workers federated accuracies:  ['49.968%', '49.968%', '49.968%', '49.968%', '49.968%']
+Workers improved  accuracies:  ['-0.043%', '-5.840%', '-15.722%', '-18.802%', '-20.321%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 9:
+Federated model validation accuracy : 52.4000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.421161. Accuracy: 50.0321%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['64.941%', '71.936%', '74.225%', '75.529%', '75.765%']
+Workers federated accuracies:  ['50.032%', '50.032%', '50.032%', '50.032%', '50.032%']
+Workers improved  accuracies:  ['0.021%', '-5.775%', '-15.658%', '-18.738%', '-20.257%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 10:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.279273. Accuracy: 49.9679%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['63.529%', '72.364%', '74.118%', '75.615%', '75.979%']
+Workers federated accuracies:  ['49.968%', '49.968%', '49.968%', '49.968%', '49.968%']
+Workers improved  accuracies:  ['-0.043%', '-5.840%', '-15.722%', '-18.802%', '-20.321%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 11:
+Federated model validation accuracy : 52.4000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 2.053192. Accuracy: 50.0321%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['61.989%', '72.813%', '73.690%', '75.829%', '76.107%']
+Workers federated accuracies:  ['50.032%', '50.032%', '50.032%', '50.032%', '50.032%']
+Workers improved  accuracies:  ['0.021%', '-5.775%', '-15.658%', '-18.738%', '-20.257%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 12:
+Federated model validation accuracy : 47.6000%
+Leave-one-out validation accuracies :  ['47.6000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 1.847312. Accuracy: 49.9679%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['60.642%', '73.112%', '74.610%', '75.850%', '76.214%']
+Workers federated accuracies:  ['49.968%', '49.968%', '49.968%', '49.968%', '49.968%']
+Workers improved  accuracies:  ['-0.043%', '-5.840%', '-15.722%', '-18.802%', '-20.321%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 13:
+Federated model validation accuracy : 52.6000%
+Leave-one-out validation accuracies :  ['52.4000%', '52.4000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.2000, 0.2000, 0.2000, 0.2000, 0.2000])
+Federated model performance: Loss: 1.556291. Accuracy: 50.4599%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['60.171%', '73.176%', '74.717%', '75.936%', '76.471%']
+Workers federated accuracies:  ['50.781%', '50.481%', '50.567%', '50.610%', '50.631%']
+Workers improved  accuracies:  ['0.770%', '-5.326%', '-15.123%', '-18.160%', '-19.658%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 14:
+Federated model validation accuracy : 48.0000%
+Leave-one-out validation accuracies :  ['48.0000%', '47.6000%', '47.6000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1982, 0.2004, 0.2004, 0.2004, 0.2004])
+Federated model performance: Loss: 1.242535. Accuracy: 50.7166%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['59.380%', '73.519%', '75.059%', '75.914%', '76.385%']
+Workers federated accuracies:  ['50.332%', '50.717%', '51.080%', '51.251%', '51.615%']
+Workers improved  accuracies:  ['0.321%', '-5.091%', '-14.610%', '-17.519%', '-18.674%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 15:
+Federated model validation accuracy : 66.8000%
+Leave-one-out validation accuracies :  ['64.8000%', '54.8000%', '52.4000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.1674, 0.2021, 0.2102, 0.2102, 0.2102])
+Federated model performance: Loss: 0.979051. Accuracy: 66.5027%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['59.487%', '73.818%', '74.759%', '75.914%', '76.492%']
+Workers federated accuracies:  ['68.406%', '66.866%', '67.337%', '67.701%', '67.679%']
+Workers improved  accuracies:  ['18.396%', '11.059%', '1.647%', '-1.070%', '-2.610%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 16:
+Federated model validation accuracy : 62.0000%
+Leave-one-out validation accuracies :  ['59.8000%', '51.0000%', '47.8000%', '47.6000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1597, 0.1997, 0.2130, 0.2137, 0.2137])
+Federated model performance: Loss: 0.760523. Accuracy: 65.1337%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['59.358%', '73.947%', '75.123%', '75.936%', '76.578%']
+Workers federated accuracies:  ['61.818%', '65.198%', '66.374%', '67.358%', '68.257%']
+Workers improved  accuracies:  ['11.807%', '9.390%', '0.684%', '-1.412%', '-2.032%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 17:
+Federated model validation accuracy : 79.8000%
+Leave-one-out validation accuracies :  ['78.2000%', '72.6000%', '59.8000%', '52.4000%', '52.4000%']
+Computed and normalized credits:  tensor([0.1507, 0.1749, 0.2128, 0.2308, 0.2308])
+Federated model performance: Loss: 0.628168. Accuracy: 76.8128%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['59.294%', '74.053%', '75.080%', '75.979%', '76.385%']
+Workers federated accuracies:  ['76.813%', '76.749%', '76.749%', '76.877%', '76.791%']
+Workers improved  accuracies:  ['26.802%', '20.941%', '11.059%', '8.107%', '6.503%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 18:
+Federated model validation accuracy : 68.6000%
+Leave-one-out validation accuracies :  ['68.4000%', '64.6000%', '52.4000%', '48.0000%', '47.6000%']
+Computed and normalized credits:  tensor([0.1493, 0.1670, 0.2159, 0.2333, 0.2344])
+Federated model performance: Loss: 0.572663. Accuracy: 72.4064%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['59.594%', '74.267%', '75.016%', '76.000%', '76.471%']
+Workers federated accuracies:  ['70.310%', '72.449%', '73.754%', '74.567%', '74.888%']
+Workers improved  accuracies:  ['20.299%', '16.642%', '8.064%', '5.797%', '4.599%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 19:
+Federated model validation accuracy : 81.0000%
+Leave-one-out validation accuracies :  ['81.6000%', '79.4000%', '71.2000%', '61.6000%', '52.8000%']
+Computed and normalized credits:  tensor([0.1532, 0.1635, 0.1989, 0.2309, 0.2536])
+Federated model performance: Loss: 0.510281. Accuracy: 77.2620%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['59.936%', '74.289%', '75.123%', '76.086%', '76.513%']
+Workers federated accuracies:  ['77.112%', '77.262%', '77.283%', '77.369%', '77.626%']
+Workers improved  accuracies:  ['27.102%', '21.455%', '11.594%', '8.599%', '7.337%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Epoch 20:
+Federated model validation accuracy : 74.0000%
+Leave-one-out validation accuracies :  ['73.4000%', '69.8000%', '62.2000%', '50.8000%', '48.0000%']
+Computed and normalized credits:  tensor([0.1518, 0.1650, 0.1967, 0.2371, 0.2494])
+Federated model performance: Loss: 0.511218. Accuracy: 74.9519%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['60.021%', '74.332%', '75.102%', '75.936%', '76.556%']
+Workers federated accuracies:  ['72.599%', '74.909%', '75.572%', '75.872%', '76.342%']
+Workers improved  accuracies:  ['22.588%', '19.102%', '9.882%', '7.102%', '6.053%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+
+Performance and Fairness analysis: 
+Federated model performance: Loss: 0.511218. Accuracy: 74.9519%.
+Workers before    accuracies:  ['50.011%', '55.807%', '65.690%', '68.770%', '70.289%']
+Workers standlone accuracies:  ['60.021%', '74.332%', '75.102%', '75.936%', '76.556%']
+Workers federated accuracies:  ['72.599%', '74.909%', '75.572%', '75.872%', '76.342%']
+Workers improved  accuracies:  ['22.588%', '19.102%', '9.882%', '7.102%', '6.053%']
+Workers shard sizes:  [128, 512, 928, 1312, 1696]
+Workers sharing_contributions :  tensor([ 25.6000, 102.4000, 185.6000, 262.4000, 339.2000])
+Correlation between stand alone test acc & perturbed federated test acc:  (0.46773680032951565, 0.4269492771211873)
+Correlation between stand alone test acc & collaborative final model acc:  (0.9706923067585558, 0.005996361843346828)
+Correlation between test_acc & sharing contributions:  (0.909295188406623, 0.032343014633711524)
+Correlation between test_acc improvements & sharing_contributions:  (-0.9605691087233929, 0.009343363839403141)
+standalone_vs_final_corr [[0.7949945118202371], [0.040889076885018125], [0.9847106089673489], [0.9112408564673699], [0.9706923067585558]]
+standalone_vs_final_corr_mean [0.740505472179706]
+standalone_vs_final_corr_std [0.3561474006927016]
+sharingcontribution_vs_final_corr [[0.7172790866835411], [0.6089554575159419], [0.9277412175991802], [0.9786175795044103], [0.909295188406623]]
+sharingcontribution_vs_final_corr_mean [0.8283777059419393]
+sharingcontribution_vs_final_corr_std [0.1410544521316438]
+standalone_vs_federated_perturbed_corr [[0.11981213310906995], [0.3183662352310631], [0.003316573327406619], [-0.4031342771896953], [0.46773680032951565]]
+standalone_vs_federated_perturbed_corr_mean [0.101219492961472]
+standalone_vs_federated_perturbed_corr_std [0.2985937165061737]
+federated_final_performance [0.7790374159812927, 0.7283422350883484, 0.7396791577339172, 0.7368984222412109, 0.7495186924934387]
+federated_final_performance_mean 0.7466951847076416
+federated_final_performance_std 0.01752725916407241
+CFFL_best_worker [0.7805347442626953, 0.7394652366638184, 0.7559358477592468, 0.7516577243804932, 0.7634224891662598]
+CFFL_best_worker_mean 0.7582032084465027
+CFFL_best_worker_std 0.013601722360162289
+standalone_best_worker [0.7655615210533142, 0.7640641927719116, 0.7614973187446594, 0.7739037275314331, 0.7655615210533142]
+standalone_best_worker_mean 0.7661176562309265
+standalone_best_worker_std 0.004166670364515112
