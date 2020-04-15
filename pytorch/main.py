@@ -23,7 +23,7 @@ use_cuda = True
 # 	'sample_size_cap': [5000, 10000, 15000],
 # 	'n_workers': [5, 10, 20],
 # 	'split': 'powerlaw',
-# 	'sharing_lambda': 0.1,  # privacy level -> at most (sharing_lambda * num_of_parameters) updates
+# 	'plevel': 0.1,  # privacy level -> at most (plevel * num_of_parameters) updates
 # 	'batch_size' : 16,
 # 	'train_val_split_ratio': 0.9,
 
@@ -48,20 +48,20 @@ args = {
 	'sample_size_cap': 15000,
 	'n_workers': 5,
 	'split': 'powerlaw',
-	'sharing_lambda': 0.1,  # privacy level -> at most (sharing_lambda * num_of_parameters) updates
-	'batch_size' : 16,
+	'plevel': 0.1,  # privacy level -> at most (plevel * num_of_parameters) updates
+	'batch_size' : 1,
 	'train_val_split_ratio': 0.9,
 
 	# model parameters
 	'model_fn': MLP_LogReg,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.CrossEntropyLoss(),
-	'lr': 0.001,
+	'lr': 0.0001,
 
 	# training parameters
 	'pretrain_epochs': 10,
 	'fl_epochs': 20,
-	'fl_individual_epochs': 5,
+	'fl_individual_epochs': 1,
 }
 
 
@@ -128,15 +128,15 @@ def run_experiments(args, repeat=5):
 if __name__ == '__main__':
 	# # init steps
 
+	'''
 	n_workers_space = [5, 10, 20]
 	sample_size_cap_space = [5000, 10000, 15000]
 	fl_epochs_space = [10, 20]
+	for n_workers, sample_size_cap, fl_epochs in product(n_workers_space, sample_size_cap_space, fl_epochs_space):
+	'''
 
-	[[5, 5000, 50],[10, 10000, 50],[20, 15000, 50]]
-
-	# for n_workers, sample_size_cap, fl_epochs in product(n_workers_space, sample_size_cap_space, fl_epochs_space):
-	# for n_workers, sample_size_cap, fl_epochs in [[5, 5000, 20],[10, 10000, 20],[20, 15000, 20]]:
-	for n_workers, sample_size_cap, fl_epochs in [[5, 5000, 100]]:
+	for n_workers, sample_size_cap, fl_epochs in [[5, 5000, 100],[10, 10000, 100],[20, 15000, 100]]:
+	# for n_workers, sample_size_cap, fl_epochs in [[5, 5000, 100]]:
 
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap
