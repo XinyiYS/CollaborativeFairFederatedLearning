@@ -1,8 +1,10 @@
 import os
 import json
 import pandas as pd
+import ast
+import numpy as np
 
-dirname = 'logs'
+from plot import plot, plot_one
 
 
 def parse(folder):
@@ -19,59 +21,111 @@ def parse(folder):
 	return setup
 
 
-import ast
-import numpy as np
+def plot_convergence_for_one(dirname, mode='best', workerId=-1):
+	if mode=='best':
+		# the best is the last worker
+		workerId = -1
 
-from plot import plot
+	for folder in os.listdir(dirname):
+		if not 'complete.txt' in os.listdir(os.path.join(dirname, folder)):
+			continue
 
-dfs = []
-setups = []
-experiment_results = []
+		fl_epochs = int(folder.split('-')[1])
 
-for folder in os.listdir(dirname):
-	n_workers = int(folder.split('_')[1][1:])
-	fl_epochs = int(folder.split('-')[1])
-	if fl_epochs != 100:
-		continue
+		experiments = []
+		with open(os.path.join(dirname, folder, 'log'), 'r') as log:
+			loginfo = log.readlines()
+	
+		worker_cffl_accs_lines = [line.replace('Workers CFFL      accuracies:  ', '') for line in loginfo if 'Workers CFFL      accuracies' in line]
+		worker_standalone_accs_lines = [line.replace('Workers standlone accuracies:  ', '') for line in loginfo if 'Workers standlone accuracies:  ' in line]
+		worker_dssgd_accs_lines = [line.replace('Workers DSSGD     accuracies:  ', '') for line in loginfo if 'Workers DSSGD     accuracies:  ' in line]
 
-	columns = ['party' + str(i + 1) for i in range(n_workers)]
+		data_rows = []
+		epoch_count = 0
+		for cffl_acc, standlone_acc, dssgd_acc in zip(worker_cffl_accs_lines, worker_standalone_accs_lines, worker_dssgd_accs_lines):
+			cffl_acc = ast.literal_eval(ast.literal_eval(cffl_acc)[workerId][:-1] )
+			standlone_acc = ast.literal_eval(ast.literal_eval(standlone_acc)[workerId][:-1])
+			dssgd_acc = ast.literal_eval(ast.literal_eval(dssgd_acc)[workerId][:-1])
+			
+			data_rows.append([standlone_acc, dssgd_acc, cffl_acc])
 
-	experiments = []
+			epoch_count +=1
+			if epoch_count == fl_epochs:
+				experiments.append(np.array(data_rows))
+				data_rows = []
+				epoch_count = 0
 
-	with open(os.path.join(dirname, folder, 'log'), 'r') as log:
-		loginfo = log.readlines()
-	worker_fed_accs_lines = [line.replace('Workers federated accuracies:  ', '') for line in loginfo if 'Workers federated accuracies' in line]
+		experiments = np.asarray(experiments)
+		average_data = np.mean(experiments, axis=0)
 
-	data_rows = []
-	epoch_count = 0
-	for line in worker_fed_accs_lines:
-		line = ast.literal_eval(line)
-		data_row = [ast.literal_eval(acc[:-1]) for acc in line]
-		data_rows.append(data_row)
+		df = pd.DataFrame(average_data, columns=['Standlone', 'Distributed', 'CFFL'])
+		figure_dir = os.path.join(dirname, folder, 'convergence_for_one.png')
+		if os.path.exists(figure_dir):
+			os.remove(figure_dir)
+		if not os.path.exists(figure_dir):
+			plot_one(df,figure_dir)
+	return
 
-		epoch_count +=1
-		if epoch_count == fl_epochs:
+def plot_convergence(dirname):
+	dfs = []
+	setups = []
+	experiment_results = []
 
-			experiments.append(np.array(data_rows))
-			data_rows = []
-			epoch_count = 0
+	for folder in os.listdir(dirname):
+		if not 'complete.txt' in os.listdir(os.path.join(dirname, folder)):
+			continue
 
-	experiments = np.asarray(experiments)
-	average_data = np.mean(experiments, axis=0)
-	df = pd.DataFrame(average_data, columns = columns)
+		n_workers = int(folder.split('_')[1][1:])
+		fl_epochs = int(folder.split('-')[1])
+
+		columns = ['party' + str(i + 1) for i in range(n_workers)]
+		
+		experiments = []
+		with open(os.path.join(dirname, folder, 'log'), 'r') as log:
+			loginfo = log.readlines()
+		worker_cffl_accs_lines = [line.replace('Workers CFFL      accuracies:  ', '') for line in loginfo if 'Workers CFFL      accuracies' in line]
+		# worker_standalone_accs_lines = [line.replace('Workers standlone accuracies:  ', '') for line in loginfo if 'Workers standlone accuracies:  ' in line]
+		# worker_dssgd_accs_lines = [line.replace('Workers DSSGD     accuracies:  ', '') for line in loginfo if 'Workers DSSGD     accuracies:  ' in line]
+
+		data_rows = []
+		epoch_count = 0
+		for line in worker_cffl_accs_lines:
+			line = ast.literal_eval(line)
+			data_row = [ast.literal_eval(acc[:-1]) for acc in line]
+			data_rows.append(data_row)
 
 
-	dfs.append(df)
+			epoch_count +=1
+			if epoch_count == fl_epochs:
+				temp_df = pd.DataFrame(data_rows, columns = columns)
+				
+				figure_dir = os.path.join(dirname, folder, 'exp{}.png'.format(len(experiments)+1))
 
-	setup = parse(folder)
-	setups.append(setup)
+				plot(temp_df, figure_dir)
+				experiments.append(np.array(data_rows))
+				data_rows = []
+				epoch_count = 0
 
-	experiment_results.append((setup, df))
+		experiments = np.asarray(experiments)
+		average_data = np.mean(experiments, axis=0)
+		df = pd.DataFrame(average_data, columns = columns)
 
-	figure_dir = os.path.join(dirname, folder, 'figure.png')
-	if os.path.exists(figure_dir):
-		os.remove(figure_dir)
-	if not os.path.exists(figure_dir):
-		plot(df,figure_dir)
-		# exit()
+		dfs.append(df)
 
+		setup = parse(folder)
+		setups.append(setup)
+
+		experiment_results.append((setup, df))
+
+		figure_dir = os.path.join(dirname, folder, 'figure.png')
+		if os.path.exists(figure_dir):
+			os.remove(figure_dir)
+		if not os.path.exists(figure_dir):
+			plot(df,figure_dir)
+
+	return experiment_results
+
+if __name__ == '__main__':
+	dirname = 'logs'
+	experiment_results = plot_convergence(dirname)
+	plot_convergence_for_one(dirname, mode='best', workerId=-1)
