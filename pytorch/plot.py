@@ -13,7 +13,7 @@ def plot(df, save_dir=None,show=False):
 	for column, fmt in zip(df.columns, fmt_styles):
 		plt.plot(index, column, fmt, data=df, label=column, )
 
-	plt.legend()
+	plt.legend(loc='lower right')
 	plt.xlabel("Communication Rounds",  fontsize='large', fontweight='bold')
 	plt.ylabel("Test Accuracy",  fontsize='large', fontweight='bold')
 	plt.title('Adult')
@@ -26,4 +26,22 @@ def plot(df, save_dir=None,show=False):
 	return
 
 
+def plot_one(df, save_dir=None, show=False):
+	# Data
+	index = np.arange(1, len(df)+1)
+	fmt_styles = ['ro-', 'c.-', 'm<-']
+	for column, fmt in zip(df.columns, ['ro-', 'c.-', 'm<-']):
+		plt.plot(index, column, fmt, data=df, label=column, )
 
+	plt.legend(loc='lower right')
+	plt.xlabel("Epochs (Communication Rounds)",  fontsize='large', fontweight='bold')
+	plt.ylabel("Test Accuracy",  fontsize='large', fontweight='bold')
+	plt.title('Adult')
+	
+	if save_dir:
+		plt.savefig(save_dir)
+		plt.clf()
+	if show:
+		plt.show()
+
+	return
