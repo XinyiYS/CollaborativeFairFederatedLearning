@@ -6,7 +6,8 @@ from torch.utils.data.sampler import SubsetRandomSampler
 class Data_Prepper:
 	def __init__(self, name, train_batch_size, sample_size_cap=-1, test_batch_size=1000, valid_batch_size=None, train_val_split_ratio=0.8,):
 		self.name = name
-		self.train_dataset, self.test_dataset = self.prepare_dataset(name, sample_size_cap)
+		self.train_dataset, self.test_dataset = self.prepare_dataset(name)
+		self.sample_size_cap = sample_size_cap
 		self.train_val_split_ratio = train_val_split_ratio
 
 		self.init_batch_size(train_batch_size, test_batch_size, valid_batch_size)
@@ -21,7 +22,7 @@ class Data_Prepper:
 		self.valid_batch_size = valid_batch_size if valid_batch_size else test_batch_size
 
 	def init_train_valid_idx(self, shuffle=True):
-		self.train_idx, self.valid_idx = self.get_train_valid_indices(self.train_dataset, self.train_val_split_ratio, shuffle=shuffle)
+		self.train_idx, self.valid_idx = self.get_train_valid_indices(self.train_dataset, self.train_val_split_ratio, sample_size_cap=self.sample_size_cap,shuffle=shuffle)
 
 	def init_valid_loader(self):
 		self.valid_loader = DataLoader(self.train_dataset, batch_size=self.valid_batch_size, sampler=SubsetRandomSampler(self.valid_idx))
@@ -35,20 +36,52 @@ class Data_Prepper:
 	def get_test_loader(self):
 		return self.test_loader
 
-	def get_train_valid_indices(self, train_dataset, train_val_split_ratio, shuffle=True):
-		train_val_split_index = int(len(train_dataset) * train_val_split_ratio)
-		indices = list(range(len(train_dataset)))
+	def get_train_valid_indices(self, train_dataset, train_val_split_ratio, sample_size_cap=-1, shuffle=True):
+
+		indices = list(range(  len(train_dataset) ))
 		if shuffle:
 			np.random.seed(1111)
 			np.random.shuffle(indices)
 
-		return  indices[:train_val_split_index], indices[train_val_split_index:]
+		if sample_size_cap != -1:
+			indices = indices[:min(sample_size_cap, len(train_dataset))]
+
+		train_val_split_index = int(len(indices) * train_val_split_ratio)
+
+		return indices[:train_val_split_index], indices[train_val_split_index:]
 
 	def get_train_loaders(self, n_workers, split='powerlaw', batch_size=None):
 		if not batch_size:
 			batch_size = self.train_batch_size
 
-		if split == 'powerlaw':
+		if split == 'class_imbalance':
+			if self.name !='mnist':
+				raise NotImplementedError("Calling on dataset {}. Only dataset mnist is implemnted for this split".format(self.name))
+
+			n_classes = len(self.train_dataset.classes)
+			data_indices = [(self.train_dataset.targets == class_id).nonzero().view(-1).tolist() for class_id in range(n_classes)]
+			class_sizes = np.linspace(1, n_classes, n_workers, dtype='int')
+			party_mean = 600 # for mnist party_mean = 600
+
+			from collections import defaultdict
+			party_indices = defaultdict(list)
+			for party_id, class_sz in enumerate(class_sizes):	
+				classes = range(class_sz) # can customize classes for each party rather than just listing
+				each_class_id_size = party_mean // class_sz
+				for i, class_id in enumerate(classes):
+					selected_indices = data_indices[class_id][:each_class_id_size]
+					data_indices[class_id] = data_indices[class_id][each_class_id_size:]
+					party_indices[party_id].extend(selected_indices)
+
+					# top up to make sure all parties have the same number of samples
+					if i == len(classes) - 1 and len(party_indices[party_id]) < party_mean:
+						extra_needed = party_mean - len(party_indices[party_id])
+						party_indices[party_id].extend(data_indices[class_id][:extra_needed])
+						data_indices[class_id] = data_indices[class_id][extra_needed:]
+
+			indices_list = [party_index_list for party_id, party_index_list in party_indices.items()] 
+
+		elif split == 'powerlaw':
 			from scipy.stats import powerlaw
 			import math
 			a = 1.65911332899
@@ -82,11 +115,10 @@ class Data_Prepper:
 
 			train_data, train_target, test_data, test_target = get_train_test()
 
-			X_train = torch.tensor(train_data.values, requires_grad=False).float()[:sample_size_cap]
-			y_train = torch.tensor(train_target.values, requires_grad=False).long()[:sample_size_cap]
+			X_train = torch.tensor(train_data.values, requires_grad=False).float()
+			y_train = torch.tensor(train_target.values, requires_grad=False).long()
 			X_test = torch.tensor(test_data.values, requires_grad=False).float()
 			y_test = torch.tensor(test_target.values, requires_grad=False).long()
-
 
 			print("X train shape: ", X_train.shape)
 			print("y train shape: ", y_train.shape)
@@ -109,7 +141,7 @@ class Data_Prepper:
 				   transforms.ToTensor(),
 				   transforms.Normalize((0.1307,), (0.3081,))
 							   ]))
-				
+
 			test = datasets.MNIST('datasets/', train=False, transform=transforms.Compose([
 					transforms.Pad((2,2,2,2)),
 					transforms.ToTensor(),
