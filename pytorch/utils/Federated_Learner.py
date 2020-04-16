@@ -40,6 +40,9 @@ class Federated_Learner:
 		theta = self.args['theta']
 
 		self.federated_model = model_fn()
+		# same initialization across experiment runs
+		# self.federated_model.load_state_dict(self.args['model'].state_dict())
+
 		self.workers = []
 		# possible to enumerate through various model_fns, optimizer_fns, lrs,
 		# thetas, or even devices
@@ -114,9 +117,7 @@ class Federated_Learner:
 
 		
 		self.dssgd_model = copy.deepcopy(self.federated_model).to(device)
-		# each worker needs a dssgd model as well
-		# self.performance_dict['round_robin_fed_model_test_accs']
-		# self.rr_federated_models = [copy.deepcopy(self.federated_model) for i in range(self.n_workers)]
+		# each worker needs a dssgd model to compute final fairness
 		double_seqs = list(range(self.n_workers)) + list(range(self.n_workers))
 
 
@@ -289,10 +290,12 @@ class Federated_Learner:
 		self.worker_model_test_accs_after = self.evaluate_workers_performance(self.test_loader)
 		self.worker_model_improvements = torch.tensor(self.worker_model_test_accs_after) - torch.tensor(self.worker_model_test_accs_before)
 
+		print('Below are testset accuracies: ---')
 		print('Workers before    accuracies: ', ["{:.3%}".format(acc_b4) for acc_b4 in self.worker_model_test_accs_before])
 		print('Workers standlone accuracies: ', ["{:.3%}".format(acc_std) for acc_std in self.worker_standalone_test_accs])
-		print('Workers federated accuracies: ', ["{:.3%}".format(acc_aft) for acc_aft in self.worker_model_test_accs_after])
+		print('Workers CFFL      accuracies: ', ["{:.3%}".format(acc_aft) for acc_aft in self.worker_model_test_accs_after])
 		print('Workers improved  accuracies: ', ["{:.3%}".format(acc_impro) for acc_impro in self.worker_model_improvements])
+		print('Workers DSSGD     accuracies: ', ["{:.3%}".format(dssgd_acc) for dssgd_acc in self.dssgd_models_test_accs])
 		print('Workers shard sizes: ', self.shard_sizes)
 
 		self.performance_dict['DSSGD_model_test_accs'].append(self.dssgd_models_test_accs)
@@ -310,23 +313,28 @@ class Federated_Learner:
 
 		self.performance_summary()
 
-
 		from scipy.stats import pearsonr
 		corrs = pearsonr(self.worker_standalone_test_accs, self.dssgd_models_test_accs)
 		self.performance_dict['standlone_vs_rrdssgd'].append(corrs[0])
 
 		corrs = pearsonr(self.worker_standalone_test_accs, self.worker_model_test_accs_after)
-		self.performance_dict['standalone_vs_final_corr'].append(corrs[0])
+		self.performance_dict['standalone_vs_final'].append(corrs[0])
 
 		corrs = pearsonr(sharing_contributions, self.worker_model_test_accs_after)
-		self.performance_dict['sharingcontribution_vs_final_corr'].append(corrs[0])
+		self.performance_dict['sharingcontribution_vs_final'].append(corrs[0])
 
 		corrs = pearsonr(sharing_contributions, self.worker_model_improvements)
-		self.performance_dict['sharingcontribution_vs_improvements_corr'].append(corrs[0])
+		self.performance_dict['sharingcontribution_vs_improvements'].append(corrs[0])
 
 		self.performance_dict['standalone_best_worker'] = max(self.worker_standalone_test_accs)
 		self.performance_dict['CFFL_best_worker'] = max(self.worker_model_test_accs_after)
 		self.performance_dict['rr_dssgd_avg'] = sum(self.dssgd_models_test_accs)/ self.n_workers
+		
+		print("----Printing performance_dict")
+		for key, value in self.performance_dict.items():
+			print(key , ' - ',  value)
+		print("----")
+	
 		'''
 		self.performance_dict['federated_final_performance'] = self.test_acc.item()
 		shapley_values = self.shapley_values
@@ -351,7 +359,7 @@ class Federated_Learner:
 			return [evaluate(worker.model, eval_loader, device, verbose=False)[1].tolist() for worker in self.workers]
 
 
-def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fade=0):
+def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fade=1):
 	total = sum(val_accs)
 	for i, (credit, val_acc) in enumerate(zip(credits, val_accs)):
 		credit_epoch = val_acc / total
@@ -367,24 +375,6 @@ def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fa
 
 	return credits / torch.sum(credits)
 
-'''
-def credit_curve(x):
-	from math import exp
-	return 1. / (1 + exp(-15 * (x - 0.5)))
-
-def compute_credits(credits, federated_val_acc, leave_one_out_val_accs, credit_threshold, credit_fade=0):
-	for i, credit in enumerate(credits):
-		gain = federated_val_acc / (federated_val_acc + leave_one_out_val_accs[i])
-		if credit >= credit_threshold:
-			if credit_fade == 1:
-				credits[i] = 0.2 * credits[i] + 0.8 * credit_curve(gain)
-			else:
-				credits[i] = 0.5 * (credits[i] + credit_curve(gain) )
-		else:
-			credits[i] = 0
-	return credits / torch.sum(credits)
-'''
-
 
 def filter_grad_updates(grad_updates, thetas):
 	"""
@@ -392,11 +382,6 @@ def filter_grad_updates(grad_updates, thetas):
 
 	"""
 	return [mask_grad_update_by_order(grad_update, mask_order=None, mask_percentile=theta) for grad_update, theta in zip(grad_updates,thetas) ]
-
-def sort_grad_updates(grad_updates, marginal_contributions):
-	# sort the grad_updates by marginal_contributions (descending order)
-	return [(grad_update, worker_id) for grad_update, marg_contr, worker_id in sorted(zip(grad_updates, marginal_contributions, range(len(grad_updates))), key=lambda x:x[1], reverse=True) ]
-
 
 def mask_grad_update_by_order(grad_update, mask_order, mask_percentile=None):
 	# mask all but the largest <mask_order> updates (by magnitude) to zero
@@ -415,3 +400,28 @@ def mask_grad_update_by_magnitude(grad_update, mask_constant):
 	for i, update in enumerate(grad_update):
 		grad_update[i].data[update.data.abs() < mask_constant] = 0
 	return grad_update
+
+
+'''
+def credit_curve(x):
+	from math import exp
+	return 1. / (1 + exp(-15 * (x - 0.5)))
+
+def compute_credits(credits, federated_val_acc, leave_one_out_val_accs, credit_threshold, credit_fade=0):
+	for i, credit in enumerate(credits):
+		gain = federated_val_acc / (federated_val_acc + leave_one_out_val_accs[i])
+		if credit >= credit_threshold:
+			if credit_fade == 1:
+				credits[i] = 0.2 * credits[i] + 0.8 * credit_curve(gain)
+			else:
+				credits[i] = 0.5 * (credits[i] + credit_curve(gain) )
+		else:
+			credits[i] = 0
+	return credits / torch.sum(credits)
+
+
+def sort_grad_updates(grad_updates, marginal_contributions):
+	# sort the grad_updates by marginal_contributions (descending order)
+	return [(grad_update, worker_id) for grad_update, marg_contr, worker_id in sorted(zip(grad_updates, marginal_contributions, range(len(grad_updates))), key=lambda x:x[1], reverse=True) ]
+
+'''
