@@ -12,7 +12,7 @@ def parse(folder):
 	param = folder.split('_')
 	setup['split'] = param[0]
 	setup['P'] = int(param[1][1:])
-	setup['pretrain_epochs'] =int(param[2].split('-')[0][1:])
+	setup['pretrain_epochs'] = int(param[2].split('-')[0][1:])
 	setup['Communication Rounds'] = int(param[2].split('-')[1])
 	setup['E'] = int(param[2].split('-')[2])
 	setup['B'] = int(param[3][1:])
@@ -22,7 +22,7 @@ def parse(folder):
 
 
 def plot_convergence_for_one(dirname, mode='best', workerId=-1):
-	if mode=='best':
+	if mode == 'best':
 		# the best is the last worker
 		workerId = -1
 
@@ -35,22 +35,28 @@ def plot_convergence_for_one(dirname, mode='best', workerId=-1):
 		experiments = []
 		with open(os.path.join(dirname, folder, 'log'), 'r') as log:
 			loginfo = log.readlines()
-	
-		worker_cffl_accs_lines = [line.replace('Workers CFFL      accuracies:  ', '') for line in loginfo if 'Workers CFFL      accuracies' in line]
-		worker_standalone_accs_lines = [line.replace('Workers standlone accuracies:  ', '') for line in loginfo if 'Workers standlone accuracies:  ' in line]
-		worker_dssgd_accs_lines = [line.replace('Workers DSSGD     accuracies:  ', '') for line in loginfo if 'Workers DSSGD     accuracies:  ' in line]
+
+		worker_cffl_accs_lines = [line.replace('Workers CFFL      accuracies:  ', '')
+											   for line in loginfo if 'Workers CFFL      accuracies' in line]
+		worker_standalone_accs_lines = [line.replace(
+			'Workers standlone accuracies:  ', '') for line in loginfo if 'Workers standlone accuracies:  ' in line]
+		worker_dssgd_accs_lines = [line.replace('Workers DSSGD     accuracies:  ', '')
+												for line in loginfo if 'Workers DSSGD     accuracies:  ' in line]
 
 		data_rows = []
 		epoch_count = 0
 		for cffl_acc, standlone_acc, dssgd_acc in zip(worker_cffl_accs_lines, worker_standalone_accs_lines, worker_dssgd_accs_lines):
-			cffl_acc = ast.literal_eval(ast.literal_eval(cffl_acc)[workerId][:-1] )
-			standlone_acc = ast.literal_eval(ast.literal_eval(standlone_acc)[workerId][:-1])
+			cffl_acc = ast.literal_eval(ast.literal_eval(cffl_acc)[workerId][:-1])
+			standlone_acc = ast.literal_eval(
+				ast.literal_eval(standlone_acc)[workerId][:-1])
 			dssgd_acc = ast.literal_eval(ast.literal_eval(dssgd_acc)[workerId][:-1])
-			
+
 			data_rows.append([standlone_acc, dssgd_acc, cffl_acc])
 
 			epoch_count +=1
-			if epoch_count == fl_epochs:
+			if epoch_count == fl_epochs + 1:
+				# skip one last row from performance
+				data_rows=data_rows[:-1]
 				experiments.append(np.array(data_rows))
 				data_rows = []
 				epoch_count = 0
@@ -90,18 +96,22 @@ def plot_convergence(dirname):
 		data_rows = []
 		epoch_count = 0
 		for line in worker_cffl_accs_lines:
+
 			line = ast.literal_eval(line)
 			data_row = [ast.literal_eval(acc[:-1]) for acc in line]
 			data_rows.append(data_row)
 
+			epoch_count += 1
+			if epoch_count == fl_epochs + 1:
+				# read extra row to skip
 
-			epoch_count +=1
-			if epoch_count == fl_epochs:
+				data_rows = data_rows[:-1]
+
+				'''
 				temp_df = pd.DataFrame(data_rows, columns = columns)
-				
 				figure_dir = os.path.join(dirname, folder, 'exp{}.png'.format(len(experiments)+1))
-
 				plot(temp_df, figure_dir)
+				'''
 				experiments.append(np.array(data_rows))
 				data_rows = []
 				epoch_count = 0
