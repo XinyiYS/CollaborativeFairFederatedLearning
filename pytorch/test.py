@@ -28,7 +28,8 @@ args = {
 	'train_val_split_ratio': 0.9,
 
 	# model parameters
-	'model_fn': MLP_LogReg,
+	'model_fn': LogisticRegression,
+	# 'model': LogisticRegression(),
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.CrossEntropyLoss(),
 	'lr': 0.0001, # use this lr
@@ -59,9 +60,11 @@ def run_experiments(args, repeat=1):
 
 		performance_dicts.append(federated_learner.performance_dict)
 	
-	keys = ['standalone_vs_final_corr', 'sharingcontribution_vs_final_corr', 'standlone_vs_rrdssgd',
-			'rr_dssgd_avg', 'CFFL_best_worker', 'standalone_best_worker' ]
-	
+	keys = ['standalone_vs_final', 'standlone_vs_rrdssgd', 'sharingcontribution_vs_final',
+			'rr_dssgd_avg', 'CFFL_best_worker', 'standalone_best_worker',
+			# 'sharingcontribution_vs_improvements'
+			 ]
+
 	aggregate_dict = {}
 	for key in keys:
 		list_of_performance = [performance_dict[key] for performance_dict in performance_dicts]
@@ -78,5 +81,12 @@ def run_experiments(args, repeat=1):
 
 if __name__ == '__main__':
 	# init steps
-	run_experiments(args)
+	
+	n_workers, sample_size_cap, fl_epochs = [5, 2000, 5]
+	theta = 0.1
+	args['n_workers'] = n_workers
+	args['sample_size_cap'] = sample_size_cap
+	args['fl_epochs'] = fl_epochs
+	args['theta'] = theta
 
+	run_experiments(args, 4)

@@ -1,0 +1,11 @@
+Experimental settings are:  {'device': device(type='cuda'), 'dataset': 'adult', 'sample_size_cap': 4000, 'n_workers': 20, 'split': 'powerlaw', 'theta': 0.1, 'batch_size': 16, 'train_val_split_ratio': 0.9, 'model_fn': <class 'utils.models.LogisticRegression'>, 'optimizer_fn': <class 'torch.optim.sgd.SGD'>, 'loss_fn': CrossEntropyLoss(), 'lr': 0.0001, 'pretrain_epochs': 5, 'fl_epochs': 100, 'fl_individual_epochs': 5} 
+
+Experiment : No.1/5
+reading from datasets/adult.data datasets/adult.test
+X train shape:  torch.Size([4000, 86])
+y train shape:  torch.Size([4000])
+Train set Positive counts: 2045 Negative counts: 1955. Split: 51.12% - 48.88%
+X test shape:  torch.Size([4675, 86])
+y test shape:  torch.Size([4675])
+Test set Positive counts: 2335 Negative counts: 2340. Split: 49.95% - 50.05%
+Start local pretraining 
