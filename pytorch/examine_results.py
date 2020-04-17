@@ -1,77 +1,134 @@
 import os
+import shutil
 import json
 import pandas as pd
 import ast
 import numpy as np
 
 from plot import plot, plot_one
-from read_convergence import plot_convergence,plot_convergence_for_one
+from read_convergence import plot_convergence, plot_convergence_for_one, parse, get_best_cffl_worker
 
 fairness_keys = [
-        'standlone_vs_rrdssgd_mean',
-        'standalone_vs_final_mean',
-        'sharingcontribution_vs_final_mean', ]
+		'standlone_vs_rrdssgd_mean',
+		'standalone_vs_final_mean',
+		'sharingcontribution_vs_final_mean', ]
 
 performance_keys = [
-        'rr_dssgd_avg_mean',
-        'standalone_best_worker_mean',
-        'CFFL_best_worker_mean',
-        ]
+		'dssgd',
+		'standalone',
+		'cffl',
+		]
 
 def collect_and_compile_performance(dirname):
 
-    fairness_rows = []
-    performance_rows = []
-    for folder in os.listdir(dirname):
-            if not 'complete.txt' in os.listdir(os.path.join(dirname, folder)):
-                continue
+	fairness_rows = []
+	performance_rows = []
+	for folder in os.listdir(dirname):
+		if os.path.isfile(os.path.join(dirname, folder)) or not 'complete.txt' in os.listdir(os.path.join(dirname, folder)):
+			continue
 
-            n_workers = int(folder.split('_')[1][1:])
-            fl_epochs = int(folder.split('-')[1])
-            theta = float(folder.split('_')[6].replace('theta', ''))
-            try:
-                with open(os.path.join(dirname, folder, 'aggregate_dict.txt')) as dict_log:
-                    aggregate_dict = json.loads(dict_log.read())
-                f_data_row = ['P' + str(n_workers) + '_' + str(theta)] + [aggregate_dict[f_key][0] for f_key in fairness_keys]
-                p_data_row = ['P' + str(n_workers) + '_' + str(theta)] + [aggregate_dict[p_key] * 100 for p_key in performance_keys]
+		n_workers = int(folder.split('_')[1][1:])
+		fl_epochs = int(folder.split('-')[1])
+		theta = float(folder.split('_')[6].replace('theta', ''))
+		try:
+			with open(os.path.join(dirname, folder, 'aggregate_dict.txt')) as dict_log:
+				aggregate_dict = json.loads(dict_log.read())
+			f_data_row = ['P' + str(n_workers) + '_' + str(theta)] + [aggregate_dict[f_key][0] for f_key in fairness_keys]
 
-                fairness_rows.append(f_data_row)
-                performance_rows.append(p_data_row)
-            except:
-                pass
-    
-    shorthand_f_keys = ['Distriubted', 'CFFL' ,'Contributions_V_final' ]
-    fair_df = pd.DataFrame(fairness_rows, columns=[' '] + shorthand_f_keys).set_index(' ')
-    print(fair_df.to_string())
-    
-    fair_df.to_csv( os.path.join(dirname, 'fairness.csv'))
+			best_workerId, performance_dict = get_best_cffl_worker(dirname, folder)
+			p_data_row = ['P' + str(n_workers) + '_' + str(theta)] + [performance_dict[p_key][best_workerId] for p_key in performance_keys]
+			# if n_workers == 20:
+			# 	print(folder)
+			# 	print(p_data_row)
+			# 	print(best_workerId)
+			# 	[print(key, value) for key, value in performance_dict.items()]
+				
 
-    shorthand_p_keys = ['Distributed', 'Standalone', 'CFFL']
-    pd.options.display.float_format = '{:,.2f}'.format
-    perf_df = pd.DataFrame(performance_rows, columns=[' '] + shorthand_p_keys).set_index(' ').T
-    print(perf_df.to_string())
-    perf_df.to_csv( os.path.join(dirname, 'performance.csv'))
+			fairness_rows.append(f_data_row)
+			performance_rows.append(p_data_row)
+		except Exception as e:
+			print(str(e))
+			pass
+	
+	shorthand_f_keys = ['Distriubted', 'CFFL' ,'Contributions_V_final']
+	fair_df = pd.DataFrame(fairness_rows, columns=[' '] + shorthand_f_keys).set_index(' ')
+	fair_df = fair_df.sort_values(' ')
+	print(fair_df.to_string())
+	
+	fair_df.to_csv( os.path.join(dirname, 'fairness.csv'))
 
-    return fair_df, perf_df
+	shorthand_p_keys = ['Distributed', 'Standalone', 'CFFL']
+	pd.options.display.float_format = '{:,.2f}'.format
+	perf_df = pd.DataFrame(performance_rows, columns=[' '] + shorthand_p_keys).set_index(' ').T
+	perf_df = perf_df[sorted(perf_df.columns)]
+	print(perf_df.to_string())
+	perf_df.to_csv( os.path.join(dirname, 'performance.csv'))
 
-
-def parse(folder):
-    setup = {}
-    param = folder.split('_')
-    setup['split'] = param[0]
-    setup['P'] = int(param[1][1:])
-    setup['pretrain_epochs'] =int(param[2].split('-')[0][1:])
-    setup['Communication Rounds'] = int(param[2].split('-')[1])
-    setup['E'] = int(param[2].split('-')[2])
-    setup['B'] = int(param[3][1:])
-    setup['size'] = int(param[4][4:])
-    setup['lr'] = float(param[5][2:])
-    return setup
+	return fair_df, perf_df
 
 
+def collate_pngs(dirname):
+	try:
+		os.mkdir(os.path.join(dirname, 'figures'))
+	except:
+		pass
+	figures_dir = os.path.join(dirname, 'figures')
+	
+	for directory in os.listdir(dirname):
+		if os.path.isfile(os.path.join(dirname, directory)) or not 'complete.txt' in os.listdir(os.path.join(dirname, directory)):
+			continue
+
+		subdir = os.path.join(dirname, directory)
+		setup = parse(directory)
+
+		# convert figure.png to
+		# adult_LR_p5e100_cffl_localepoch5_localbatch16_lr0001_upload1
+		figure_name = 'adult_LR_p{}e{}_cffl_localepoch{}_localbatch{}_lr{}_upload{}.png'.format(
+			setup['P'], setup['Communication Rounds'],
+			setup['E'], setup['B'],
+			str(setup['lr']).replace('.', ''),
+			str(setup['theta']).replace('.', '').rstrip('0'))
+		shutil.copy(os.path.join(subdir,'figure.png'),  os.path.join(figures_dir, figure_name) )
+
+		# convert standalone.png to
+		# adult_LR_p5e100_standalone
+		standalone_name = 'adult_LR_p{}e{}_standalone.png'.format(
+			setup['P'], setup['Communication Rounds'])
+		shutil.copy(os.path.join(subdir,'standlone.png'),   os.path.join(figures_dir, standalone_name) )
+
+		# convert convergence_for_one.png to
+		# adult_LR_p5e100_upload1_convergence
+		convergence_name = 'adult_LR_p{}e{}_upload{}_convergence.png'.format(setup['P'], setup['Communication Rounds'],
+																		 str(setup['theta']).replace('.', '').rstrip('0'))
+		shutil.copy(os.path.join(subdir,'convergence_for_one.png'),   os.path.join(figures_dir, convergence_name) )
+	return
+
+
+
+def run_all(dirname):
+	print('Running performance scripts for {}'.format(dirname))
+	experiment_results = plot_convergence(dirname)
+	plot_convergence_for_one(dirname)
+	collate_pngs(dirname)
+	fair_df, perf_df = collect_and_compile_performance(dirname)
+	print()
+	return
 
 if __name__ == '__main__':
-    dirname = 'logs/e1-100-5'
-    experiment_results = plot_convergence(dirname)
-    plot_convergence_for_one(dirname)
-    fair_df, perf_df = collect_and_compile_performance(dirname)
+
+	'''
+	1000perpartylr0001
+	1000perparty
+	500perparty
+	'''
+
+	TEST = True
+	if TEST:
+		dirname = 'logs/nopretrain'
+		experiment_results = plot_convergence(dirname)
+		plot_convergence_for_one(dirname)
+		collate_pngs(dirname)
+		fair_df, perf_df = collect_and_compile_performance(dirname)
+	else:
+		for dirname in ['logs/500perparty', 'logs/1000perparty', 'logs/1000perpartylr0001']:
+			run_all(dirname)
