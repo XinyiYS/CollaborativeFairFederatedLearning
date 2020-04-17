@@ -30,7 +30,7 @@ def add_gradient_updates(grad_update_1, grad_update_2):
 	return [grad_update_1[i] + grad_update_2[i] for i in range(len(grad_update_1))]
 
 
-def aggregate_gradient_updates(grad_updates, device=None, mode='sum'):
+def aggregate_gradient_updates(grad_updates, device=None, mode='sum', credits=None):
 	if grad_updates:
 		len_first = len(grad_updates[0])
 		assert all(len(i) == len_first for i in grad_updates), "Different shapes of parameters. Cannot take average."
@@ -47,6 +47,16 @@ def aggregate_gradient_updates(grad_updates, device=None, mode='sum'):
 			aggregated_gradient_updates.append(torch.stack(
 				[grad_update[i] for grad_update in grad_updates]).mean(dim=0))
 	elif mode =='sum':
+		for i in range(len(grad_updates[0])):
+			aggregated_gradient_updates.append(torch.stack(
+				[grad_update[i] for grad_update in grad_updates]).sum(dim=0))
+
+	elif mode == 'credit-sum':
+		# first changes the grad_updates altogether
+		for i, (grad_update, credit) in enumerate(zip(grad_updates, credits)):
+			grad_updates[i] = [(credit * update) for update in grad_update]
+
+		# then compute the credit weight sum
 		for i in range(len(grad_updates[0])):
 			aggregated_gradient_updates.append(torch.stack(
 				[grad_update[i] for grad_update in grad_updates]).sum(dim=0))
