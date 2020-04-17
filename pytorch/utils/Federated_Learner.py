@@ -108,6 +108,9 @@ class Federated_Learner:
 		fl_epochs = self.args['fl_epochs']
 		device = self.args['device']
 		fl_individual_epochs = self.args['fl_individual_epochs']
+		aggregate_mode = self.args['aggregate_mode']
+
+
 		self.performance_dict['shard_sizes'] = self.shard_sizes
 
 		print("Start local pretraining ")
@@ -120,7 +123,6 @@ class Federated_Learner:
 		# each worker needs a dssgd model to compute final fairness
 		double_seqs = list(range(self.n_workers)) + list(range(self.n_workers))
 
-
 		print("\nStart federated learning \n")
 		for epoch in range(fl_epochs):
 			print('Epoch {}:'.format(epoch+1))
@@ -128,9 +130,14 @@ class Federated_Learner:
 			# 1. training locally, return updates, and filter the updates
 			grad_updates, dssgd_grad_updates = self.train_locally(fl_individual_epochs, requires_update=True)
 			grad_updates = filter_grad_updates(grad_updates, worker_thetas)
-			aggregated_gradient_updates = aggregate_gradient_updates(grad_updates, device=self.device)
-			# param_frequency = [freq + (update.abs()>0).float()  for freq, update in zip(param_frequency, aggregated_gradient_updates) ]
 
+			# changes the grad_updates altogether
+			aggregated_gradient_updates = aggregate_gradient_updates(grad_updates, device=self.device, mode=aggregate_mode, credits=credits)
+			
+			# credit_weighted_grad_updates =  [credit * update for credit, grad_update in zip(credits, grad_updates) for update in grad_update]
+			# credit_aggregated_gradient_updates = aggregate_gradient_updates(grad_updates, device=self.device, mode='credit-sum', credits=credits)
+
+			# param_frequency = [freq + (update.abs()>0).float()  for freq, update in zip(param_frequency, aggregated_gradient_updates) ]
 
 			dssgd_grad_updates = filter_grad_updates(dssgd_grad_updates, worker_thetas)
 			# generate a roundrobin sequence
@@ -313,6 +320,7 @@ class Federated_Learner:
 
 		self.performance_summary()
 
+
 		from scipy.stats import pearsonr
 		corrs = pearsonr(self.worker_standalone_test_accs, self.dssgd_models_test_accs)
 		self.performance_dict['standlone_vs_rrdssgd'].append(corrs[0])
@@ -359,7 +367,7 @@ class Federated_Learner:
 			return [evaluate(worker.model, eval_loader, device, verbose=False)[1].tolist() for worker in self.workers]
 
 
-def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fade=1):
+def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fade=0):
 	total = sum(val_accs)
 	for i, (credit, val_acc) in enumerate(zip(credits, val_accs)):
 		credit_epoch = val_acc / total

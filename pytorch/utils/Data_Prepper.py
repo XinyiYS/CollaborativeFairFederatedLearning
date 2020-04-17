@@ -54,7 +54,7 @@ class Data_Prepper:
 		if not batch_size:
 			batch_size = self.train_batch_size
 
-		if split == 'class_imbalance':
+		if split == 'classimbalance':
 			if self.name !='mnist':
 				raise NotImplementedError("Calling on dataset {}. Only dataset mnist is implemnted for this split".format(self.name))
 

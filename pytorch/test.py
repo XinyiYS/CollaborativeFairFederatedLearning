@@ -22,22 +22,23 @@ args = {
 	'dataset': 'adult',
 	'sample_size_cap': 5000,
 	'n_workers': 5,
-	'split': 'powerlaw',
+	'split': 'powerlaw', #classimbalance
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
 	'batch_size' : 16, # use this batch_size
 	'train_val_split_ratio': 0.9,
 
 	# model parameters
 	'model_fn': LogisticRegression,
-	# 'model': LogisticRegression(),
 	'optimizer_fn': optim.SGD,
-	'loss_fn': nn.CrossEntropyLoss(),
-	'lr': 0.0001, # use this lr
+	'loss_fn': nn.CrossEntropyLoss(), 
+	'lr': 0.001, # use this lr
 
 	# training parameters
 	'pretrain_epochs': 5,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
+	'aggregate_mode':'credit-sum',  # 'mean', 'sum'
+
 }
 
 
@@ -82,11 +83,11 @@ def run_experiments(args, repeat=1):
 if __name__ == '__main__':
 	# init steps
 	
-	n_workers, sample_size_cap, fl_epochs = [5, 2000, 5]
+	n_workers, sample_size_cap, fl_epochs = [5, 2000, 100]
 	theta = 0.1
 	args['n_workers'] = n_workers
 	args['sample_size_cap'] = sample_size_cap
 	args['fl_epochs'] = fl_epochs
 	args['theta'] = theta
 
-	run_experiments(args, 4)
+	run_experiments(args, 3)
