@@ -80,7 +80,7 @@ _However, we note that, in such cases, it seems that the parties are no longer h
 ## No pretrain 
 ### Adult
 
-1. [x] - conduct no pretrain for 40 communication rounds - COMPLETE
+1. [x] - conduct no pretrain for 40 communication rounds - __COMPLETE__
 
 #### Results:
 	|         |   Distriubted |     CFFL |   Contributions_V_final |
@@ -99,7 +99,7 @@ _However, we note that, in such cases, it seems that the parties are no longer h
 
 
 
-2. [x] - conduct no pretrain for full 100 communication rounds - COMPLETE
+2. [x] - conduct no pretrain for full 100 communication rounds - __COMPLETE__
 
 #### Results:
 	|         |   Distriubted |     CFFL |   Contributions_V_final |
@@ -115,3 +115,15 @@ _However, we note that, in such cases, it seems that the parties are no longer h
 	| Distributed |    81.108 |    81.561 |    80.505 |    75.029 |   80.74  |   80.886 |
 	| Standalone  |    80.719 |    80.642 |    80.342 |    80.261 |   80.449 |   80.612 |
 	| CFFL        |    81.442 |    81.335 |    81.455 |    81.395 |   80.642 |   80.877 |
+
+## Learning-hijack problem
+When multiple parties with data of different qualities collaborate, for example in the case of MNIST in the imbalanced class setting. We observe a phenomenon we are naming the _learning-hijack problem_, where because the low-contribution parties' updates carry the same degree of weight in the server's aggregation logic, the convergence curve even for the high-contribution parties become 'hijacked' and its model converges to low performance. We do note that it is _not_ necessarily the case that this problem cause all models to converge to the standalone models of the low-contribution parties, but rather it simply causes the model performance to deteriorate, due to a large proportion of 'bad' gradient updates being aggregated by the server. This is supported by several observations in which the conditions can lead to such problem:
+	- With more parties 
+	- With higher learning rate
+	- With smaller batch sizes
+	- With higher local training epochs during the collaborative learning process
+	- With smaller theta
+
+	The first four causes can be all translated to the same effect, that is the magnitude of the aggregated gradient update by the server increases and becomes too large. The last cause of smaller theta is due to the design of our algorithm. In the extreme case of theta=1.0, the server evaluates the parties' contribution individually because it can recover the parties' model entirely (by keeping track of their updates each round and the initial model parameters). As a result, the learning-hijack problem is mitigated. On the other hand, when theta is smalle such as theta=0.1, the server has to aggregate all the updates and evaluate these updates together, and it then leads to the same effect of the aggregated gradient update has too large magnitude.
+
+The observeations are obtained from the experimental results on MNIST dataset with various settings. We include the diagrams and settings here. SEE: mnist/lr01\_various
