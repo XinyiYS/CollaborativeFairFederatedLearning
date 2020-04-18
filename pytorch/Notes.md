@@ -1,7 +1,7 @@
 
 ## Credit Sum  (credit weighted sum)
 ### Adult
-1. [x] -  run credit-sum for the 500 perparty setting to see if it can reach better fairness - COMPLETE
+1. [x] -  run credit-sum for the 500 perparty setting to see if it can reach better fairness - __COMPLETE__
 
 #### Results:
 	 |         |   Distriubted |     CFFL |   Contributions_V_final |
@@ -19,7 +19,7 @@
 	 | CFFL        |    80.227 |    80.449 |    80.594 |    80.556 |   79.884 |   80.355 |
 
 
-2. [x] - run credit-sum for lr=0.001 setting to see if it corrects for the instability - COMPLETE
+2. [x] - run credit-sum for lr=0.001 setting to see if it corrects for the instability - __COMPLETE__
 
 #### Results:
 	|         |   Distriubted |     CFFL |   Contributions_V_final |
@@ -37,12 +37,13 @@
 	| CFFL        |    81.514 |    81.425 |    81.608 |    81.532 |   81.074 |   81.253 |
 
 ### MNIST
-1. [ ] -  compare with the MNIST credit-sum results to show that it will not be dominated by the least reputable - RUNNING
+1. [ ] -  compare with the MNIST credit-sum results to show that it will not be dominated by the least reputable - __RUNNING__
 _Motivation_: though in the upload == 1 cases the performance of the best worker does not suffer, it is highly insecure and not private, so we would want to achieve where the upload is much less and still maintain a high performance
 
-2. [ ] -  run a case with larger party number on MNIST and credit-sum - RUNNING
-2.1 P10 theta = [0.1, 0.2, 0.4]
-2.2 P10 theta = [0.6, 0.8, 1.0]
+2. [ ] -  run a case with larger party number on MNIST and credit-sum - __RUNNING__
+
+	2.1 P10 theta = [0.1, 0.2, 0.4]  __RUNNING__
+	2.2 P10 theta = [0.6, 0.8, 1.0]  __RUNNING__
 
 3. [x] - Compare MNIST P5, thetas = [0.1, 1] setting between using _direct sum_ VS _credit sum_:
 
@@ -74,7 +75,8 @@ _Using credit sum for update aggregation can well mitigate the issue of the most
 _However, we note that, in such cases, it seems that the parties are no longer helping each other achieving better performance, we believe it could be caused by the selection of the punishment factor (alpha parameter in the sinh function) and it might need to be decresed in the settings where the contributions of the parties are already very well distinguishable so that a large punishment factor would isolate low-contribution party too early from the collaboration preventing them to learn and helping others learn._
 
 
-4. [ ] - Run MNIST P5 with smaller alpha to allow low-contribution parties to learn, and yet not hijacking the entire training process.
+4. [ ] - Run MNIST P5 with smaller alpha to allow low-contribution parties to learn, and yet not hijacking the entire training process. __PENDING__
+
 ## No pretrain 
 ### Adult
 
