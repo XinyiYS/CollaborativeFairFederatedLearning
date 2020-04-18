@@ -5,8 +5,7 @@ import pandas as pd
 import ast
 import numpy as np
 
-from plot import plot, plot_one
-from read_convergence import plot_convergence, plot_convergence_for_one, parse, get_best_cffl_worker
+from read_convergence import plot_convergence, parse, get_best_cffl_worker
 
 fairness_keys = [
 		'standlone_vs_rrdssgd_mean',
@@ -37,12 +36,6 @@ def collect_and_compile_performance(dirname):
 
 			best_workerId, performance_dict = get_best_cffl_worker(dirname, folder)
 			p_data_row = ['P' + str(n_workers) + '_' + str(theta)] + [performance_dict[p_key][best_workerId] for p_key in performance_keys]
-			# if n_workers == 20:
-			# 	print(folder)
-			# 	print(p_data_row)
-			# 	print(best_workerId)
-			# 	[print(key, value) for key, value in performance_dict.items()]
-				
 
 			fairness_rows.append(f_data_row)
 			performance_rows.append(p_data_row)
@@ -53,7 +46,7 @@ def collect_and_compile_performance(dirname):
 	shorthand_f_keys = ['Distriubted', 'CFFL' ,'Contributions_V_final']
 	fair_df = pd.DataFrame(fairness_rows, columns=[' '] + shorthand_f_keys).set_index(' ')
 	fair_df = fair_df.sort_values(' ')
-	print(fair_df.to_string())
+	print(fair_df.to_markdown())
 	
 	fair_df.to_csv( os.path.join(dirname, 'fairness.csv'))
 
@@ -61,7 +54,7 @@ def collect_and_compile_performance(dirname):
 	pd.options.display.float_format = '{:,.2f}'.format
 	perf_df = pd.DataFrame(performance_rows, columns=[' '] + shorthand_p_keys).set_index(' ').T
 	perf_df = perf_df[sorted(perf_df.columns)]
-	print(perf_df.to_string())
+	print(perf_df.to_markdown())
 	perf_df.to_csv( os.path.join(dirname, 'performance.csv'))
 
 	return fair_df, perf_df
@@ -81,9 +74,11 @@ def collate_pngs(dirname):
 		subdir = os.path.join(dirname, directory)
 		setup = parse(directory)
 
+
 		# convert figure.png to
 		# adult_LR_p5e100_cffl_localepoch5_localbatch16_lr0001_upload1
-		figure_name = 'adult_LR_p{}e{}_cffl_localepoch{}_localbatch{}_lr{}_upload{}.png'.format(
+		figure_name = '{}_{}_p{}e{}_cffl_localepoch{}_localbatch{}_lr{}_upload{}.png'.format(
+			setup['name'],  setup['model'],
 			setup['P'], setup['Communication Rounds'],
 			setup['E'], setup['B'],
 			str(setup['lr']).replace('.', ''),
@@ -92,14 +87,17 @@ def collate_pngs(dirname):
 
 		# convert standalone.png to
 		# adult_LR_p5e100_standalone
-		standalone_name = 'adult_LR_p{}e{}_standalone.png'.format(
+		standalone_name = '{}_{}_p{}e{}_standalone.png'.format(
+			setup['name'],  setup['model'],
 			setup['P'], setup['Communication Rounds'])
 		shutil.copy(os.path.join(subdir,'standlone.png'),   os.path.join(figures_dir, standalone_name) )
 
 		# convert convergence_for_one.png to
 		# adult_LR_p5e100_upload1_convergence
-		convergence_name = 'adult_LR_p{}e{}_upload{}_convergence.png'.format(setup['P'], setup['Communication Rounds'],
-																		 str(setup['theta']).replace('.', '').rstrip('0'))
+		convergence_name = '{}_{}_p{}e{}_upload{}_convergence.png'.format(
+			setup['name'], setup['model'],
+			setup['P'], setup['Communication Rounds'],
+			str(setup['theta']).replace('.', '').rstrip('0'))
 		shutil.copy(os.path.join(subdir,'convergence_for_one.png'),   os.path.join(figures_dir, convergence_name) )
 	return
 
@@ -108,7 +106,6 @@ def collate_pngs(dirname):
 def run_all(dirname):
 	print('Running performance scripts for {}'.format(dirname))
 	experiment_results = plot_convergence(dirname)
-	plot_convergence_for_one(dirname)
 	collate_pngs(dirname)
 	fair_df, perf_df = collect_and_compile_performance(dirname)
 	print()
@@ -124,11 +121,11 @@ if __name__ == '__main__':
 
 	TEST = True
 	if TEST:
-		dirname = 'logs/nopretrain'
+		dirname = 'logs/mnist/credit_sum'
 		experiment_results = plot_convergence(dirname)
-		plot_convergence_for_one(dirname)
 		collate_pngs(dirname)
 		fair_df, perf_df = collect_and_compile_performance(dirname)
 	else:
-		for dirname in ['logs/500perparty', 'logs/1000perparty', 'logs/1000perpartylr0001']:
-			run_all(dirname)
+		dirname = 'logs/adult'
+		for folder in ['500perparty', 'full_lr0001', 'full_lr00001', 'nopretrain-40', 'nopretrain-100']:
+			run_all(os.path.join(dirname, folder))
