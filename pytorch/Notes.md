@@ -1,4 +1,15 @@
 
+## Dataset dropped na
+
+1. [ ] - run the full-suite experiment on dataset with nan dropped for Adult - __PENDING__
+See if we can avoid dropping performance at the end of the communication round.
+- 500 perparty (lr0001)
+- 1000* perparty (lr0001, lr00001)
+- sum OR credit-sum
+
+
+
+
 ## Credit Sum  (credit weighted sum)
 ### Adult
 1. [x] -  run credit-sum for the 500 perparty setting to see if it can reach better fairness - __COMPLETE__
