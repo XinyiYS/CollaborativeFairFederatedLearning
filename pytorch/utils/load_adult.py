@@ -55,9 +55,10 @@ def get_train_test(train_dir='datasets/adult.data', test_dir='datasets/adult.tes
 
 	original = pd.concat([original_train, original_test])
 
+	original = orinal.dropna()
+
 	original['Target'] = original['Target'].replace('<=50K', 0).replace('>50K', 1)
 	original['Target'] = original['Target'].replace('<=50K.', 0).replace('>50K.', 1)
-
 
 	# create equal number of positive nad negative cases
 	positives = original[original['Target']==1]
@@ -84,5 +85,5 @@ if __name__ =='__main__':
 	import os
 	dirname = os.path.dirname(__file__)
 	print(dirname)
-	train_data, train_labels, test_data, test_labels = get_train_test()
+	train_data, train_labels, test_data, test_labels = get_train_test('../datasets/adult.data', '../datasets/adult.test')
 
