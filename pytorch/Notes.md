@@ -42,6 +42,34 @@ _Motivation_: though in the upload == 1 cases the performance of the best worker
 2.1 P10 theta = [0.1, 0.2, 0.4]
 2.2 P10 theta = [0.6, 0.8, 1.0]
 
+3. [x] - Compare MNIST P5, thetas = [0.1, 1] setting between using _direct sum_ VS _credit sum_:
+	Results:
+
+	Direct sum:
+	        Distriubted      CFFL  Contributions_V_final
+	                                                    
+	P5_0.1     0.033637       NaN                    NaN
+	P5_1.0          NaN  0.999385                    NaN
+	             P5_0.1  P5_1.0
+	Distributed   85.59   55.28
+	Standalone    86.72   86.74
+	CFFL          25.41   87.96
+
+	Credit sum:
+	        Distriubted      CFFL  Contributions_V_final
+	                                                    
+	P5_0.1    -0.263989  1.000000                    NaN
+	P5_1.0    -0.185295  0.999999                    NaN
+	             P5_0.1  P5_1.0
+	Distributed   55.58   70.91
+	Standalone    86.54   86.57
+	CFFL          86.52   86.59
+_Using credit sum for update aggregation can well mitigate the issue of the most contriubtive party being dominated by another party with the same number of data points, under the setting of theta=0.1. As we can clearly see, under the setting of theta=1, the convergence is what we would expect given different parties have different classes of datapoints since the each party is relatively isolated for its evaluation. But under the setting of theta=0.1, the parties are evaluated together and it causes such learning-hijacking problem._
+
+_However, we note that, in such cases, it seems that the parties are no longer helping each other achieving better performance, we believe it could be caused by the selection of the punishment factor (alpha parameter in the sinh function) and it might need to be decresed in the settings where the contributions of the parties are already very well distinguishable so that a large punishment factor would isolate low-contribution party too early from the collaboration preventing them to learn and helping others learn._
+
+
+4. [ ] - Run MNIST P5 with smaller alpha to allow low-contribution parties to learn, and yet not hijacking the entire training process.
 ## No pretrain 
 ### Adult
 
