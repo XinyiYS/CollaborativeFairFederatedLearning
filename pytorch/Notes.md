@@ -3,36 +3,38 @@
 ### Adult
 1. [x] -  run credit-sum for the 500 perparty setting to see if it can reach better fairness - COMPLETE
 
-	Results:
-	          Distriubted      CFFL  Contributions_V_final
-	                                                      
-	 P10_0.1     0.041625  0.967811               0.842494
-	 P10_1.0    -0.002434  0.970850               0.838971
-	 P20_0.1    -0.213877  0.957852               0.829683
-	 P20_1.0     0.022222  0.960659               0.792706
-	 P5_0.1           NaN  0.978062               0.832128
-	 P5_1.0      0.071142  0.974996               0.784920
-	              P10_0.1  P10_1.0  P20_0.1  P20_1.0  P5_0.1  P5_1.0
-	 Distributed    81.34    81.38    81.78    81.86   80.42   80.94
-	 Standalone     79.97    79.78    80.33    80.26   79.49   79.74
-	 CFFL           80.23    80.45    80.59    80.56   79.88   80.36
- 
+#### Results:
+	 |         |   Distriubted |     CFFL |   Contributions_V_final |
+	 |:--------|--------------:|---------:|------------------------:|
+	 | P10_0.1 |    0.0416253  | 0.967811 |                0.842494 |
+	 | P10_1.0 |   -0.00243359 | 0.97085  |                0.838971 |
+	 | P20_0.1 |   -0.213877   | 0.957852 |                0.829683 |
+	 | P20_1.0 |    0.0222218  | 0.960659 |                0.792706 |
+	 | P5_0.1  |  nan          | 0.978062 |                0.832128 |
+	 | P5_1.0  |    0.0711416  | 0.974996 |                0.78492  |
+	 |             |   P10_0.1 |   P10_1.0 |   P20_0.1 |   P20_1.0 |   P5_0.1 |   P5_1.0 |
+	 |:------------|----------:|----------:|----------:|----------:|---------:|---------:|
+	 | Distributed |    81.343 |    81.378 |    81.784 |    81.857 |   80.423 |   80.937 |
+	 | Standalone  |    79.97  |    79.782 |    80.334 |    80.257 |   79.491 |   79.743 |
+	 | CFFL        |    80.227 |    80.449 |    80.594 |    80.556 |   79.884 |   80.355 |
+
 
 2. [x] - run credit-sum for lr=0.001 setting to see if it corrects for the instability - COMPLETE
 
-	Results:
-	         Distriubted      CFFL  Contributions_V_final
-	                                                     
-	P10_0.1    -0.298843  0.992100               0.774863
-	P10_1.0    -0.071833  0.989802               0.761198
-	P20_0.1     0.513050  0.988957               0.732011
-	P20_1.0     0.513980  0.991257               0.719077
-	P5_0.1     -0.070658  0.986048               0.810387
-	P5_1.0      0.340125  0.994423               0.791185
-	             P10_0.1  P10_1.0  P20_0.1  P20_1.0  P5_0.1  P5_1.0
-	Distributed    80.83    81.09    79.77    81.29   81.29   81.26
-	Standalone     81.29    81.18    81.51    81.42   80.97   81.17
-	CFFL           81.51    81.42    81.61    81.53   81.07   81.25
+#### Results:
+	|         |   Distriubted |     CFFL |   Contributions_V_final |
+	|:--------|--------------:|---------:|------------------------:|
+	| P10_0.1 |    -0.298843  | 0.9921   |                0.774863 |
+	| P10_1.0 |    -0.0718331 | 0.989802 |                0.761198 |
+	| P20_0.1 |     0.51305   | 0.988957 |                0.732011 |
+	| P20_1.0 |     0.51398   | 0.991257 |                0.719077 |
+	| P5_0.1  |    -0.0706579 | 0.986048 |                0.810387 |
+	| P5_1.0  |     0.340125  | 0.994423 |                0.791185 |
+	|             |   P10_0.1 |   P10_1.0 |   P20_0.1 |   P20_1.0 |   P5_0.1 |   P5_1.0 |
+	|:------------|----------:|----------:|----------:|----------:|---------:|---------:|
+	| Distributed |    80.826 |    81.091 |    79.773 |    81.292 |   81.292 |   81.262 |
+	| Standalone  |    81.288 |    81.176 |    81.51  |    81.425 |   80.971 |   81.168 |
+	| CFFL        |    81.514 |    81.425 |    81.608 |    81.532 |   81.074 |   81.253 |
 
 ### MNIST
 1. [ ] -  compare with the MNIST credit-sum results to show that it will not be dominated by the least reputable - RUNNING
@@ -43,27 +45,30 @@ _Motivation_: though in the upload == 1 cases the performance of the best worker
 2.2 P10 theta = [0.6, 0.8, 1.0]
 
 3. [x] - Compare MNIST P5, thetas = [0.1, 1] setting between using _direct sum_ VS _credit sum_:
-	Results:
 
-	Direct sum:
-	        Distriubted      CFFL  Contributions_V_final
-	                                                    
-	P5_0.1     0.033637       NaN                    NaN
-	P5_1.0          NaN  0.999385                    NaN
-	             P5_0.1  P5_1.0
-	Distributed   85.59   55.28
-	Standalone    86.72   86.74
-	CFFL          25.41   87.96
+#### Results:
+##### Direct sum:
+	|        |   Distriubted |       CFFL |   Contributions_V_final |
+	|:-------|--------------:|-----------:|------------------------:|
+	| P5_0.1 |     0.0336366 | nan        |                     nan |
+	| P5_1.0 |   nan         |   0.999385 |                     nan |
+	|             |   P5_0.1 |   P5_1.0 |
+	|:------------|---------:|---------:|
+	| Distributed |   85.59  |   55.278 |
+	| Standalone  |   86.716 |   86.738 |
+	| CFFL        |   25.414 |   87.964 |
 
-	Credit sum:
-	        Distriubted      CFFL  Contributions_V_final
-	                                                    
-	P5_0.1    -0.263989  1.000000                    NaN
-	P5_1.0    -0.185295  0.999999                    NaN
-	             P5_0.1  P5_1.0
-	Distributed   55.58   70.91
-	Standalone    86.54   86.57
-	CFFL          86.52   86.59
+##### Credit sum:
+	|        |   Distriubted |     CFFL |   Contributions_V_final |
+	|:-------|--------------:|---------:|------------------------:|
+	| P5_0.1 |     -0.263989 | 1        |                     nan |
+	| P5_1.0 |     -0.185295 | 0.999999 |                     nan |
+	|             |   P5_0.1 |   P5_1.0 |
+	|:------------|---------:|---------:|
+	| Distributed |   55.58  |   70.914 |
+	| Standalone  |   86.544 |   86.574 |
+	| CFFL        |   86.52  |   86.594 |
+
 _Using credit sum for update aggregation can well mitigate the issue of the most contriubtive party being dominated by another party with the same number of data points, under the setting of theta=0.1. As we can clearly see, under the setting of theta=1, the convergence is what we would expect given different parties have different classes of datapoints since the each party is relatively isolated for its evaluation. But under the setting of theta=0.1, the parties are evaluated together and it causes such learning-hijacking problem._
 
 _However, we note that, in such cases, it seems that the parties are no longer helping each other achieving better performance, we believe it could be caused by the selection of the punishment factor (alpha parameter in the sinh function) and it might need to be decresed in the settings where the contributions of the parties are already very well distinguishable so that a large punishment factor would isolate low-contribution party too early from the collaboration preventing them to learn and helping others learn._
@@ -75,32 +80,36 @@ _However, we note that, in such cases, it seems that the parties are no longer h
 
 1. [x] - conduct no pretrain for 40 communication rounds - COMPLETE
 
-	Results:
-	         Distriubted      CFFL  Contributions_V_final
-	                                                     
-	P10_0.1     0.128158  0.631266               0.386762
-	P10_1.0     0.454375  0.456134               0.194421
-	P20_0.1    -0.419014  0.627031               0.536876
-	P20_1.0    -0.666683  0.772636               0.587413
-	P5_0.1      0.196924  0.605719               0.559240
-	P5_1.0      0.453753  0.382098               0.422874
-	             P10_0.1  P10_1.0  P20_0.1  P20_1.0  P5_0.1  P5_1.0
-	Distributed    81.35    81.46    79.40    78.64   80.89   80.85
-	Standalone     80.75    80.71    80.46    80.33   80.31   80.26
-	CFFL           81.58    81.60    81.38    81.13   80.77   80.86
+#### Results:
+	|         |   Distriubted |     CFFL |   Contributions_V_final |
+	|:--------|--------------:|---------:|------------------------:|
+	| P10_0.1 |      0.128158 | 0.631266 |                0.386762 |
+	| P10_1.0 |      0.454375 | 0.456134 |                0.194421 |
+	| P20_0.1 |     -0.419014 | 0.627031 |                0.536876 |
+	| P20_1.0 |     -0.666683 | 0.772636 |                0.587413 |
+	| P5_0.1  |      0.196924 | 0.605719 |                0.55924  |
+	| P5_1.0  |      0.453753 | 0.382098 |                0.422874 |
+	|             |   P10_0.1 |   P10_1.0 |   P20_0.1 |   P20_1.0 |   P5_0.1 |   P5_1.0 |
+	|:------------|----------:|----------:|----------:|----------:|---------:|---------:|
+	| Distributed |    81.352 |    81.459 |    79.401 |    78.635 |   80.89  |   80.847 |
+	| Standalone  |    80.749 |    80.714 |    80.462 |    80.334 |   80.312 |   80.257 |
+	| CFFL        |    81.583 |    81.6   |    81.382 |    81.134 |   80.774 |   80.855 |
+
+
 
 2. [x] - conduct no pretrain for full 100 communication rounds - COMPLETE
 
-	Results:
-	         Distriubted      CFFL  Contributions_V_final
-	                                                     
-	P10_0.1     0.046518  0.888950               0.651231
-	P10_1.0     0.607076  0.810996               0.628693
-	P20_0.1    -0.051254  0.817794               0.644739
-	P20_1.0    -0.655356  0.851323               0.670486
-	P5_0.1      0.164908  0.746662               0.711852
-	P5_1.0      0.414504  0.900074               0.800510
-	             P10_0.1  P10_1.0  P20_0.1  P20_1.0  P5_0.1  P5_1.0
-	Distributed    81.11    81.56    80.50    75.03   80.74   80.89
-	Standalone     80.72    80.64    80.34    80.26   80.45   80.61
-	CFFL           81.44    81.33    81.45    81.39   80.64   80.88
+#### Results:
+	|         |   Distriubted |     CFFL |   Contributions_V_final |
+	|:--------|--------------:|---------:|------------------------:|
+	| P10_0.1 |     0.0465178 | 0.88895  |                0.651231 |
+	| P10_1.0 |     0.607076  | 0.810996 |                0.628693 |
+	| P20_0.1 |    -0.0512543 | 0.817794 |                0.644739 |
+	| P20_1.0 |    -0.655356  | 0.851323 |                0.670486 |
+	| P5_0.1  |     0.164908  | 0.746662 |                0.711852 |
+	| P5_1.0  |     0.414504  | 0.900074 |                0.80051  |
+	|             |   P10_0.1 |   P10_1.0 |   P20_0.1 |   P20_1.0 |   P5_0.1 |   P5_1.0 |
+	|:------------|----------:|----------:|----------:|----------:|---------:|---------:|
+	| Distributed |    81.108 |    81.561 |    80.505 |    75.029 |   80.74  |   80.886 |
+	| Standalone  |    80.719 |    80.642 |    80.342 |    80.261 |   80.449 |   80.612 |
+	| CFFL        |    81.442 |    81.335 |    81.455 |    81.395 |   80.642 |   80.877 |
