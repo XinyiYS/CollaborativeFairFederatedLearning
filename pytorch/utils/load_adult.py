@@ -27,7 +27,7 @@ def split_and_transform(original, labels, train_test_ratio):
 
 	return train_data, train_labels, test_data, test_labels
 
-def get_train_test(train_dir='datasets/adult.data', test_dir='datasets/adult.test', train_test_ratio=0.8):
+def get_train_test(dataset_dir='datasets/adult.csv', train_dir='datasets/adult.data', test_dir='datasets/adult.test', train_test_ratio=0.8):
 
 	features = ["Age", "Workclass", "fnlwgt", "Education", "Education-Num", "Martial Status",
 			"Occupation", "Relationship", "Race", "Sex", "Capital Gain", "Capital Loss",
@@ -39,6 +39,19 @@ def get_train_test(train_dir='datasets/adult.data', test_dir='datasets/adult.tes
 	# test_dir= 'http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test'
 
 	import os
+	if os.path.isfile(dataset_dir):
+		df = pd.read_csv(dataset_dir)
+
+		positives = df[df['income']==1]
+		negatives = df[df['income']==0][:len(positives)]
+
+		df = pd.concat([positives, negatives])
+		df = df.sample(frac=1).reset_index(drop=True)
+		labels = df['income'].astype('float')
+		del df["income"]
+
+		return split_and_transform(df, labels, train_test_ratio)
+
 	if not os.path.isfile(train_dir):
 		# This will download 3.8M
 		train_dir = 'http://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data'
@@ -85,5 +98,5 @@ if __name__ =='__main__':
 	import os
 	dirname = os.path.dirname(__file__)
 	print(dirname)
-	train_data, train_labels, test_data, test_labels = get_train_test('../datasets/adult.data', '../datasets/adult.test')
-
+	train_data, train_labels, test_data, test_labels = get_train_test(dataset_dir='../datasets/adult.csv', train_dir='../datasets/adult.data', test_dir='../datasets/adult.test')
+	print(train_data.shape, test_data.shape)
