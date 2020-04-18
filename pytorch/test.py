@@ -12,7 +12,7 @@ from utils.Data_Prepper import Data_Prepper
 from utils.Federated_Learner import Federated_Learner
 from utils.models import LogisticRegression, MLP_LogReg, MLP_Net, CNN_Net
 
-use_cuda = True
+use_cuda = False
 
 
 args = {
@@ -32,6 +32,33 @@ args = {
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.CrossEntropyLoss(), 
 	'lr': 0.001, # use this lr
+
+	# training parameters
+	'pretrain_epochs': 5,
+	'fl_epochs': 100,
+	'fl_individual_epochs': 5,
+	'aggregate_mode':'credit-sum',  # 'mean', 'sum'
+
+}
+
+mnist_args = {
+	
+	# system parameters
+	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
+	# setting parameters
+	'dataset': 'mnist',
+	'sample_size_cap': 5000,
+	'n_workers': 5,
+	'split': 'classimbalance', #or 'powerlaw' classimbalance
+	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
+	'batch_size' : 10, 
+	'train_val_split_ratio': 0.9,
+
+	# model parameters
+	'model_fn': MLP_Net,
+	'optimizer_fn': optim.SGD,
+	'loss_fn': nn.NLLLoss(), 
+	'lr': 0.1,
 
 	# training parameters
 	'pretrain_epochs': 5,
@@ -82,7 +109,7 @@ def run_experiments(args, repeat=1):
 
 if __name__ == '__main__':
 	# init steps
-	
+	args = mnist_args
 	n_workers, sample_size_cap, fl_epochs = [5, 2000, 100]
 	theta = 0.1
 	args['n_workers'] = n_workers
