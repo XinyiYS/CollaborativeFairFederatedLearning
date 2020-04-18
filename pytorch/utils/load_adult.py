@@ -55,7 +55,7 @@ def get_train_test(train_dir='datasets/adult.data', test_dir='datasets/adult.tes
 
 	original = pd.concat([original_train, original_test])
 
-	original = orinal.dropna()
+	original = original.dropna()
 
 	original['Target'] = original['Target'].replace('<=50K', 0).replace('>50K', 1)
 	original['Target'] = original['Target'].replace('<=50K.', 0).replace('>50K.', 1)
