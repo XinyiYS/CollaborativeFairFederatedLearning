@@ -3,8 +3,8 @@
 
 1. [x] - run the full-suite experiment on dataset with nan dropped for Adult - __PENDING__
 See if we can avoid dropping performance at the end of the communication round.
-- ~~500 perparty (lr0001)
-- ~~1000* perparty (lr00001) 
+- ~500 perparty (lr0001)
+- ~1000* perparty (lr00001) 
 - 1000* perparty (lr0001) sum __COMPLETE__
 - sum AND credit-sum __COMPLETE__
 
