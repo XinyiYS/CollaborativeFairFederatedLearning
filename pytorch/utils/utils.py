@@ -100,7 +100,6 @@ def evaluate(model, eval_loader, device, loss_fn=nn.CrossEntropyLoss(),verbose=T
 	return loss, accuracy
 
 
-
 def one_on_one_evaluate(workers, federated_model, grad_updates, eval_loader, device):
 
 	val_accs = []
