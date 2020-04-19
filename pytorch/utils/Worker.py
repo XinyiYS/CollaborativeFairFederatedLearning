@@ -32,8 +32,8 @@ class Worker():
         self.optimizer = optimizer
         self.standalone_model = standalone_model
         self.standalone_optimizer = standalone_optimizer
-        self.dssgd_model=dssgd_model
-        self.dssgd_optimizer=dssgd_optimizer
+        self.dssgd_model = dssgd_model
+        self.dssgd_optimizer = dssgd_optimizer
         self.loss_fn = loss_fn
         self.theta = theta
         self.device = device
@@ -60,6 +60,7 @@ class Worker():
             for i, (batch_data, batch_target) in enumerate(self.train_loader):
                 batch_data, batch_target = batch_data.to(
                     self.device), batch_target.to(self.device)
+                
                 self.optimizer.zero_grad()
                 outputs = self.model(batch_data)
                 loss = self.loss_fn(outputs, batch_target)
@@ -68,7 +69,8 @@ class Worker():
                 iter += 1
 
                 # if pretrain, skip the standalone and dssgd
-                if is_pretrain: continue
+                if is_pretrain:
+                    continue
 
                 self.standalone_optimizer.zero_grad()
                 outputs = self.standalone_model(batch_data)

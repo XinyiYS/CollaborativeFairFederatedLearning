@@ -2,17 +2,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-fmt_styles = ['', '--','-.', 'o-', 'v-',
+
+all_party_fmt_styles = ['', '--','-.', 'o-', 'v-',
 			 '^-', '<-','>-', '1-','2-',
 			 '3-','4-','s-','p-','*-',
 			 'h-', 'H-', '+-', 'X-','D-']
 
+best_worker_fmt_styles = ['ro-', 'c.-', 'm<-', 'b<-']
+
+# Add 'b<-' for w/o pretrain
 FONTSIZE = 17
 
-Xlabel_NAMES = ['Epochs', 'Communication Rounds', 'Epochs (Communication Rounds)']
-def plot(df, save_dir=None, name='Adult', plot_type=1, show=False):
+Xlabel_NAMES = ['Communication Rounds', 'Epochs', 'Epochs (Communication Rounds)']
+def plot(df, save_dir=None, name='adult', plot_type=1, show=False):
 	# Data
 	index = np.arange(1, len(df)+1)
+
+
+	fmt_styles = best_worker_fmt_styles if plot_type == 2 else all_party_fmt_styles
 
 	for column, fmt in zip(df.columns, fmt_styles):
 		plt.plot(index, column, fmt, data=df, label=column, )
@@ -27,22 +34,20 @@ def plot(df, save_dir=None, name='Adult', plot_type=1, show=False):
 	
 
 	# reformat the yticks
-	if name =='Adult':
-		locs, labels = plt.yticks()
-		n_ticks = len(locs)
-		y_ticks = np.linspace(locs[0], locs[-1], n_ticks)
-		plt.yticks(np.round(np.array(locs), 2) ,fontsize=14)
-		# plt.ylim(0.6, 1.0)
-		# plt.yticks(np.arange(0.6, 0.90, step=0.05), size=14)
+	if name =='adult':
+		bottom, top = 0.70, 0.85
 	else: # for MNIST
-		locs, labels = plt.yticks()
-		n_ticks = len(locs)
-		y_ticks = np.linspace(locs[0], locs[-1], n_ticks)
-		plt.yticks(np.round(np.array(locs), 2) ,fontsize=14)
-		# plt.ylim(0.6, 1.02)
-		# plt.yticks(np.arange(0.6, 1.02, step=0.05), size=14)
+		# for the classimbalance setting, lowest party has acc ~= 10%
+		bottom, top = 0, 1.0
 
-	plt.title(name, fontsize=FONTSIZE)
+
+	plt.ylim(bottom, top)
+	locs, labels = plt.yticks()
+	n_ticks = len(locs)
+	y_ticks = np.linspace(bottom, top, n_ticks)
+	plt.yticks(np.round(np.array(locs), 2) ,fontsize=14)		
+
+	plt.title(name.capitalize(), fontsize=FONTSIZE)
 	plt.tight_layout()
 
 	if save_dir:
