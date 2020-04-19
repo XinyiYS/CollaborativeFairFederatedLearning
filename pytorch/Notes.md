@@ -3,13 +3,13 @@
 
 1. [x] - run the full-suite experiment on dataset with nan dropped for Adult - __COMPLETE__
 
-See if we can avoid dropping performance at the end of the communication round.
+~~See if we can avoid dropping performance at the end of the communication round.~~
 - ~~500 perparty (lr0001)~~
 - ~~1000* perparty (lr00001)~~ 
 - 1000* perparty (lr0001) sum 
 - sum AND credit-sum
 
-### 1000* perparty (lr0001) sum __COMPLETE__
+### 1000* perparty (lr0001) sum
 #### Results:
 	|         |   Distriubted |     CFFL |   Contributions_V_final |
 	|:--------|--------------:|---------:|------------------------:|
@@ -26,7 +26,7 @@ See if we can avoid dropping performance at the end of the communication round.
 	| CFFL        |    80.972 |    81.022 |    81.097 |    81.035 |   80.807 |   80.651 |
 
 
-### 1000* perparty (lr0001) credit-sum __COMPLETE__
+### 1000* perparty (lr0001) credit-sum
 #### Results:
 	|         |   Distriubted |     CFFL |   Contributions_V_final |
 	|:--------|--------------:|---------:|------------------------:|
@@ -42,6 +42,38 @@ See if we can avoid dropping performance at the end of the communication round.
 	| Standalone  |    80.714 |    80.669 |    80.388 |    80.374 |   80.58  |   80.254 |
 	| CFFL        |    80.772 |    80.758 |    80.419 |    80.375 |   80.722 |   80.402 |
 
+
+### 1000* perparty (lr0001) sum no-pretrain
+#### Results:
+	|         |   Distriubted |     CFFL |   Contributions_V_final |
+	|:--------|--------------:|---------:|------------------------:|
+	| P10_0.1 |   0.276184    | 0.951093 |                0.659389 |
+	| P10_1.0 |   0.161764    | 0.968217 |                0.684205 |
+	| P20_0.1 |  -0.000467303 | 0.639044 |                0.542624 |
+	| P20_1.0 |  -0.107185    | 0.659705 |                0.512569 |
+	| P5_0.1  |  -0.170295    | 0.959823 |                0.873949 |
+	| P5_1.0  |  -0.442646    | 0.928185 |                0.773191 |
+	|             |   P10_0.1 |   P10_1.0 |   P20_0.1 |   P20_1.0 |   P5_0.1 |   P5_1.0 |
+	|:------------|----------:|----------:|----------:|----------:|---------:|---------:|
+	| Distributed |    81.342 |    81.641 |    79.161 |    78.804 |   81.24  |   81.45  |
+	| Standalone  |    80.606 |    80.486 |    80.192 |    80.071 |   80.62  |   80.241 |
+	| CFFL        |    80.972 |    80.95  |    81.133 |    81.035 |   80.932 |   80.66  |
+
+### 1000* perparty (lr0001) credit-sum no-pretrain
+#### Results:
+	|         |   Distriubted |     CFFL |   Contributions_V_final |
+	|:--------|--------------:|---------:|------------------------:|
+	| P10_0.1 |     0.309912  | 0.990409 |                0.787775 |
+	| P10_1.0 |    -0.0813792 | 0.996282 |                0.768822 |
+	| P20_0.1 |    -0.453333  | 0.983986 |                0.834583 |
+	| P20_1.0 |    -0.0555836 | 0.98489  |                0.801629 |
+	| P5_0.1  |     0.235268  | 0.994754 |                0.861884 |
+	| P5_1.0  |    -0.237416  | 0.992427 |                0.828656 |
+	|             |   P10_0.1 |   P10_1.0 |   P20_0.1 |   P20_1.0 |   P5_0.1 |   P5_1.0 |
+	|:------------|----------:|----------:|----------:|----------:|---------:|---------:|
+	| Distributed |    81.187 |    81.575 |    76.802 |    76.213 |   81.209 |   81.392 |
+	| Standalone  |    80.682 |    80.7   |    80.237 |    80.107 |   80.553 |   80.442 |
+	| CFFL        |    80.776 |    80.745 |    80.455 |    80.25  |   80.709 |   80.45  |
 
 ## Credit Sum  (credit weighted sum)
 ### Adult
@@ -80,7 +112,7 @@ See if we can avoid dropping performance at the end of the communication round.
 	| Standalone  |    81.288 |    81.176 |    81.51  |    81.425 |   80.971 |   81.168 |
 	| CFFL        |    81.514 |    81.425 |    81.608 |    81.532 |   81.074 |   81.253 |
 
-### MNIST
+### MNIST imbalanced class numbers setting
 1. [x] -  compare with the MNIST credit-sum results to show that it will not be dominated by the least reputable - __COMPLETE__
 _Motivation_: though in the upload == 1 cases the performance of the best worker does not suffer, it is highly insecure and not private, so we would want to achieve where the upload is much less and still maintain a high performance
 
