@@ -93,7 +93,7 @@ class Federated_Learner:
 			return grad_updates, dssgd_grad_updates
 		else:
 			for worker in self.workers:
-				worker.train(epochs=epochs)
+				worker.train(epochs, is_pretrain=is_pretrain)
 				if test:
 					evaluate(worker.model, self.test_loader, worker.device)
 		return
