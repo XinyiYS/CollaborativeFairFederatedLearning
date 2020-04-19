@@ -11,7 +11,7 @@ def parse(folder):
     setup = {}
     param = folder.split('_')
 
-    setup['name'] = 'Adult'
+    setup['name'] = 'adult'
     if 'MLP_Net' in folder or 'CNN_Net' in folder or 'classimbalance' in folder:
         setup['name'] = 'mnist'
     setup['model'] = param[-1]
@@ -130,6 +130,49 @@ def get_best_cffl_worker(dirname, folder):
     return workerId, performance_dict
 
 
+def save_acc_dfs(dirname, folder, dfs):
+    directory = os.path.join(dirname, folder, 'acc_dfs')
+    try:
+        os.mkdir(directory)
+    except:
+        pass
+    [df.to_csv(os.path.join(directory, csv_name), index=False) for df, csv_name in zip(dfs, ['cffl.csv', 'standalone.csv', 'worker.csv'])]
+    print('saving computed csvs to: ', directory)
+    
+    return
+
+
+def load_acc_dfs(dirname, folder):
+    directory = os.path.join(dirname, folder, 'acc_dfs')
+    try:
+        cffl_df = pd.read_csv(os.path.join(directory, 'cffl.csv'),  index_col=False)
+        standalone_df = pd.read_csv(os.path.join(directory, 'standalone.csv'),  index_col=False)
+        worker_df = pd.read_csv(os.path.join(directory, 'worker.csv'),  index_col=False)
+        return cffl_df, standalone_df, worker_df
+    except:
+        return 
+
+
+def get_acc_lines(dirname, folder):
+
+    setup = parse(folder)
+    n_workers = int(folder.split('_')[1][1:])
+    fl_epochs = int(folder.split('-')[1])
+
+    columns = ['party' + str(i + 1) for i in range(n_workers)]
+
+    with open(os.path.join(dirname, folder, 'log'), 'r') as log:
+        loginfo = log.readlines()
+
+    worker_cffl_accs_lines = [line.replace(
+        'Workers CFFL      accuracies:  ', '') for line in loginfo if 'Workers CFFL      accuracies' in line]
+    worker_standalone_accs_lines = [line.replace(
+        'Workers standlone accuracies:  ', '') for line in loginfo if 'Workers standlone accuracies:  ' in line]
+    worker_dssgd_accs_lines = [line.replace('Workers DSSGD     accuracies:  ', '')
+                               for line in loginfo if 'Workers DSSGD     accuracies:  ' in line]
+
+    return [worker_cffl_accs_lines, worker_standalone_accs_lines ,worker_dssgd_accs_lines] 
+
 def plot_convergence(dirname):
     dfs = []
     setups = []
@@ -139,42 +182,55 @@ def plot_convergence(dirname):
         if os.path.isfile(os.path.join(dirname, folder)) or not 'complete.txt' in os.listdir(os.path.join(dirname, folder)):
             continue
 
-        n_workers = int(folder.split('_')[1][1:])
-        fl_epochs = int(folder.split('-')[1])
         setup = parse(folder)
+        loaded = load_acc_dfs(dirname, folder)
+        if setup['pretrain_epochs'] == 0:
+            continue
 
-        columns = ['party' + str(i + 1) for i in range(n_workers)]
+        if not loaded:
+            n_workers = int(folder.split('_')[1][1:])
+            fl_epochs = int(folder.split('-')[1])
 
-        with open(os.path.join(dirname, folder, 'log'), 'r') as log:
-            loginfo = log.readlines()
+            columns = ['party' + str(i + 1) for i in range(n_workers)]
 
-        worker_cffl_accs_lines = [line.replace(
-            'Workers CFFL      accuracies:  ', '') for line in loginfo if 'Workers CFFL      accuracies' in line]
-        worker_standalone_accs_lines = [line.replace(
-            'Workers standlone accuracies:  ', '') for line in loginfo if 'Workers standlone accuracies:  ' in line]
-        worker_dssgd_accs_lines = [line.replace('Workers DSSGD     accuracies:  ', '')
-                                   for line in loginfo if 'Workers DSSGD     accuracies:  ' in line]
+            with open(os.path.join(dirname, folder, 'log'), 'r') as log:
+                loginfo = log.readlines()
 
-        averaged_cffl_accs = get_averaged_results(
-            worker_cffl_accs_lines, fl_epochs)
-        averaged_standalone_accs = get_averaged_results(
-            worker_standalone_accs_lines, fl_epochs)
+            worker_cffl_accs_lines = [line.replace(
+                'Workers CFFL      accuracies:  ', '') for line in loginfo if 'Workers CFFL      accuracies' in line]
+            worker_standalone_accs_lines = [line.replace(
+                'Workers standlone accuracies:  ', '') for line in loginfo if 'Workers standlone accuracies:  ' in line]
+            worker_dssgd_accs_lines = [line.replace('Workers DSSGD     accuracies:  ', '')
+                                       for line in loginfo if 'Workers DSSGD     accuracies:  ' in line]
 
-        cffl_df = pd.DataFrame(averaged_cffl_accs, columns=columns)
-        standalone_df = pd.DataFrame(averaged_standalone_accs, columns=columns)
+            averaged_cffl_accs = get_averaged_results(
+                worker_cffl_accs_lines, fl_epochs)
+            averaged_standalone_accs = get_averaged_results(
+                worker_standalone_accs_lines, fl_epochs)
+
+            cffl_df = pd.DataFrame(averaged_cffl_accs, columns=columns)
+            standalone_df = pd.DataFrame(averaged_standalone_accs, columns=columns)
+
+            best_workerId, _ = get_best_cffl_worker(dirname, folder)
+
+            averaged_worker_accs = get_averaged_results_by_workerId(zip(
+                worker_standalone_accs_lines, worker_dssgd_accs_lines, worker_cffl_accs_lines), fl_epochs, best_workerId)
+            worker_df = pd.DataFrame(averaged_worker_accs, columns=[
+                                     'Standlone', 'Distributed', 'CFFL (w pretrain)'])
+        
+            # save_acc_dfs(dirname, folder, [cffl_df, standalone_df, worker_df])
+
+        else:
+            cffl_df, standalone_df, worker_df = loaded
 
         cffl_figure_dir = os.path.join(dirname, folder, 'figure.png')
         standlone_figure_dir = os.path.join(dirname, folder, 'standlone.png')
+        worker_figure_dir = os.path.join(dirname, folder, 'convergence_for_one.png')
 
+        worker_acc_without_pretraining = find_without_pretraining(dirname, folder, fl_epochs, best_workerId)
+        worker_df['CFFL (w/o pretrain)'] = worker_acc_without_pretraining
 
-        best_workerId, _ = get_best_cffl_worker(dirname, folder)
-
-        averaged_worker_accs = get_averaged_results_by_workerId(zip(
-            worker_standalone_accs_lines, worker_dssgd_accs_lines, worker_cffl_accs_lines), fl_epochs, best_workerId)
-        worker_df = pd.DataFrame(averaged_worker_accs, columns=[
-                                 'Standlone', 'Distributed', 'CFFL'])
-        worker_figure_dir = os.path.join(
-            dirname, folder, 'convergence_for_one.png')
+        diffs = worker_df['CFFL (w/o pretrain)'] - worker_df['CFFL (w pretrain)']
 
         if os.path.exists(cffl_figure_dir):
             os.remove(cffl_figure_dir)
@@ -190,6 +246,17 @@ def plot_convergence(dirname):
 
     return
 
+
+def find_without_pretraining(dirname, folder, fl_epochs, best_workerId):
+
+    setup = parse(folder)
+    pretrain_epochs = setup['pretrain_epochs']
+
+    nopretrain_folder = folder.replace('_e{}-'.format(str(pretrain_epochs)), '_e0-')
+
+    worker_cffl_accs_lines, _ , __= get_acc_lines(dirname, nopretrain_folder)
+    averaged_worker_accs = get_averaged_results_by_workerId( zip(worker_cffl_accs_lines), fl_epochs, best_workerId)
+    return  averaged_worker_accs
 
 if __name__ == '__main__':
     dirname = 'logs'
