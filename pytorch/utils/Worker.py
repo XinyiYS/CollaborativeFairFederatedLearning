@@ -45,7 +45,7 @@ class Worker():
         self.train_loader = DataLoader(
             dataset=self.dataset, batch_size=batch_size, shuffle=True)
 
-    def train(self, epochs):
+    def train(self, epochs, is_pretrain=False):
         iter = 0
         self.model.train()
         self.model = self.model.to(self.device)
@@ -66,6 +66,9 @@ class Worker():
                 loss.backward()
                 self.optimizer.step()
                 iter += 1
+
+                # if pretrain, skip the standalone and dssgd
+                if is_pretrain: continue
 
                 self.standalone_optimizer.zero_grad()
                 outputs = self.standalone_model(batch_data)

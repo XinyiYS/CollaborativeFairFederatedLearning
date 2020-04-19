@@ -67,7 +67,7 @@ class Federated_Learner:
 			self.workers.append(worker)
 		return
 
-	def train_locally(self, epochs, requires_update=False, test=False):
+	def train_locally(self, epochs, requires_update=False, test=False, is_pretrain=False):
 		# requires grad_updates
 		if requires_update:
 			grad_updates = []
@@ -76,7 +76,7 @@ class Federated_Learner:
 			for worker in self.workers:
 				model_before = copy.deepcopy(worker.model)
 				dssgd_model_before = copy.deepcopy(worker.dssgd_model)
-				worker.train(epochs)
+				worker.train(epochs, is_pretrain=is_pretrain)
 				model_after = copy.deepcopy(worker.model)
 				dssgd_model_after = copy.deepcopy(worker.dssgd_model)
 
@@ -114,7 +114,7 @@ class Federated_Learner:
 		self.performance_dict['shard_sizes'] = self.shard_sizes
 
 		print("Start local pretraining ")
-		self.train_locally(self.args['pretrain_epochs'])
+		self.train_locally(self.args['pretrain_epochs'], is_pretrain=True)
 		self.worker_model_test_accs_before = self.evaluate_workers_performance(self.test_loader)
 		self.performance_dict['worker_model_test_accs_before'] = self.worker_model_test_accs_before
 
@@ -168,7 +168,7 @@ class Federated_Learner:
 			decay = 1
 			credit_threshold *= 1. / torch.sum(credits > credit_threshold) * (2. / 3.)
 			# credits = compute_credits(credits, federated_val_acc, loo_val_accs, credit_threshold=credit_threshold)
-			credits = compute_credits_sinh(credits, worker_val_accs, credit_threshold=credit_threshold, alpha=5,)			
+			credits = compute_credits_sinh(credits, worker_val_accs, credit_threshold=credit_threshold, alpha=3,)			
 			print("Computed and normalized credits: ", credits.tolist())
 
 
