@@ -1,13 +1,45 @@
 
-## Dataset dropped na
+## Adult dataset dropna alpha=3
 
-1. [ ] - run the full-suite experiment on dataset with nan dropped for Adult - __PENDING__
+1. [x] - run the full-suite experiment on dataset with nan dropped for Adult - __PENDING__
 See if we can avoid dropping performance at the end of the communication round.
-- 500 perparty (lr0001)
-- 1000* perparty (lr0001, lr00001)
-- sum OR credit-sum
+- ~~500 perparty (lr0001)
+- ~~1000* perparty (lr00001) 
+- 1000* perparty (lr0001) sum __COMPLETE__
+- sum AND credit-sum __COMPLETE__
+
+### 1000* perparty (lr0001) sum __COMPLETE__
+#### Results:
+	|         |   Distriubted |     CFFL |   Contributions_V_final |
+	|:--------|--------------:|---------:|------------------------:|
+	| P10_0.1 |     0.147111  | 0.962562 |                0.694697 |
+	| P10_1.0 |     0.03495   | 0.965558 |                0.622293 |
+	| P20_0.1 |     0.0355479 | 0.699946 |                0.585948 |
+	| P20_1.0 |     0.170343  | 0.668903 |                0.564976 |
+	| P5_0.1  |     0.0232225 | 0.968605 |                0.862541 |
+	| P5_1.0  |    -0.292087  | 0.940189 |                0.793836 |
+	|             |   P10_0.1 |   P10_1.0 |   P20_0.1 |   P20_1.0 |   P5_0.1 |   P5_1.0 |
+	|:------------|----------:|----------:|----------:|----------:|---------:|---------:|
+	| Distributed |    81.24  |    81.637 |    80.379 |    80.04  |   81.289 |   81.445 |
+	| Standalone  |    80.642 |    80.638 |    80.111 |    80.116 |   80.575 |   80.335 |
+	| CFFL        |    80.972 |    81.022 |    81.097 |    81.035 |   80.807 |   80.651 |
 
 
+### 1000* perparty (lr0001) credit-sum __COMPLETE__
+#### Results:
+	|         |   Distriubted |     CFFL |   Contributions_V_final |
+	|:--------|--------------:|---------:|------------------------:|
+	| P10_0.1 |    0.273895   | 0.995806 |                0.781912 |
+	| P10_1.0 |    0.00769279 | 0.99435  |                0.777496 |
+	| P20_0.1 |    0.196581   | 0.988598 |                0.821339 |
+	| P20_1.0 |    0.178977   | 0.984783 |                0.82752  |
+	| P5_0.1  |    0.148757   | 0.994454 |                0.857914 |
+	| P5_1.0  |   -0.110997   | 0.993622 |                0.827973 |
+	|             |   P10_0.1 |   P10_1.0 |   P20_0.1 |   P20_1.0 |   P5_0.1 |   P5_1.0 |
+	|:------------|----------:|----------:|----------:|----------:|---------:|---------:|
+	| Distributed |    81.191 |    81.637 |    80.781 |    81.213 |   81.258 |   81.428 |
+	| Standalone  |    80.714 |    80.669 |    80.388 |    80.374 |   80.58  |   80.254 |
+	| CFFL        |    80.772 |    80.758 |    80.419 |    80.375 |   80.722 |   80.402 |
 
 
 ## Credit Sum  (credit weighted sum)
@@ -48,13 +80,31 @@ See if we can avoid dropping performance at the end of the communication round.
 	| CFFL        |    81.514 |    81.425 |    81.608 |    81.532 |   81.074 |   81.253 |
 
 ### MNIST
-1. [ ] -  compare with the MNIST credit-sum results to show that it will not be dominated by the least reputable - __RUNNING__
+1. [x] -  compare with the MNIST credit-sum results to show that it will not be dominated by the least reputable - __COMPLETE__
 _Motivation_: though in the upload == 1 cases the performance of the best worker does not suffer, it is highly insecure and not private, so we would want to achieve where the upload is much less and still maintain a high performance
 
-2. [ ] -  run a case with larger party number on MNIST and credit-sum - __RUNNING__
+2. [x] - run a case with larger party number on MNIST and credit-sum - __COMPLETE__
 
-	2.1 P10 theta = [0.1, 0.2, 0.4]  __RUNNING__
-	2.2 P10 theta = [0.6, 0.8, 1.0]  __RUNNING__
+- P5 theta =[0.1, 1.0] 
+- P10 theta = [0.1, 0.2, 0.4, 0.6, 0.8, 1.0] 
+
+#### Resuts:
+	|         |   Distriubted |     CFFL |   Contributions_V_final |
+	|:--------|--------------:|---------:|------------------------:|
+	| P10_0.1 |   nan         | 0.999999 |                     nan |
+	| P10_0.2 |   nan         | 0.999998 |                     nan |
+	| P10_0.4 |     0.0814127 | 0.999999 |                     nan |
+	| P10_0.6 |    -0.139876  | 0.999999 |                     nan |
+	| P10_0.8 |     0.200977  | 0.999999 |                     nan |
+	| P10_1.0 |     0.126151  | 0.999999 |                     nan |
+	| P5_0.1  |    -0.263989  | 1        |                     nan |
+	| P5_1.0  |    -0.185295  | 0.999999 |                     nan |
+	|             |   P10_0.1 |   P10_0.2 |   P10_0.4 |   P10_0.6 |   P10_0.8 |   P10_1.0 |   P5_0.1 |   P5_1.0 |
+	|:------------|----------:|----------:|----------:|----------:|----------:|----------:|---------:|---------:|
+	| Distributed |    10.038 |    10.274 |    10.09  |    10.318 |    10.228 |    10.376 |   55.58  |   70.914 |
+	| Standalone  |    85.83  |    85.79  |    85.636 |    85.638 |    85.696 |    85.494 |   86.544 |   86.574 |
+	| CFFL        |    85.914 |    85.882 |    85.692 |    85.734 |    85.778 |    85.644 |   86.52  |   86.594 |
+
 
 3. [x] - Compare MNIST P5, thetas = [0.1, 1] setting between using _direct sum_ VS _credit sum_:
 
