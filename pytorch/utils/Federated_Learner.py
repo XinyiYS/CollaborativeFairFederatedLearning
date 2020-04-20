@@ -166,9 +166,12 @@ class Federated_Learner:
 
 			# 3.2 compute credits
 			decay = 1
-			credit_threshold *= 1. / torch.sum(credits > credit_threshold) * (2. / 3.)
+			credit_threshold = torch.div(1.0, (torch.sum(credits > credit_threshold) - 1) ) * (1./ self.n_workers) 
+			credit_threshold = min(torch.tensor(1), credit_threshold) # to avoid NaN when only one player in C
+			print("New credit threshold is : ", credit_threshold.item())
+
 			# credits = compute_credits(credits, federated_val_acc, loo_val_accs, credit_threshold=credit_threshold)
-			credits = compute_credits_sinh(credits, worker_val_accs, credit_threshold=credit_threshold, alpha=3,)			
+			credits = compute_credits_sinh(credits, worker_val_accs, credit_threshold=credit_threshold, alpha=self.args['alpha'],)			
 			print("Computed and normalized credits: ", credits.tolist())
 
 
@@ -208,6 +211,10 @@ class Federated_Learner:
 		"""
 
 		for i, (credit, worker, worker_update) in enumerate( zip(credits, self.workers, grad_updates)):
+			if credit == 0: 
+				# skipping the non contributing parties
+				continue
+
 			agg_grad_update = copy.deepcopy(aggregated_gradient_updates)
 			num_param_downloads = int(credit * worker.param_count)
 
@@ -368,6 +375,7 @@ class Federated_Learner:
 
 
 def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fade=0):
+	print('alpha used is :', alpha, ' current credits are : ', credits, ' current threshold: ', credit_threshold)
 	total = sum(val_accs)
 	for i, (credit, val_acc) in enumerate(zip(credits, val_accs)):
 		credit_epoch = val_acc / total
