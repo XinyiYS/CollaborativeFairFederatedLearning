@@ -227,10 +227,13 @@ def plot_convergence(dirname):
         standlone_figure_dir = os.path.join(dirname, folder, 'standlone.png')
         worker_figure_dir = os.path.join(dirname, folder, 'convergence_for_one.png')
 
-        worker_acc_without_pretraining = find_without_pretraining(dirname, folder, fl_epochs, best_workerId)
-        worker_df['CFFL (w/o pretrain)'] = worker_acc_without_pretraining
+        try:
+            worker_acc_without_pretraining = find_without_pretraining(dirname, folder, fl_epochs, best_workerId)
+            worker_df['CFFL (w/o pretrain)'] = worker_acc_without_pretraining
+        except:
+            #  no corresponding w/o pretrain experimental results
+            pass
 
-        diffs = worker_df['CFFL (w/o pretrain)'] - worker_df['CFFL (w pretrain)']
 
         if os.path.exists(cffl_figure_dir):
             os.remove(cffl_figure_dir)
