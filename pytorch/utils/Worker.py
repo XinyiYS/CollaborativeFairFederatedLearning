@@ -63,6 +63,9 @@ class Worker():
 				self.optimizer.step()
 				iter += len(batch_data)
 
+				if iter >= self.epoch_sample_size:
+					break
+
 				# if pretrain, skip the standalone and dssgd
 				if is_pretrain:
 					continue
@@ -81,6 +84,5 @@ class Worker():
 
 
 
-				if iter >= self.epoch_sample_size:
-					break
+
 
