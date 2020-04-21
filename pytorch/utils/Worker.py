@@ -42,7 +42,6 @@ class Worker():
 		self.param_count = sum([p.numel() for p in self.model.parameters()])
 
 	def train(self, epochs, is_pretrain=False):
-		iter = 0
 		self.model.train()
 		self.model = self.model.to(self.device)
 
@@ -52,6 +51,7 @@ class Worker():
 		self.dssgd_model.train()
 		self.dssgd_model = self.dssgd_model.to(self.device)
 		for epoch in range(int(epochs)):
+			iter = 0
 			for i, (batch_data, batch_target) in enumerate(self.train_loader):
 				batch_data, batch_target = batch_data.to(
 					self.device), batch_target.to(self.device)
@@ -61,7 +61,7 @@ class Worker():
 				loss = self.loss_fn(outputs, batch_target)
 				loss.backward()
 				self.optimizer.step()
-				iter += 1
+				iter += len(batch_data)
 
 				# if pretrain, skip the standalone and dssgd
 				if is_pretrain:
@@ -81,7 +81,6 @@ class Worker():
 
 
 
-				if iter == self.epoch_sample_size:
-					print(self.id, iter, end='  ')
+				if iter >= self.epoch_sample_size:
 					break
 

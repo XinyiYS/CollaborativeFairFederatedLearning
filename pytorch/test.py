@@ -12,7 +12,7 @@ from utils.Data_Prepper import Data_Prepper
 from utils.Federated_Learner import Federated_Learner
 from utils.models import LogisticRegression, MLP_LogReg, MLP_Net, CNN_Net, RNN
 
-use_cuda = True
+use_cuda = False
 args = {
 	# system parameters
 	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
@@ -80,7 +80,7 @@ names_args = {
 	'n_workers': 5,
 	'split': 'powerlaw', #or 'powerlaw' classimbalance
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size' : 16, 
+	'batch_size' : 1, 
 	'train_val_split_ratio': 0.9,
 	'alpha': 5,
 	'epoch_sample_size':10,
@@ -140,7 +140,7 @@ if __name__ == '__main__':
 	# init steps
 	# args = mnist_args
 	args = names_args
-	n_workers, sample_size_cap, fl_epochs = [5, 1000, 100]
+	n_workers, sample_size_cap, fl_epochs = [5, 5000, 100]
 	theta = 1
 	args['n_workers'] = n_workers
 	args['sample_size_cap'] = sample_size_cap
