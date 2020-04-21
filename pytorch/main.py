@@ -17,7 +17,7 @@ def run_experiments(args, repeat=5):
 	# init steps
 	logs_dir = 'logs'
 	model_name = str(args['model_fn']).split('.')[-1][:-2]
-	subdir = "{}_p{}_e{}-{}-{}_b{}_size{}_lr{}_theta{}_{}runs_{}_{}".format(args['split'],args['n_workers'], 
+	subdir = "{}_p{}_e{}-{}-{}_b{}_size{}_lr{}_theta{}_{}runs_{}_{}".format(args['dataset']+'@'+args['split'],args['n_workers'], 
 							args['pretrain_epochs'], args['fl_epochs'], args['fl_individual_epochs'],
 							args['batch_size'], args['sample_size_cap'], args['lr'], args['theta'],
 							str(repeat), args['aggregate_mode'], model_name,
@@ -79,102 +79,20 @@ def run_experiments(args, repeat=5):
 
 
 
-use_cuda = True
-'''
-args = {
-	# system parameters
-	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
-	# setting parameters
-	'dataset': 'adult',
-	'sample_size_cap': 5000,
-	'n_workers': 5,
-	'split': 'powerlaw', #classimbalance
-	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size' : 16, # use this batch_size
-	'train_val_split_ratio': 0.9,
-
-	# model parameters
-	'model_fn': LogisticRegression,
-	# 'model': LogisticRegression(),
-	'optimizer_fn': optim.SGD,
-	'loss_fn': nn.CrossEntropyLoss(), # CrossEntropyLoss(), NLLLoss()
-	'lr': 0.0001, # use this lr
-
-	# training parameters
-	'pretrain_epochs': 5,
-	'fl_epochs': 100,
-	'fl_individual_epochs': 5,
-	'aggregate_mode':'sum',  # 'mean', 'sum'
-}
-'''
-
-adult_args = {
-	# system parameters
-	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
-	# setting parameters
-	'dataset': 'adult',
-	'sample_size_cap': 5000,
-	'n_workers': 5,
-	'split': 'powerlaw', #classimbalance
-	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size' : 16, # use this batch_size
-	'train_val_split_ratio': 0.9,
-	'alpha': 3,
-
-	# model parameters
-	'model_fn': LogisticRegression,
-	'optimizer_fn': optim.SGD,
-	'loss_fn': nn.CrossEntropyLoss(), 
-	'lr': 0.001, # use this lr
-
-	# training parameters
-	'pretrain_epochs': 5,
-	'fl_epochs': 100,
-	'fl_individual_epochs': 5,
-	'aggregate_mode':'credit-sum',  # 'mean', 'sum', 'credit-sum'
-
-}
-
-mnist_args = {
-	
-	# system parameters
-	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
-	# setting parameters
-	'dataset': 'mnist',
-	'sample_size_cap': 5000,
-	'n_workers': 5,
-	'split': 'classimbalance', #or 'powerlaw'
-	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size' : 10, 
-	'train_val_split_ratio': 0.9,
-	'alpha': 1,
-
-	# model parameters
-	'model_fn': MLP_Net,
-	'optimizer_fn': optim.SGD,
-	'loss_fn': nn.NLLLoss(), 
-	'lr': 0.1,
-
-	# training parameters
-	'pretrain_epochs': 5,
-	'fl_epochs': 100,
-	'fl_individual_epochs': 5,
-	'aggregate_mode':'credit-sum',  # 'mean', 'sum'
-
-}
-
+from arguments import adult_args, mnist_args, names_args
 
 if __name__ == '__main__':
 	# # init steps
 	# for n_workers, sample_size_cap, fl_epochs in [[5, 5000, 100],[10, 10000, 100],[20, 15000, 100]]:
 
-	args = mnist_args 
 	# args = adult_args # mnist_args
 
 	# n_workers, sample_size_cap, fl_epochs = [5, 3000, 20]
 
 	# for n_workers, sample_size_cap, fl_epochs in [ [5, 5000, 100], [10, 10000, 100]]:
-	for n_workers, sample_size_cap, fl_epochs in [[5, 3000, 100]]:
+	args = names_args
+
+	for n_workers, sample_size_cap, fl_epochs in [ [20, 6000, 100]]:
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap
 		args['fl_epochs'] = fl_epochs
@@ -182,7 +100,6 @@ if __name__ == '__main__':
 		for theta in [0.1]:
 			args['theta'] = theta
 			run_experiments(args, 5)
-
 
 
 
