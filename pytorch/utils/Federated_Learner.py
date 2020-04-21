@@ -38,8 +38,9 @@ class Federated_Learner:
 		device = self.args['device']
 		loss_fn = self.args['loss_fn']
 		theta = self.args['theta']
+		epoch_sample_size = self.args['epoch_sample_size']
 
-		self.federated_model = model_fn()
+		self.federated_model = model_fn(device=device)
 		# same initialization across experiment runs
 		# self.federated_model.load_state_dict(self.args['model'].state_dict())
 
@@ -60,7 +61,7 @@ class Federated_Learner:
 							model=model, optimizer=optimizer, 
 							standalone_model=standalone_model, standalone_optimizer=standalone_optimizer,
 							dssgd_model=dssgd_model, dssgd_optimizer=dssgd_optimizer,
-							loss_fn=loss_fn, theta=theta,
+							loss_fn=loss_fn, theta=theta, epoch_sample_size=epoch_sample_size,
 							device=device, 
 							id=i,
 							)
