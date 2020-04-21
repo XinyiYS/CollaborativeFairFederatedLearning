@@ -12,91 +12,7 @@ from utils.Data_Prepper import Data_Prepper
 from utils.Federated_Learner import Federated_Learner
 from utils.models import LogisticRegression, MLP_LogReg, MLP_Net, CNN_Net, RNN
 
-use_cuda = False
-args = {
-	# system parameters
-	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
-	# setting parameters
-	'dataset': 'adult',
-	'sample_size_cap': 5000,
-	'n_workers': 5,
-	'split': 'powerlaw', #classimbalance
-	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size' : 16, # use this batch_size
-	'train_val_split_ratio': 0.9,
-	'alpha': 3,
 
-	# model parameters
-	'model_fn': LogisticRegression,
-	'optimizer_fn': optim.SGD,
-	'loss_fn': nn.CrossEntropyLoss(), 
-	'lr': 0.001, # use this lr
-
-	# training parameters
-	'pretrain_epochs': 5,
-	'fl_epochs': 100,
-	'fl_individual_epochs': 5,
-	'aggregate_mode':'credit-sum',  # 'mean', 'sum'
-
-}
-
-mnist_args = {
-	
-	# system parameters
-	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
-	# setting parameters
-	'dataset': 'mnist',
-	'sample_size_cap': 5000,
-	'n_workers': 5,
-	'split': 'classimbalance', #or 'powerlaw' classimbalance
-	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size' : 10, 
-	'train_val_split_ratio': 0.9,
-	'alpha': 1,
-
-
-	# model parameters
-	'model_fn': MLP_Net,
-	'optimizer_fn': optim.SGD,
-	'loss_fn': nn.NLLLoss(), 
-	'lr': 0.01,
-
-
-	# training parameters
-	'pretrain_epochs': 5,
-	'fl_epochs': 100,
-	'fl_individual_epochs': 5,
-	'aggregate_mode':'credit-sum',  # 'mean', 'sum', credit-sum
-}
-
-
-names_args = {
-	
-	# system parameters
-	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
-	# setting parameters
-	'dataset': 'names',
-	'sample_size_cap': 5000,
-	'n_workers': 5,
-	'split': 'powerlaw', #or 'powerlaw' classimbalance
-	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size' : 1, 
-	'train_val_split_ratio': 0.9,
-	'alpha': 5,
-	'epoch_sample_size':10,
-
-	# model parameters
-	'model_fn': RNN,
-	'optimizer_fn': optim.SGD,
-	'loss_fn': nn.NLLLoss(), 
-	'lr': 0.005,
-
-	# training parameters
-	'pretrain_epochs': 5,
-	'fl_epochs': 100,
-	'fl_individual_epochs': 5,
-	'aggregate_mode':'sum',  # 'mean', 'sum', credit-sum
-}
 
 def run_experiments(args, repeat=1):
 	# init steps
@@ -134,6 +50,8 @@ def run_experiments(args, repeat=1):
 		# print(key +'_std', aggregate_dict[key +'_std'])
 	return
 
+
+from arguments import adult_args, mnist_args, names_args
 
 
 if __name__ == '__main__':
