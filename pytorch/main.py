@@ -80,6 +80,7 @@ def run_experiments(args, repeat=5):
 
 
 use_cuda = True
+'''
 args = {
 	# system parameters
 	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
@@ -103,11 +104,9 @@ args = {
 	'pretrain_epochs': 5,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
-	'aggregate_mode':'credit-sum',  # 'mean', 'sum'
-
-
-
+	'aggregate_mode':'sum',  # 'mean', 'sum'
 }
+'''
 
 adult_args = {
 	# system parameters
@@ -120,6 +119,7 @@ adult_args = {
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
 	'batch_size' : 16, # use this batch_size
 	'train_val_split_ratio': 0.9,
+	'alpha': 3,
 
 	# model parameters
 	'model_fn': LogisticRegression,
@@ -131,7 +131,7 @@ adult_args = {
 	'pretrain_epochs': 5,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
-	'aggregate_mode':'credit-sum',  # 'mean', 'sum'
+	'aggregate_mode':'credit-sum',  # 'mean', 'sum', 'credit-sum'
 
 }
 
@@ -147,6 +147,7 @@ mnist_args = {
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
 	'batch_size' : 10, 
 	'train_val_split_ratio': 0.9,
+	'alpha': 1,
 
 	# model parameters
 	'model_fn': MLP_Net,
@@ -167,37 +168,22 @@ if __name__ == '__main__':
 	# # init steps
 	# for n_workers, sample_size_cap, fl_epochs in [[5, 5000, 100],[10, 10000, 100],[20, 15000, 100]]:
 
-
 	args = mnist_args 
-	args = adult_args # mnist_args
+	# args = adult_args # mnist_args
 
 	# n_workers, sample_size_cap, fl_epochs = [5, 3000, 20]
 
-	# for n_workers, sample_size_cap, fl_epochs in [ [5, 5000, 100], [10, 10000, 100], [20, 15000, 100]]:
-	for n_workers, sample_size_cap, fl_epochs in [[10, 6000, 100]]:
+	# for n_workers, sample_size_cap, fl_epochs in [ [5, 5000, 100], [10, 10000, 100]]:
+	for n_workers, sample_size_cap, fl_epochs in [[5, 3000, 100]]:
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap
 		args['fl_epochs'] = fl_epochs
 
-		for theta in [1, 0.1]:
+		for theta in [0.1]:
 			args['theta'] = theta
 			run_experiments(args, 5)
 
 
 
-	'''
-	# MNIST credit-sum setting waiting to be run
-	for n_workers, sample_size_cap, fl_epochs in [[10, 6000, 100]]:
-		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		args['fl_epochs'] = fl_epochs
-		for theta in [0.6, 0.8, 1.0]:
-
-			args['theta'] = theta
-			run_experiments(args, 5)
-
-
-
-	'''
 
 

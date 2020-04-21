@@ -18,13 +18,17 @@ performance_keys = [
 		'cffl',
 		]
 
-def collect_and_compile_performance(dirname):
+def collect_and_compile_performance(dirname, compiling_both=False):
 
 	fairness_rows = []
 	performance_rows = []
 	for folder in os.listdir(dirname):
 		if os.path.isfile(os.path.join(dirname, folder)) or not 'complete.txt' in os.listdir(os.path.join(dirname, folder)):
 			continue
+
+		setup = parse(folder)
+		if compiling_both and setup['pretrain_epochs'] == 0: continue
+
 
 		n_workers = int(folder.split('_')[1][1:])
 		fl_epochs = int(folder.split('-')[1])
@@ -60,7 +64,7 @@ def collect_and_compile_performance(dirname):
 	return fair_df, perf_df
 
 
-def collate_pngs(dirname):
+def collate_pngs(dirname, compiling_both=False):
 	try:
 		os.mkdir(os.path.join(dirname, 'figures'))
 	except:
@@ -71,9 +75,10 @@ def collate_pngs(dirname):
 		if os.path.isfile(os.path.join(dirname, directory)) or not 'complete.txt' in os.listdir(os.path.join(dirname, directory)):
 			continue
 
-		subdir = os.path.join(dirname, directory)
 		setup = parse(directory)
+		if compiling_both and setup['pretrain_epochs'] == 0: continue
 
+		subdir = os.path.join(dirname, directory)
 
 		# convert figure.png to
 		# adult_LR_p5e100_cffl_localepoch5_localbatch16_lr0001_upload1
@@ -119,13 +124,16 @@ if __name__ == '__main__':
 	500perparty
 	'''
 
+	COMPILING_BOTH = False
 	TEST = True
 	if TEST:
-		dirname = 'logs/mnist/credit_sum'
+		dirname = 'logs'
+		# dirname = 'logs/adult/dropna_alpha3/credit_sum'
+		# dirname = 'logs/adult/credit_sum'
 		experiment_results = plot_convergence(dirname)
-		collate_pngs(dirname)
-		fair_df, perf_df = collect_and_compile_performance(dirname)
+		collate_pngs(dirname, COMPILING_BOTH)
+		fair_df, perf_df = collect_and_compile_performance(dirname, COMPILING_BOTH)
 	else:
-		dirname = 'logs/adult'
-		for folder in ['500perparty', 'full_lr0001', 'full_lr00001', 'nopretrain-40', 'nopretrain-100']:
+		dirname = 'logs/adult/na_a3_nopretrain/'
+		for folder in ['credit_sum', 'sum']:
 			run_all(os.path.join(dirname, folder))

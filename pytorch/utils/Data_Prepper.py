@@ -22,7 +22,7 @@ class Data_Prepper:
 		self.valid_batch_size = valid_batch_size if valid_batch_size else test_batch_size
 
 	def init_train_valid_idx(self, shuffle=True):
-		self.train_idx, self.valid_idx = self.get_train_valid_indices(self.train_dataset, self.train_val_split_ratio, sample_size_cap=self.sample_size_cap,shuffle=shuffle)
+		self.train_idx, self.valid_idx = self.get_train_valid_indices(self.train_dataset, self.train_val_split_ratio, sample_size_cap=self.sample_size_cap, shuffle=shuffle)
 
 	def init_valid_loader(self):
 		self.valid_loader = DataLoader(self.train_dataset, batch_size=self.valid_batch_size, sampler=SubsetRandomSampler(self.valid_idx))
@@ -107,7 +107,7 @@ class Data_Prepper:
 		return worker_train_loaders
 
 
-	def prepare_dataset(self, name='adult', sample_size_cap=-1):
+	def prepare_dataset(self, name='adult'):
 		if name == 'adult':
 			from utils.load_adult import get_train_test
 			from utils.Custom_Dataset import Custom_Dataset
@@ -148,3 +148,44 @@ class Data_Prepper:
 					transforms.Normalize((0.1307,), (0.3081,))
 				]))
 			return train, test
+
+		elif name == 'names':
+
+			from utils.load_names import get_train_test
+			from utils.Custom_Dataset import Custom_Dataset
+			import torch
+			from collections import Counter
+
+			X_train, y_train, X_test, y_test, reference_dict = get_train_test()
+
+			print("X train shape: ", X_train.shape)
+			print("y train shape: ", y_train.shape)
+			
+			print("X test shape: ", X_test.shape)
+			print("y test shape: ", y_test.shape)
+
+			'''
+			train_class_counts = Counter(y_train.tolist())
+
+			print("Train class counts: ", end='') 
+			for key, value in reference_dict.items():
+			    print("{} : {}, ".format(value,  train_class_counts[int(key)]), end='')
+			print()
+			'''
+
+			'''
+			test_class_counts = Counter(y_test.tolist())
+			print("Test class counts: ", end='') 
+
+			for key, value in reference_dict.items():
+			    print("{} : {}, ".format(value,  test_class_counts[int(key)]), end='')
+			print()
+			print("Total of {} categories".format(len(reference_dict)))
+			'''
+
+			from utils.Custom_Dataset import Custom_Dataset
+			train_set = Custom_Dataset(X_train, y_train)
+			test_set = Custom_Dataset(X_test, y_test)
+
+			return train_set, test_set
+

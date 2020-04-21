@@ -10,11 +10,9 @@ from torch import nn, optim
 from utils.Worker import Worker
 from utils.Data_Prepper import Data_Prepper
 from utils.Federated_Learner import Federated_Learner
-from utils.models import LogisticRegression, MLP_LogReg, MLP_Net, CNN_Net
+from utils.models import LogisticRegression, MLP_LogReg, MLP_Net, CNN_Net, RNN
 
-use_cuda = False
-
-
+use_cuda = True
 args = {
 	# system parameters
 	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
@@ -26,6 +24,7 @@ args = {
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
 	'batch_size' : 16, # use this batch_size
 	'train_val_split_ratio': 0.9,
+	'alpha': 3,
 
 	# model parameters
 	'model_fn': LogisticRegression,
@@ -53,21 +52,51 @@ mnist_args = {
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
 	'batch_size' : 10, 
 	'train_val_split_ratio': 0.9,
+	'alpha': 1,
+
 
 	# model parameters
 	'model_fn': MLP_Net,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(), 
-	'lr': 0.1,
+	'lr': 0.01,
+
 
 	# training parameters
 	'pretrain_epochs': 5,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
-	'aggregate_mode':'credit-sum',  # 'mean', 'sum'
-
+	'aggregate_mode':'credit-sum',  # 'mean', 'sum', credit-sum
 }
 
+
+names_args = {
+	
+	# system parameters
+	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
+	# setting parameters
+	'dataset': 'names',
+	'sample_size_cap': 5000,
+	'n_workers': 5,
+	'split': 'powerlaw', #or 'powerlaw' classimbalance
+	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
+	'batch_size' : 16, 
+	'train_val_split_ratio': 0.9,
+	'alpha': 5,
+	'epoch_sample_size':10,
+
+	# model parameters
+	'model_fn': RNN,
+	'optimizer_fn': optim.SGD,
+	'loss_fn': nn.NLLLoss(), 
+	'lr': 0.005,
+
+	# training parameters
+	'pretrain_epochs': 5,
+	'fl_epochs': 100,
+	'fl_individual_epochs': 5,
+	'aggregate_mode':'sum',  # 'mean', 'sum', credit-sum
+}
 
 def run_experiments(args, repeat=1):
 	# init steps
@@ -78,7 +107,7 @@ def run_experiments(args, repeat=1):
 
 		print("Experiment : No.{}/{}".format(str(i+1) ,str(repeat)))
 		data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'], sample_size_cap=args['sample_size_cap'], train_val_split_ratio=args['train_val_split_ratio'])
-		
+
 		federated_learner = Federated_Learner(args, data_prep)
 
 		# train
@@ -109,12 +138,13 @@ def run_experiments(args, repeat=1):
 
 if __name__ == '__main__':
 	# init steps
-	args = mnist_args
-	n_workers, sample_size_cap, fl_epochs = [5, 2000, 100]
-	theta = 0.1
+	# args = mnist_args
+	args = names_args
+	n_workers, sample_size_cap, fl_epochs = [5, 1000, 100]
+	theta = 1
 	args['n_workers'] = n_workers
 	args['sample_size_cap'] = sample_size_cap
 	args['fl_epochs'] = fl_epochs
 	args['theta'] = theta
 
-	run_experiments(args, 3)
+	run_experiments(args, 1)
