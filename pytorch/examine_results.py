@@ -5,7 +5,7 @@ import pandas as pd
 import ast
 import numpy as np
 
-from read_convergence import plot_convergence, parse, get_best_cffl_worker
+from read_convergence import plot_convergence, parse, get_cffl_best
 
 fairness_keys = [
 		'standlone_vs_rrdssgd_mean',
@@ -29,7 +29,6 @@ def collect_and_compile_performance(dirname, compiling_both=False):
 		setup = parse(folder)
 		if compiling_both and setup['pretrain_epochs'] == 0: continue
 
-
 		n_workers = int(folder.split('_')[1][1:])
 		fl_epochs = int(folder.split('-')[1])
 		theta = float(folder.split('_')[6].replace('theta', ''))
@@ -38,14 +37,15 @@ def collect_and_compile_performance(dirname, compiling_both=False):
 				aggregate_dict = json.loads(dict_log.read())
 			f_data_row = ['P' + str(n_workers) + '_' + str(theta)] + [aggregate_dict[f_key][0] for f_key in fairness_keys]
 
-			best_workerId, performance_dict = get_best_cffl_worker(dirname, folder)
-			p_data_row = ['P' + str(n_workers) + '_' + str(theta)] + [performance_dict[p_key][best_workerId] for p_key in performance_keys]
+			best_worker_accs = get_cffl_best(dirname, folder)
+			p_data_row = ['P' + str(n_workers) + '_' + str(theta)] + best_worker_accs
 
 			fairness_rows.append(f_data_row)
 			performance_rows.append(p_data_row)
 		except Exception as e:
-			print(str(e))
+			print(e)
 			pass
+			
 	
 	shorthand_f_keys = ['Distriubted', 'CFFL' ,'Contributions_V_final']
 	fair_df = pd.DataFrame(fairness_rows, columns=[' '] + shorthand_f_keys).set_index(' ')
@@ -127,7 +127,7 @@ if __name__ == '__main__':
 	COMPILING_BOTH = False
 	TEST = True
 	if TEST:
-		dirname = 'logs'
+		dirname = 'logs/archive/latest_dropna_alpha3'
 		# dirname = 'logs/adult/dropna_alpha3/credit_sum'
 		# dirname = 'logs/adult/credit_sum'
 		experiment_results = plot_convergence(dirname)
