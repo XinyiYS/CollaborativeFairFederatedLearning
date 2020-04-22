@@ -54,18 +54,19 @@ class LogisticRegression(nn.Module):
 		return outputs
 
 
-class MLP_LogReg(nn.Module):
+class MLP_Adult(nn.Module):
 
 	def __init__(self, input_dim=85, output_dim=2, device=None):
-		super(MLP_LogReg, self).__init__()
+		super(MLP_Adult, self).__init__()
 		self.fc1 = nn.Linear(input_dim, 64)
 		self.fc2 = nn.Linear(64, output_dim)
 
 		# self.linear = torch.nn.Linear(input_dim, output_dim)
 
 	def forward(self, x):
-		x = torch.sigmoid(self.fc1(x))
-		return self.fc2(x)
+		x = F.relu(self.fc1(x))
+		x = self.fc2(x)
+		return F.log_softmax(x, dim=1)
 
 # For names language classification
 class RNN(nn.Module):
