@@ -114,7 +114,7 @@ class Federated_Learner:
 
 		self.performance_dict['shard_sizes'] = self.shard_sizes
 
-		print("Start local pretraining ")
+		# print("Start local pretraining ")
 		self.train_locally(self.args['pretrain_epochs'], is_pretrain=True)
 		self.worker_model_test_accs_before = self.evaluate_workers_performance(self.test_loader)
 		self.performance_dict['worker_model_test_accs_before'] = self.worker_model_test_accs_before
@@ -124,9 +124,10 @@ class Federated_Learner:
 		# each worker needs a dssgd model to compute final fairness
 		double_seqs = list(range(self.n_workers)) + list(range(self.n_workers))
 
-		print("\nStart federated learning \n")
+		# print("\nStart federated learning \n")
 		for epoch in range(fl_epochs):
-			print('Epoch {}:'.format(epoch+1))
+			if epoch % 20 == 0:
+				print('Epoch {}:'.format(epoch+1))
 
 			# 1. training locally, return updates, and filter the updates
 			grad_updates, dssgd_grad_updates = self.train_locally(fl_individual_epochs, requires_update=True)
@@ -150,11 +151,11 @@ class Federated_Learner:
 			self.federated_model = add_update_to_model(self.federated_model, aggregated_gradient_updates, device=device)
 			
 			_, federated_val_acc = evaluate(self.federated_model, self.valid_loader, device, verbose=False)
-			print("CFFL server model validation accuracy : {:.4%}".format(federated_val_acc))
+			# print("CFFL server model validation accuracy : {:.4%}".format(federated_val_acc))
 
 			dssgd_val_accs = self.evaluate_workers_performance(self.valid_loader, mode='dssgd')
 			self.performance_dict['dssgd_val_accs'].append(dssgd_val_accs) 
-			print("DSSGD models validation accuracies: ", ["{:.4%}".format(dssgd_val_acc) for dssgd_val_acc in dssgd_val_accs ])
+			# print("DSSGD models validation accuracies: ", ["{:.4%}".format(dssgd_val_acc) for dssgd_val_acc in dssgd_val_accs ])
 
 			# 3.1 carry out evaluations			
 			'''
@@ -163,17 +164,17 @@ class Federated_Learner:
 			'''
 
 			worker_val_accs = one_on_one_evaluate(self.workers, self.federated_model, grad_updates, self.valid_loader, device)
-			print("One-on-one validation accuracies : ", ["{:.4%}".format(val_acc) for val_acc in worker_val_accs])
+			# print("One-on-one validation accuracies : ", ["{:.4%}".format(val_acc) for val_acc in worker_val_accs])
 
 			# 3.2 compute credits
 			decay = 1
 			credit_threshold = torch.div(1.0, (torch.sum(credits > credit_threshold) - 1) ) * (1./ self.n_workers) 
 			credit_threshold = min(torch.tensor(1), credit_threshold) # to avoid NaN when only one player in C
-			print("New credit threshold is : ", credit_threshold.item())
+			# print("New credit threshold is : ", credit_threshold.item())
 
 			# credits = compute_credits(credits, federated_val_acc, loo_val_accs, credit_threshold=credit_threshold)
 			credits = compute_credits_sinh(credits, worker_val_accs, credit_threshold=credit_threshold, alpha=self.args['alpha'],)			
-			print("Computed and normalized credits: ", credits.tolist())
+			# print("Computed and normalized credits: ", credits.tolist())
 
 
 			# 4. gradient downloads and uploads according to credits and thetas 
@@ -191,7 +192,7 @@ class Federated_Learner:
 			self.performance_dict['credits'].append(credits.tolist())
 			self.performance_dict['federated_val_acc'].append(federated_val_acc.item())
 			self.performance_dict['credit_threshold'].append(credit_threshold.item())
-			print()
+			# print()
 
 		self.worker_model_test_accs_after = self.evaluate_workers_performance(self.test_loader)
 		self.worker_standalone_test_accs = self.evaluate_workers_performance(self.test_loader, mode='standlone')
@@ -305,13 +306,13 @@ class Federated_Learner:
 		self.worker_model_test_accs_after = self.evaluate_workers_performance(self.test_loader)
 		self.worker_model_improvements = torch.tensor(self.worker_model_test_accs_after) - torch.tensor(self.worker_model_test_accs_before)
 
-		print('Below are testset accuracies: ---')
-		print('Workers before    accuracies: ', ["{:.3%}".format(acc_b4) for acc_b4 in self.worker_model_test_accs_before])
-		print('Workers standlone accuracies: ', ["{:.3%}".format(acc_std) for acc_std in self.worker_standalone_test_accs])
-		print('Workers CFFL      accuracies: ', ["{:.3%}".format(acc_aft) for acc_aft in self.worker_model_test_accs_after])
-		print('Workers improved  accuracies: ', ["{:.3%}".format(acc_impro) for acc_impro in self.worker_model_improvements])
-		print('Workers DSSGD     accuracies: ', ["{:.3%}".format(dssgd_acc) for dssgd_acc in self.dssgd_models_test_accs])
-		print('Workers shard sizes: ', self.shard_sizes)
+		# print('Below are testset accuracies: ---')
+		# print('Workers before    accuracies: ', ["{:.3%}".format(acc_b4) for acc_b4 in self.worker_model_test_accs_before])
+		# print('Workers standlone accuracies: ', ["{:.3%}".format(acc_std) for acc_std in self.worker_standalone_test_accs])
+		# print('Workers CFFL      accuracies: ', ["{:.3%}".format(acc_aft) for acc_aft in self.worker_model_test_accs_after])
+		# print('Workers improved  accuracies: ', ["{:.3%}".format(acc_impro) for acc_impro in self.worker_model_improvements])
+		# print('Workers DSSGD     accuracies: ', ["{:.3%}".format(dssgd_acc) for dssgd_acc in self.dssgd_models_test_accs])
+		# print('Workers shard sizes: ', self.shard_sizes)
 
 		self.performance_dict['DSSGD_model_test_accs'].append(self.dssgd_models_test_accs)
 		self.performance_dict['worker_standalone_test_accs'].append(self.worker_standalone_test_accs)
@@ -357,10 +358,8 @@ class Federated_Learner:
 		if not (shapley_values ==0).all():
 			corrs = scipy.stats.pearsonr(sharing_ledger, shapley_values)
 			print('sharing ledge vs shapley values: ', corrs)
-
 			corrs = scipy.stats.pearsonr(shapley_values, self.worker_model_improvements)
 			print('shapley values vs model improvements: ', corrs)
-
 			print('shapley values: ', shapley_values)
 		'''
 		return
@@ -376,7 +375,7 @@ class Federated_Learner:
 
 
 def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fade=0):
-	print('alpha used is :', alpha, ' current credits are : ', credits, ' current threshold: ', credit_threshold)
+	# print('alpha used is :', alpha, ' current credits are : ', credits, ' current threshold: ', credit_threshold)
 	total = sum(val_accs)
 	for i, (credit, val_acc) in enumerate(zip(credits, val_accs)):
 		credit_epoch = val_acc / total
