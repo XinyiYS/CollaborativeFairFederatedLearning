@@ -124,10 +124,10 @@ if __name__ == '__main__':
 	500perparty
 	'''
 
-	COMPILING_BOTH = False
+	COMPILING_BOTH = True
 	TEST = True
 	if TEST:
-		dirname = 'logs/archive/latest_dropna_alpha3'
+		dirname = 'logs/gcut_sum'
 		# dirname = 'logs/adult/dropna_alpha3/credit_sum'
 		# dirname = 'logs/adult/credit_sum'
 		experiment_results = plot_convergence(dirname)
