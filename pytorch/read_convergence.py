@@ -11,20 +11,20 @@ from plot import plot
 from collections import defaultdict
 
 keys = ['worker_model_test_accs_before  -  ', 
-        'dssgd_val_accs  -  ', 
-        'DSSGD_model_test_accs  -  ',
-        'worker_standalone_test_accs  -  ',
-        'worker_model_test_accs_after  -  ',
-        'worker_model_improvements  -  ',
-        'credits  -  ',
-        'federated_val_acc  -  '
+		'dssgd_val_accs  -  ', 
+		'DSSGD_model_test_accs  -  ',
+		'worker_standalone_test_accs  -  ',
+		'worker_model_test_accs_after  -  ',
+		'worker_model_improvements  -  ',
+		'credits  -  ',
+		'federated_val_acc  -  '
 ]
 
 key_map = {'DSSGD_model_test_accs  -  ':'DSSGD',
-            'worker_standalone_test_accs  -  ':'Standalone',
-            'worker_model_test_accs_after  -  ':'CFFL',
-            'credits  -  ':'credits'
-            }
+			'worker_standalone_test_accs  -  ':'Standalone',
+			'worker_model_test_accs_after  -  ':'CFFL',
+			'credits  -  ':'credits'
+			}
 
 
 def parse(folder):
@@ -109,74 +109,97 @@ def find_without_pretraining(dirname, folder, best_worker_ind):
 	return np.asarray(cffl_accs_lines).mean(axis=0)[:, best_worker_ind]
 
 
+def get_fairness(acc_lines):
+	from scipy.stats import pearsonr
+	Distributed_f = 0
+	CFFL_f = 0
+	
+	DSSGD_accs = np.asarray(acc_lines['DSSGD'])
+	Standalone_accs = np.asarray(acc_lines['Standalone'])
+	CFFL_accs = np.asarray(acc_lines['CFFL'])
+
+	n_experiments = DSSGD_accs.shape[0]
+	for experiment in range(n_experiments):
+		Distributed_f += pearsonr(DSSGD_accs[experiment][-1], Standalone_accs[experiment][-1])[0]
+		CFFL_f += pearsonr(CFFL_accs[experiment][-1], Standalone_accs[experiment][-1])[0]
+
+	Distributed_f /= n_experiments
+	CFFL_f /= n_experiments
+	print(Distributed_f, CFFL_f)
+	return Distributed_f,CFFL_f
+
 def plot_convergence(dirname):
-    dfs = []
-    setups = []
-    experiment_results = []
+	dfs = []
+	setups = []
+	experiment_results = []
 
-    for folder in os.listdir(dirname):
-        if os.path.isfile(os.path.join(dirname, folder)) or not 'complete.txt' in os.listdir(os.path.join(dirname, folder)):
-            continue
+	for folder in os.listdir(dirname):
+		if os.path.isfile(os.path.join(dirname, folder)) or not 'complete.txt' in os.listdir(os.path.join(dirname, folder)):
+			continue
 
-        setup = parse(folder)
-        loaded = load_acc_dfs(dirname, folder)
-        if setup['pretrain_epochs'] == 0:
-            continue
+		setup = parse(folder)
+		loaded = load_acc_dfs(dirname, folder)
+		if setup['pretrain_epochs'] == 0:
+			continue
 
-        if not loaded:
+		if not loaded:
 
-        	# read accuracies from the folder
-            acc_lines = get_acc_lines(dirname, folder)
+			# read accuracies from the folder
+			acc_lines = get_acc_lines(dirname, folder)
 
 
-            n_workers = int(folder.split('_')[1][1:])
-            columns = ['party' + str(i + 1) for i in range(n_workers)]
+			n_workers = int(folder.split('_')[1][1:])
+			columns = ['party' + str(i + 1) for i in range(n_workers)]
 
-            # construct nparrays, and then dfs
-            avg_dfs = {}
-            for com_protocol, acc_lines in acc_lines.items():
-                avg_acc = np.asarray(acc_lines).mean(axis=0)
-                avg_dfs[com_protocol] = pd.DataFrame(data=avg_acc, columns=columns)                
 
-            cffl_df = avg_dfs['CFFL']
-            standalone_df = avg_dfs['Standalone']
-            dssgd_df = avg_dfs['DSSGD']
+			fairness = get_fairness(acc_lines)
+			# construct nparrays, and then dfs
+			avg_dfs = {}
+			for com_protocol, acc_lines in acc_lines.items():
+				avg_acc = np.asarray(acc_lines).mean(axis=0)
+				avg_dfs[com_protocol] = pd.DataFrame(data=avg_acc, columns=columns)                
 
-            best_worker_ind = cffl_df.iloc[-1].argmax()
+			cffl_df = avg_dfs['CFFL']
+			standalone_df = avg_dfs['Standalone']
+			dssgd_df = avg_dfs['DSSGD']
 
-            worker_df = pd.DataFrame(data = [standalone_df.iloc[:, best_worker_ind],
-            								dssgd_df.iloc[:, best_worker_ind],
-            								cffl_df.iloc[:, best_worker_ind] ],
-                                    columns=[
-                                     'Standlone', 'Distributed', 'CFFL (w pretrain)'])
-            # save_acc_dfs(dirname, folder, [cffl_df, standalone_df, worker_df])
+			best_worker_ind = cffl_df.iloc[-1].argmax()
 
-        else:
-            cffl_df, standalone_df, worker_df = loaded
 
-        cffl_figure_dir = os.path.join(dirname, folder, 'figure.png')
-        standlone_figure_dir = os.path.join(dirname, folder, 'standlone.png')
-        worker_figure_dir = os.path.join(dirname, folder, 'convergence_for_one.png')
+			worker_df = pd.DataFrame(data = 
+				{'Standlone':standalone_df.iloc[:, best_worker_ind],
+				 'Distributed':dssgd_df.iloc[:, best_worker_ind],
+					'CFFL (w pretrain)': cffl_df.iloc[:, best_worker_ind]})
 
-        try:
-            worker_acc_without_pretraining = find_without_pretraining(dirname, folder, fl_epochs, best_workerId)
-            worker_df['CFFL (w/o pretrain)'] = worker_acc_without_pretraining
-        except:
-            #  no corresponding w/o pretrain experimental results
-            pass
+			# save_acc_dfs(dirname, folder, [cffl_df, standalone_df, worker_df])
+			# print(worker_df.head())
+		else:
+			cffl_df, standalone_df, worker_df = loaded
 
-        if os.path.exists(cffl_figure_dir):
-            os.remove(cffl_figure_dir)
-        plot(cffl_df, cffl_figure_dir, name=setup['name'], plot_type=0)
+		cffl_figure_dir = os.path.join(dirname, folder, 'figure.png')
+		standlone_figure_dir = os.path.join(dirname, folder, 'standlone.png')
+		worker_figure_dir = os.path.join(dirname, folder, 'convergence_for_one.png')
 
-        if os.path.exists(standlone_figure_dir):
-            os.remove(standlone_figure_dir)
-        plot(standalone_df, standlone_figure_dir, name=setup['name'], plot_type=1)
+		try:
+			worker_acc_without_pretraining = find_without_pretraining(dirname, folder, best_worker_ind)
+			worker_df['CFFL (w/o pretrain)'] = worker_acc_without_pretraining
+		except Exception as e:
+			print(str(e))
+			#  no corresponding w/o pretrain experimental results
+			pass
 
-        if os.path.exists(worker_figure_dir):
-            os.remove(worker_figure_dir)
-        plot(worker_df, worker_figure_dir, name=setup['name'], plot_type=2)
-    return
+		if os.path.exists(cffl_figure_dir):
+			os.remove(cffl_figure_dir)
+		plot(cffl_df, cffl_figure_dir, name=setup['name'], plot_type=0)
+
+		if os.path.exists(standlone_figure_dir):
+			os.remove(standlone_figure_dir)
+		plot(standalone_df, standlone_figure_dir, name=setup['name'], plot_type=1)
+
+		if os.path.exists(worker_figure_dir):
+			os.remove(worker_figure_dir)
+		plot(worker_df, worker_figure_dir, name=setup['name'], plot_type=2)
+	return
 
 
 if __name__ == '__main__':
