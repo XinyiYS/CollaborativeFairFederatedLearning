@@ -28,11 +28,7 @@ args = {
 import torch
 from torch import nn, optim
 
-from utils.models import LogisticRegression, MLP_LogReg, MLP_Net, CNN_Net, RNN
-
-
-
-
+from utils.models import LogisticRegression, MLP, MLP_Net, CNN_Net, RNN
 
 use_cuda = True
 adult_args = {
@@ -46,20 +42,21 @@ adult_args = {
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
 	'batch_size' : 16, # use this batch_size
 	'train_val_split_ratio': 0.9,
-	'alpha': 3,
+	'alpha': 5,
+	'epoch_sample_size':float("Inf"),
 
 	# model parameters
-	'model_fn': LogisticRegression,
+	'model_fn': MLP,
 	'optimizer_fn': optim.SGD,
-	'loss_fn': nn.CrossEntropyLoss(), 
-	'lr': 0.001, # use this lr
+	'loss_fn': nn.NLLLoss(),  #CrossEntropyLoss NLLLoss
+	'lr': 0.01,  # lr 0.01 and above is no good
+	'grad_clip': 1,
 
 	# training parameters
 	'pretrain_epochs': 5,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
-	'aggregate_mode':'credit-sum',  # 'mean', 'sum', 'credit-sum'
-
+	'aggregate_mode':'sum',  # 'mean', 'sum', 'credit-sum'
 }
 
 mnist_args = {
@@ -70,11 +67,14 @@ mnist_args = {
 	'dataset': 'mnist',
 	'sample_size_cap': 5000,
 	'n_workers': 5,
-	'split': 'classimbalance', #or 'powerlaw'
+	'split': 'powerlaw', #or 'powerlaw'
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
 	'batch_size' : 10, 
 	'train_val_split_ratio': 0.9,
-	'alpha': 1,
+	'alpha': 5,
+	'epoch_sample_size':float("Inf"),
+	'grad_clip':0.001,
+
 
 	# model parameters
 	'model_fn': MLP_Net,
@@ -83,7 +83,7 @@ mnist_args = {
 	'lr': 0.1,
 
 	# training parameters
-	'pretrain_epochs': 5,
+	'pretrain_epochs': 10,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 	'aggregate_mode':'credit-sum',  # 'mean', 'sum'

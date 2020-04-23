@@ -39,6 +39,7 @@ class Federated_Learner:
 		loss_fn = self.args['loss_fn']
 		theta = self.args['theta']
 		epoch_sample_size = self.args['epoch_sample_size']
+		grad_clip = self.args['grad_clip']
 
 		self.federated_model = model_fn(device=device)
 		# same initialization across experiment runs
@@ -61,7 +62,8 @@ class Federated_Learner:
 							model=model, optimizer=optimizer, 
 							standalone_model=standalone_model, standalone_optimizer=standalone_optimizer,
 							dssgd_model=dssgd_model, dssgd_optimizer=dssgd_optimizer,
-							loss_fn=loss_fn, theta=theta, epoch_sample_size=epoch_sample_size,
+							loss_fn=loss_fn, theta=theta, 
+							grad_clip=grad_clip, epoch_sample_size=epoch_sample_size,
 							device=device, 
 							id=i,
 							)
@@ -225,7 +227,7 @@ class Federated_Learner:
 
 				# filter out and remove the updates from itself
 				filter_indices = (res_param_update.abs() > 0)  & (worker_param_update.abs() > 0)
-				res_param_update.data[filter_indices] -= worker_param_update.data[filter_indices]
+				res_param_update.data[filter_indices] -= credit * worker_param_update.data[filter_indices]
 			add_update_to_model(worker.model, agg_grad_update)
 		return
 
@@ -390,7 +392,6 @@ def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fa
 		credits[i] = math.sinh(alpha * credits[i])
 
 	return credits / torch.sum(credits)
-
 
 def filter_grad_updates(grad_updates, thetas):
 	"""
