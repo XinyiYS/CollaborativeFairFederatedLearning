@@ -105,7 +105,8 @@ class Federated_Learner:
 	def train(self):
 		points = torch.tensor([ worker.theta * worker.param_count * (self.n_workers - 1) for worker in self.workers])
 		credits = torch.zeros((self.n_workers))
-		credit_threshold = 1. / (self.n_workers - 1) * (2. / 3.)
+		# credit_threshold = 1. / (self.n_workers - 1) * (2. / 3.)
+		credit_threshold = 0
 		worker_thetas = [worker.theta for worker in self.workers]
 
 		fl_epochs = self.args['fl_epochs']
@@ -374,7 +375,7 @@ class Federated_Learner:
 
 
 def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fade=1):
-	# print('alpha used is :', alpha, ' current credits are : ', credits, ' current threshold: ', credit_threshold)
+	print('alpha used is :', alpha, ' current credits are : ', credits, ' current threshold: ', credit_threshold)
 	total = sum(val_accs)
 	for i, (credit, val_acc) in enumerate(zip(credits, val_accs)):
 		credit_epoch = val_acc / total
