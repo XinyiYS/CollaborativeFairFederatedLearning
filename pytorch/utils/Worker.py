@@ -60,11 +60,7 @@ class Worker():
 				outputs = self.model(batch_data)
 				loss = self.loss_fn(outputs, batch_target)
 				loss.backward()
-
-				# for p in self.model.parameters():
-				# 	print(p.grad.abs())
-
-				clip_grad_value_(self.model.parameters(), self.grad_clip)
+				# clip_grad_value_(self.model.parameters(), self.grad_clip)
 				self.optimizer.step()
 				iter += len(batch_data)
 

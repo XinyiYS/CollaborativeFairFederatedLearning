@@ -104,8 +104,8 @@ class Federated_Learner:
 
 	def train(self):
 		points = torch.tensor([ worker.theta * worker.param_count * (self.n_workers - 1) for worker in self.workers])
-		credits = torch.ones((self.n_workers)) / self.n_workers
-		credit_threshold = 1. / (self.n_workers) * (2. / 3.)
+		credits = torch.zeros((self.n_workers))
+		credit_threshold = 1. / (self.n_workers - 1) * (2. / 3.)
 		worker_thetas = [worker.theta for worker in self.workers]
 
 		fl_epochs = self.args['fl_epochs']
@@ -164,20 +164,17 @@ class Federated_Learner:
 			loo_val_accs = leave_one_out_evaluate(self.federated_model, grad_updates, self.valid_loader, device)
 			print("Leave-one-out validation accuracies : ", ["{:.4%}".format(loo_val_acc) for loo_val_acc in loo_val_accs]   )
 			'''
-
 			worker_val_accs = one_on_one_evaluate(self.workers, self.federated_model, grad_updates, self.valid_loader, device)
 			# print("One-on-one validation accuracies : ", ["{:.4%}".format(val_acc) for val_acc in worker_val_accs])
 
 			# 3.2 compute credits
-			decay = 1
-			credit_threshold = torch.div(1.0, (torch.sum(credits > credit_threshold) - 1) ) * (1./ self.n_workers) 
-			credit_threshold = min(torch.tensor(1), credit_threshold) # to avoid NaN when only one player in C
-			# print("New credit threshold is : ", credit_threshold.item())
-
 			# credits = compute_credits(credits, federated_val_acc, loo_val_accs, credit_threshold=credit_threshold)
 			credits = compute_credits_sinh(credits, worker_val_accs, credit_threshold=credit_threshold, alpha=self.args['alpha'],)			
 			# print("Computed and normalized credits: ", credits.tolist())
-
+			decay = 1
+			credit_threshold = torch.div(1.0, (torch.sum(credits > 0) - 1) ) * (2./3.) 
+			credit_threshold = min(torch.tensor(1), credit_threshold) # to avoid NaN when only one player in C
+			# print("New credit threshold is : ", credit_threshold.item())
 
 			# 4. gradient downloads and uploads according to credits and thetas 
 			self.assign_updates_with_filter(credits, aggregated_gradient_updates, grad_updates)
@@ -227,7 +224,7 @@ class Federated_Learner:
 
 				# filter out and remove the updates from itself
 				filter_indices = (res_param_update.abs() > 0)  & (worker_param_update.abs() > 0)
-				res_param_update.data[filter_indices] -= credit * worker_param_update.data[filter_indices]
+				res_param_update.data[filter_indices] -= worker_param_update.data[filter_indices]
 			add_update_to_model(worker.model, agg_grad_update)
 		return
 
@@ -376,7 +373,7 @@ class Federated_Learner:
 			return [evaluate(worker.model, eval_loader, device, verbose=False)[1].tolist() for worker in self.workers]
 
 
-def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fade=0):
+def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fade=1):
 	# print('alpha used is :', alpha, ' current credits are : ', credits, ' current threshold: ', credit_threshold)
 	total = sum(val_accs)
 	for i, (credit, val_acc) in enumerate(zip(credits, val_accs)):
@@ -391,6 +388,8 @@ def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fa
 
 		credits[i] = math.sinh(alpha * credits[i])
 
+	credits = credits / torch.sum(credits)
+	credits[credits < credit_threshold] = 0
 	return credits / torch.sum(credits)
 
 def filter_grad_updates(grad_updates, thetas):
