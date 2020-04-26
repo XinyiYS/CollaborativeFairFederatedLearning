@@ -1,5 +1,12 @@
 ## This is dedicated to pysyft and pytorch for fair and private FL.
 
+- [ ] Add in no-pretrain model directly, to avoid repeated re-run of pretrain = 0
+- [ ] Add in other datasets to test MLP
+- [ ] Communication efficiency consideration
+- [ ] Heterogenuous models setting for predictions allocation on a public validation set
+- [ ] Imbalanced class numbers setting
+
+
 ### Example on MNIST
 - [x] CNN
 - ~~[x] Shapley value using test acc~~
