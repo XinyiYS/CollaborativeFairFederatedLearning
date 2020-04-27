@@ -25,7 +25,8 @@ class Federated_Learner:
 
 		self.worker_train_loaders = self.data_prepper.get_train_loaders(
 			self.args['n_workers'], self.args['split'])
-		self.shard_sizes = [len(worker_train_loader) * worker_train_loader.batch_size for worker_train_loader in self.worker_train_loaders]
+		self.shard_sizes = [len(
+			worker_train_loader) * worker_train_loader.batch_size for worker_train_loader in self.worker_train_loaders]
 		self.init_workers()
 		self.performance_dict = defaultdict(list)
 
@@ -46,6 +47,28 @@ class Federated_Learner:
 		# self.federated_model.load_state_dict(self.args['model'].state_dict())
 
 		self.workers = []
+
+		# add in free riders
+		
+		freerider = Worker(train_loader=None,
+						model=copy.deepcopy(self.federated_model),
+						# , optimizer=optimizer,
+						standalone_model=copy.deepcopy(self.federated_model),
+						# , standalone_optimizer=standalone_optimizer,
+						dssgd_model=copy.deepcopy(self.federated_model),
+						# , dssgd_optimizer=dssgd_optimizer,
+						# loss_fn=loss_fn, theta=theta,
+						# grad_clip=grad_clip, epoch_sample_size=epoch_sample_size,
+						device=device,
+						# id=i,
+						is_free_rider=True
+						)
+		
+		self.workers.append(freerider)
+		self.shard_sizes.insert(0, 0)
+		self.n_workers+=1
+		
+		
 		# possible to enumerate through various model_fns, optimizer_fns, lrs,
 		# thetas, or even devices
 		for i, worker_train_loader in enumerate(self.worker_train_loaders):
@@ -53,18 +76,19 @@ class Federated_Learner:
 			optimizer = optimizer_fn(model.parameters(), lr=lr)
 
 			standalone_model = copy.deepcopy(self.federated_model)
-			standalone_optimizer = optimizer_fn(standalone_model.parameters(), lr=lr)
+			standalone_optimizer = optimizer_fn(
+				standalone_model.parameters(), lr=lr)
 
 			dssgd_model = copy.deepcopy(self.federated_model)
 			dssgd_optimizer = optimizer_fn(dssgd_model.parameters(), lr=lr)
 
 			worker = Worker(train_loader=worker_train_loader,
-							model=model, optimizer=optimizer, 
+							model=model, optimizer=optimizer,
 							standalone_model=standalone_model, standalone_optimizer=standalone_optimizer,
 							dssgd_model=dssgd_model, dssgd_optimizer=dssgd_optimizer,
-							loss_fn=loss_fn, theta=theta, 
+							loss_fn=loss_fn, theta=theta,
 							grad_clip=grad_clip, epoch_sample_size=epoch_sample_size,
-							device=device, 
+							device=device,
 							id=i,
 							)
 			self.workers.append(worker)
@@ -85,25 +109,32 @@ class Federated_Learner:
 
 				grad_updates.append(compute_grad_update(
 					model_before, model_after, device=self.device))
-				del model_before, model_after # to free up memory immediately
-				
+				# recover the model before training for clipped grad update later
+				worker.model.load_state_dict(model_before.state_dict())
+				del model_before, model_after  # to free up memory immediately
+
 				dssgd_grad_updates.append(compute_grad_update(
 					dssgd_model_before, dssgd_model_after, device=self.device))
-				del dssgd_model_before, dssgd_model_after # to free up memory immediately
 				
+				# NOT necessary for dssgd because the worker.dssgd_model loads the full global dssgd_model later
+				# recover the model before training for clipped grad update later
+				# worker.dssgd_model.load_state_dict(dssgd_model_before.state_dict())
+				
+				del dssgd_model_before, dssgd_model_after  # to free up memory immediately
+
 				if test:
 					evaluate(worker.model, self.test_loader, worker.device)
 			return grad_updates, dssgd_grad_updates
 		else:
 			for worker in self.workers:
-				worker.train(epochs=epochs ,is_pretrain=is_pretrain)
+				worker.train(epochs=epochs, is_pretrain=is_pretrain)
 				if test:
 					evaluate(worker.model, self.test_loader, worker.device)
 		return
 
-
 	def train(self):
-		points = torch.tensor([ worker.theta * worker.param_count * (self.n_workers - 1) for worker in self.workers])
+		points = torch.tensor(
+			[worker.theta * worker.param_count * (self.n_workers - 1) for worker in self.workers])
 		credits = torch.zeros((self.n_workers))
 		# credit_threshold = 1. / (self.n_workers - 1) * (2. / 3.)
 		credit_threshold = 0
@@ -114,71 +145,101 @@ class Federated_Learner:
 		fl_individual_epochs = self.args['fl_individual_epochs']
 		aggregate_mode = self.args['aggregate_mode']
 
-
 		self.performance_dict['shard_sizes'] = self.shard_sizes
 
 		# print("Start local pretraining ")
 		self.train_locally(self.args['pretrain_epochs'], is_pretrain=True)
-		self.worker_model_test_accs_before = self.evaluate_workers_performance(self.test_loader)
-		self.performance_dict['worker_model_test_accs_before'] = self.worker_model_test_accs_before
+		self.worker_model_test_accs_before = self.evaluate_workers_performance(
+			self.test_loader)
+		self.performance_dict[
+			'worker_model_test_accs_before'] = self.worker_model_test_accs_before
 
-		
 		self.dssgd_model = copy.deepcopy(self.federated_model).to(device)
 		# each worker needs a dssgd model to compute final fairness
 		double_seqs = list(range(self.n_workers)) + list(range(self.n_workers))
 
+
+		_, federated_val_acc = evaluate(
+			self.federated_model, self.valid_loader, device, verbose=False)
+		print("CFFL server model validation accuracy : {:.4%}".format(federated_val_acc))
+
+		_, federated_test_acc = evaluate(
+			self.federated_model, self.test_loader, device, verbose=False)
+		print("CFFL server model test accuracy : {:.4%}".format(federated_test_acc))
+
+
 		# print("\nStart federated learning \n")
 		for epoch in range(fl_epochs):
 			if epoch % 20 == 0:
-				print('Epoch {}:'.format(epoch+1))
+				print('Epoch {}:'.format(epoch + 1))
 
-			# 1. training locally, return updates, and filter the updates
-			grad_updates, dssgd_grad_updates = self.train_locally(fl_individual_epochs, requires_update=True)
+			# 1. training locally, return updates, clip and filter the updates
+			grad_updates, dssgd_grad_updates = self.train_locally(
+				fl_individual_epochs, requires_update=True)
+			clip_gradients_(grad_updates, self.args['grad_clip'])
+			clip_gradients_(dssgd_grad_updates, self.args['grad_clip'])
+			unfiltererd_grad_updates = copy.deepcopy(grad_updates)
 			grad_updates = filter_grad_updates(grad_updates, worker_thetas)
 
 			# changes the grad_updates altogether
-			aggregated_gradient_updates = aggregate_gradient_updates(grad_updates, device=self.device, mode=aggregate_mode, credits=credits)
-			
+			aggregated_gradient_updates = aggregate_gradient_updates(
+				grad_updates, device=self.device, mode=aggregate_mode, credits=credits)
+
 			# credit_weighted_grad_updates =  [credit * update for credit, grad_update in zip(credits, grad_updates) for update in grad_update]
 			# credit_aggregated_gradient_updates = aggregate_gradient_updates(grad_updates, device=self.device, mode='credit-sum', credits=credits)
 
 			# param_frequency = [freq + (update.abs()>0).float()  for freq, update in zip(param_frequency, aggregated_gradient_updates) ]
 
-			dssgd_grad_updates = filter_grad_updates(dssgd_grad_updates, worker_thetas)
+			dssgd_grad_updates = filter_grad_updates(
+				dssgd_grad_updates, worker_thetas)
 			# generate a roundrobin sequence
-			rr_sequence = double_seqs[epoch % self.n_workers: epoch % self.n_workers + self.n_workers]
+			rr_sequence = double_seqs[
+				epoch % self.n_workers: epoch % self.n_workers + self.n_workers]
 			self.update_dssgd_model(rr_sequence, dssgd_grad_updates)
 
-
 			# 2. update the federated_model
-			self.federated_model = add_update_to_model(self.federated_model, aggregated_gradient_updates, device=device)
-			
-			_, federated_val_acc = evaluate(self.federated_model, self.valid_loader, device, verbose=False)
+			self.federated_model = add_update_to_model(
+				self.federated_model, aggregated_gradient_updates, device=device)
+
+			_, federated_val_acc = evaluate(
+				self.federated_model, self.valid_loader, device, verbose=False)
 			# print("CFFL server model validation accuracy : {:.4%}".format(federated_val_acc))
 
-			dssgd_val_accs = self.evaluate_workers_performance(self.valid_loader, mode='dssgd')
-			self.performance_dict['dssgd_val_accs'].append(dssgd_val_accs) 
+
+			dssgd_val_accs = self.evaluate_workers_performance(
+				self.valid_loader, mode='dssgd')
+			self.performance_dict['dssgd_val_accs'].append(dssgd_val_accs)
 			# print("DSSGD models validation accuracies: ", ["{:.4%}".format(dssgd_val_acc) for dssgd_val_acc in dssgd_val_accs ])
 
-			# 3.1 carry out evaluations			
+			# 3.1 carry out evaluations
 			'''
 			loo_val_accs = leave_one_out_evaluate(self.federated_model, grad_updates, self.valid_loader, device)
 			print("Leave-one-out validation accuracies : ", ["{:.4%}".format(loo_val_acc) for loo_val_acc in loo_val_accs]   )
 			'''
-			worker_val_accs = one_on_one_evaluate(self.workers, self.federated_model, grad_updates, self.valid_loader, device)
+			worker_val_accs = one_on_one_evaluate(
+				self.workers, self.federated_model, grad_updates, unfiltererd_grad_updates, self.valid_loader, device)
 			# print("One-on-one validation accuracies : ", ["{:.4%}".format(val_acc) for val_acc in worker_val_accs])
+
+
+			worker_test_accs = one_on_one_evaluate(
+				self.workers, self.federated_model, grad_updates, unfiltererd_grad_updates, self.test_loader, device)
+			# print("One-on-one test accuracies : ", ["{:.4%}".format(test_acc) for test_acc in worker_test_accs])
+
 
 			# 3.2 compute credits
 			# credits = compute_credits(credits, federated_val_acc, loo_val_accs, credit_threshold=credit_threshold)
-			credits = compute_credits_sinh(credits, worker_val_accs, credit_threshold=credit_threshold, alpha=self.args['alpha'],)			
+			credits = compute_credits_sinh(
+				credits, worker_val_accs, credit_threshold=credit_threshold, alpha=self.args['alpha'],)
 			# print("Computed and normalized credits: ", credits.tolist())
 			decay = 1
-			credit_threshold = torch.div(1.0, (torch.sum(credits > 0) - 1) ) * (2./3.) 
-			credit_threshold = min(torch.tensor(1), credit_threshold) # to avoid NaN when only one player in C
+			credit_threshold = torch.div(
+				1.0, (torch.sum(credits > 0) - 1)) * (2. / 3.)
+			# to avoid NaN when only one player in C
+			credit_threshold = min(torch.tensor(1), credit_threshold)
 			# print("New credit threshold is : ", credit_threshold.item())
 
-			# 4. gradient downloads and uploads according to credits and thetas 
-			self.assign_updates_with_filter(credits, aggregated_gradient_updates, grad_updates)
+			# 4. gradient downloads and uploads according to credits and thetas
+			self.assign_updates_with_filter(credits, aggregated_gradient_updates, grad_updates, unfiltererd_grad_updates)
 			'''
 			self.shapley_values += compute_shapley(grad_updates, federated_model, test_loader, device)
 			self.assign_updates(credits, param_frequency, aggregated_gradient_updates)
@@ -188,32 +249,35 @@ class Federated_Learner:
 
 			# 5. evaluate the federated_model at the end of each epoch
 			self.performance_summary()
-			
+
 			self.performance_dict['credits'].append(credits.tolist())
-			self.performance_dict['federated_val_acc'].append(federated_val_acc.item())
-			self.performance_dict['credit_threshold'].append(credit_threshold.item())
+			self.performance_dict['federated_val_acc'].append(
+				federated_val_acc.item())
+			self.performance_dict['credit_threshold'].append(
+				credit_threshold.item())
 			# print()
 
-		self.worker_model_test_accs_after = self.evaluate_workers_performance(self.test_loader)
-		self.worker_standalone_test_accs = self.evaluate_workers_performance(self.test_loader, mode='standlone')
+		self.worker_model_test_accs_after = self.evaluate_workers_performance(
+			self.test_loader)
+		self.worker_standalone_test_accs = self.evaluate_workers_performance(
+			self.test_loader, mode='standlone')
 		return
 
-
-	def update_dssgd_model(self, sequence, dssgd_grad_updates):		
+	def update_dssgd_model(self, sequence, dssgd_grad_updates):
 		for Id in sequence:
 			add_update_to_model(self.dssgd_model, dssgd_grad_updates[Id])
-			self.workers[Id].dssgd_model.load_state_dict(self.dssgd_model.state_dict())
+			self.workers[Id].dssgd_model.load_state_dict(
+				self.dssgd_model.state_dict())
 
-	def assign_updates_with_filter(self, credits, aggregated_gradient_updates, grad_updates):
-
+	def assign_updates_with_filter(self, credits, aggregated_gradient_updates, grad_updates, unfiltererd_grad_updates):
 		"""
 		download the largest magnitude updates <credits[i] * num_param> from the server
 		and filter out its own updates in the local model
 		and apply to its local model
 		"""
 
-		for i, (credit, worker, worker_update) in enumerate( zip(credits, self.workers, grad_updates)):
-			if credit == 0: 
+		for i, (credit, worker, worker_update, worker_update_unfiltered) in enumerate(zip(credits, self.workers, grad_updates, unfiltererd_grad_updates)):
+			if credit == 0:
 				# skipping the non contributing parties
 				continue
 
@@ -221,11 +285,15 @@ class Federated_Learner:
 			num_param_downloads = int(credit * worker.param_count)
 
 			allocated_grad = mask_grad_update_by_order(agg_grad_update, num_param_downloads)
-			for res_param_update, worker_param_update in zip(allocated_grad, worker_update):
+			for res_param_update, worker_param_update, worker_param_update_unfiltered in zip(allocated_grad, worker_update, worker_update_unfiltered):
 
 				# filter out and remove the updates from itself
-				filter_indices = (res_param_update.abs() > 0)  & (worker_param_update.abs() > 0)
+				filter_indices = (res_param_update.abs() > 0) & (worker_param_update.abs() > 0)
 				res_param_update.data[filter_indices] -= worker_param_update.data[filter_indices]
+
+				# add in back the clipped but unfiltered own grad updates
+				res_param_update.data += worker_param_update_unfiltered.data
+
 			add_update_to_model(worker.model, agg_grad_update)
 		return
 
@@ -301,10 +369,14 @@ class Federated_Learner:
 
 	def performance_summary(self):
 
-		self.dssgd_models_test_accs = self.evaluate_workers_performance(self.test_loader, mode='dssgd')
-		self.worker_standalone_test_accs = self.evaluate_workers_performance(self.test_loader, mode='standlone')
-		self.worker_model_test_accs_after = self.evaluate_workers_performance(self.test_loader)
-		self.worker_model_improvements = torch.tensor(self.worker_model_test_accs_after) - torch.tensor(self.worker_model_test_accs_before)
+		self.dssgd_models_test_accs = self.evaluate_workers_performance(
+			self.test_loader, mode='dssgd')
+		self.worker_standalone_test_accs = self.evaluate_workers_performance(
+			self.test_loader, mode='standlone')
+		self.worker_model_test_accs_after = self.evaluate_workers_performance(
+			self.test_loader)
+		self.worker_model_improvements = torch.tensor(
+			self.worker_model_test_accs_after) - torch.tensor(self.worker_model_test_accs_before)
 
 		# print('Below are testset accuracies: ---')
 		# print('Workers before    accuracies: ', ["{:.3%}".format(acc_b4) for acc_b4 in self.worker_model_test_accs_before])
@@ -314,44 +386,63 @@ class Federated_Learner:
 		# print('Workers DSSGD     accuracies: ', ["{:.3%}".format(dssgd_acc) for dssgd_acc in self.dssgd_models_test_accs])
 		# print('Workers shard sizes: ', self.shard_sizes)
 
-		self.performance_dict['DSSGD_model_test_accs'].append(self.dssgd_models_test_accs)
-		self.performance_dict['worker_standalone_test_accs'].append(self.worker_standalone_test_accs)
-		self.performance_dict['worker_model_test_accs_after'].append(self.worker_model_test_accs_after)
-		self.performance_dict['worker_model_improvements'].append(self.worker_model_improvements.tolist())
+		self.performance_dict['DSSGD_model_test_accs'].append(
+			self.dssgd_models_test_accs)
+		self.performance_dict['worker_standalone_test_accs'].append(
+			self.worker_standalone_test_accs)
+		self.performance_dict['worker_model_test_accs_after'].append(
+			self.worker_model_test_accs_after)
+		self.performance_dict['worker_model_improvements'].append(
+			self.worker_model_improvements.tolist())
 
 		return
 
 	def get_fairness_analysis(self):
 		print("Performance and Fairness analysis: ")
 		worker_thetas = [worker.theta for worker in self.workers]
-		sharing_contributions = (torch.tensor(self.shard_sizes) * torch.tensor(worker_thetas)).tolist()
+		sharing_contributions = (torch.tensor(
+			self.shard_sizes) * torch.tensor(worker_thetas)).tolist()
 		print('Workers sharing_contributions : ', sharing_contributions)
 
 		self.performance_summary()
 
 
+		credits = self.performance_dict['credits'][-1]
+		remaining_workers_indices = [i for i, credit in enumerate(credits)]
+		remaining_standalone_test_accs =  [ self.worker_standalone_test_accs[i] for i in remaining_workers_indices]
+		remaining_dssgd_test_accs =  [ self.dssgd_models_test_accs[i] for i in remaining_workers_indices]
+		remaining_cffl_test_accs =  [ self.worker_model_test_accs_after[i] for i in remaining_workers_indices]
+
+
 		from scipy.stats import pearsonr
-		corrs = pearsonr(self.worker_standalone_test_accs, self.dssgd_models_test_accs)
+		corrs = pearsonr(remaining_standalone_test_accs,
+						 remaining_dssgd_test_accs)
 		self.performance_dict['standlone_vs_rrdssgd'].append(corrs[0])
 
-		corrs = pearsonr(self.worker_standalone_test_accs, self.worker_model_test_accs_after)
+		corrs = pearsonr(remaining_standalone_test_accs,
+						 remaining_cffl_test_accs)
 		self.performance_dict['standalone_vs_final'].append(corrs[0])
 
-		corrs = pearsonr(sharing_contributions, self.worker_model_test_accs_after)
+		corrs = pearsonr(sharing_contributions,
+						 remaining_cffl_test_accs)
 		self.performance_dict['sharingcontribution_vs_final'].append(corrs[0])
 
 		corrs = pearsonr(sharing_contributions, self.worker_model_improvements)
-		self.performance_dict['sharingcontribution_vs_improvements'].append(corrs[0])
+		self.performance_dict['sharingcontribution_vs_improvements'].append(corrs[
+																			0])
 
-		self.performance_dict['standalone_best_worker'] = max(self.worker_standalone_test_accs)
-		self.performance_dict['CFFL_best_worker'] = max(self.worker_model_test_accs_after)
-		self.performance_dict['rr_dssgd_avg'] = sum(self.dssgd_models_test_accs)/ self.n_workers
-		
+		self.performance_dict['standalone_best_worker'] = max(
+			self.worker_standalone_test_accs)
+		self.performance_dict['CFFL_best_worker'] = max(
+			self.worker_model_test_accs_after)
+		self.performance_dict['rr_dssgd_avg'] = sum(
+			self.dssgd_models_test_accs) / self.n_workers
+
 		print("----Printing performance_dict")
 		for key, value in self.performance_dict.items():
-			print(key , ' - ',  value)
+			print(key, ' - ',  value)
 		print("----")
-	
+
 		'''
 		self.performance_dict['federated_final_performance'] = self.test_acc.item()
 		shapley_values = self.shapley_values
@@ -368,44 +459,59 @@ class Federated_Learner:
 		device = self.args['device']
 		if mode == 'standlone':
 			return [evaluate(worker.standalone_model, eval_loader, device, verbose=False)[1].tolist() for worker in self.workers]
-		elif mode =='dssgd':
+		elif mode == 'dssgd':
 			return [evaluate(worker.dssgd_model, eval_loader, device, verbose=False)[1].tolist() for worker in self.workers]
 		else:
 			return [evaluate(worker.model, eval_loader, device, verbose=False)[1].tolist() for worker in self.workers]
 
 
 def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fade=1):
-	print('alpha used is :', alpha, ' current credits are : ', credits, ' current threshold: ', credit_threshold)
+	# print('alpha used is :', alpha, ' current credits are : ', credits, ' current threshold: ', credit_threshold)
 	total = sum(val_accs)
 	for i, (credit, val_acc) in enumerate(zip(credits, val_accs)):
 		credit_epoch = val_acc / total
-		if credit_fade==1:
+		if credit_fade == 1:
 			credits[i] = credit * 0.2 + credit_epoch * 0.8
 		else:
-			credits[i] = (credit + credit_epoch) * 0.5 
+			credits[i] = (credit + credit_epoch) * 0.5
 
 		if credits[i] < credit_threshold:
 			credits[i] = 0
 
 		credits[i] = math.sinh(alpha * credits[i])
 
+
+	if torch.sum(credits) == 0:
+		print('credits all zero')
 	credits = credits / torch.sum(credits)
 	credits[credits < credit_threshold] = 0
+
+	if torch.sum(credits) == 0:
+		print('credits all zero')
+	# print("computed normalized credits are: ", credits/ torch.sum(credits))
 	return credits / torch.sum(credits)
+
+
+def clip_gradients_(grad_updates, grad_clip):
+	grad_clip = abs(grad_clip)
+	for grad_update in grad_updates:
+		for param in grad_update:
+			param.data = torch.clamp(param.data, min=-grad_clip, max=grad_clip)
 
 def filter_grad_updates(grad_updates, thetas):
 	"""
 	Filter the grad_updates by the largest magnitude criterion top m%
 
 	"""
-	return [mask_grad_update_by_order(grad_update, mask_order=None, mask_percentile=theta) for grad_update, theta in zip(grad_updates,thetas) ]
+	return [mask_grad_update_by_order(grad_update, mask_order=None, mask_percentile=theta) for grad_update, theta in zip(grad_updates, thetas)]
+
 
 def mask_grad_update_by_order(grad_update, mask_order, mask_percentile=None):
 	# mask all but the largest <mask_order> updates (by magnitude) to zero
-	all_update_mod = torch.cat( [update.data.view(-1).abs() for update in grad_update]  )
-	
+	all_update_mod = torch.cat([update.data.view(-1).abs()
+								for update in grad_update])
 	if not mask_order and mask_percentile:
-		mask_order = int( len(all_update_mod) * mask_percentile )
+		mask_order = int(len(all_update_mod) * mask_percentile)
 
 	topk, indices = torch.topk(all_update_mod, mask_order)
 	return mask_grad_update_by_magnitude(grad_update, topk[-1])
