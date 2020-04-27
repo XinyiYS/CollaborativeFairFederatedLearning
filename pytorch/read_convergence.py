@@ -47,6 +47,7 @@ def parse(folder):
 	setup['B'] = int(param[3][1:])
 	setup['size'] = int(param[4][4:])
 	setup['lr'] = float(param[5][2:])
+	setup['alpha'] = int(folder[folder.find('_a')+2])
 	return setup
 
 
@@ -125,7 +126,6 @@ def get_fairness(acc_lines):
 
 	Distributed_f /= n_experiments
 	CFFL_f /= n_experiments
-	print(Distributed_f, CFFL_f)
 	return Distributed_f,CFFL_f
 
 def plot_convergence(dirname):
@@ -139,8 +139,8 @@ def plot_convergence(dirname):
 
 		setup = parse(folder)
 		loaded = load_acc_dfs(dirname, folder)
-		if setup['pretrain_epochs'] == 0:
-			continue
+		# if setup['pretrain_epochs'] == 0:
+			# continue
 
 		if not loaded:
 

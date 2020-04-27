@@ -52,9 +52,9 @@ def plot(df, save_dir=None, name='adult', plot_type=1, show=False):
 
 	if save_dir:
 		plt.savefig(save_dir)
-		plt.clf()
 	if show:
 		plt.show()
+	plt.clf()
 	return
 
 

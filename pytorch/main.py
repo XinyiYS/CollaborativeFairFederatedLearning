@@ -84,20 +84,19 @@ from arguments import adult_args, mnist_args, names_args
 if __name__ == '__main__':
 	# # init steps
 	# for n_workers, sample_size_cap, fl_epochs in [[5, 5000, 100],[10, 10000, 100],[20, 15000, 100]]:
-
 	# args = adult_args # mnist_args
-
 	# n_workers, sample_size_cap, fl_epochs = [5, 3000, 20]
-
 	# for n_workers, sample_size_cap, fl_epochs in [ [5, 5000, 100], [10, 10000, 100]]:
 	args = adult_args
 
-	args['pretrain_epochs'] = 10
-	args['theta'] = 1
-	for n_workers, sample_size_cap in [  [5, 5000], [10, 10000], [20, 15000]]:
+	args['pretrain_epochs'] = 0
+	args['theta'] = 0.1
+	for n_workers, sample_size_cap in [  [10, 10000]]:
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap
-		run_experiments(args, 5)
+		for alpha in [6,7,8,9,10]:
+			args['alpha'] = alpha
+			run_experiments(args, 5)
 
 
 

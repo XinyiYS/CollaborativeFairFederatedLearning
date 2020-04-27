@@ -37,20 +37,20 @@ adult_args = {
 	# setting parameters
 	'dataset': 'adult',
 	'sample_size_cap': 5000,
-	'n_workers': 5,
+	'n_workers': 10,
 	'split': 'powerlaw', #classimbalance
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size' : 16, # use this batch_size
+	'batch_size': 16, # use this batch_size
 	'train_val_split_ratio': 0.9,
-	'alpha': 10,
+	'alpha': 5,
 	'epoch_sample_size':float("Inf"),
 
 	# model parameters
 	'model_fn': MLP,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(),  #CrossEntropyLoss NLLLoss
-	'lr': 0.01,  # lr 0.01 and above is no good
-	'grad_clip': 0.1,
+	'lr': 0.1,  # lr 0.01 and above is no good
+	'grad_clip': 0.01,
 
 	# training parameters
 	'pretrain_epochs': 5,
@@ -65,7 +65,7 @@ mnist_args = {
 	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
 	# setting parameters
 	'dataset': 'mnist',
-	'sample_size_cap': 5000,
+	'sample_size_cap': 3000,
 	'n_workers': 5,
 	'split': 'powerlaw', #or 'powerlaw'
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
@@ -73,20 +73,21 @@ mnist_args = {
 	'train_val_split_ratio': 0.9,
 	'alpha': 5,
 	'epoch_sample_size':float("Inf"),
-	'grad_clip':0.001,
 
 
 	# model parameters
 	'model_fn': MLP_Net,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(), 
-	'lr': 0.1,
+	'lr': 0.001,
+	'grad_clip':0.001,
+
 
 	# training parameters
 	'pretrain_epochs': 10,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
-	'aggregate_mode':'credit-sum',  # 'mean', 'sum'
+	'aggregate_mode':'sum',  # 'mean', 'sum'
 }
 
 names_args = {
