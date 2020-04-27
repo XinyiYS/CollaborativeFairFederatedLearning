@@ -100,17 +100,18 @@ def evaluate(model, eval_loader, device, loss_fn=nn.CrossEntropyLoss(),verbose=T
 	return loss, accuracy
 
 
-def one_on_one_evaluate(workers, federated_model, grad_updates, eval_loader, device):
-
+def one_on_one_evaluate(workers, federated_model, grad_updates, unfiltererd_grad_updates, eval_loader, device):
 	val_accs = []
-	for grad_update, worker in zip(grad_updates, workers):
+	for i, worker in enumerate(workers):
 		if worker.theta == 1:
-			_, val_acc = evaluate(worker.model, eval_loader, device, verbose=False)
+			model_to_eval = copy.deepcopy(worker.model)
+			add_update_to_model(model_to_eval, unfiltererd_grad_updates[i])
 		else:
-			backup = copy.deepcopy(federated_model)
-			_, val_acc = evaluate(add_update_to_model(backup, grad_update), eval_loader, device, verbose=False)
-			del backup
-		
+			model_to_eval = copy.deepcopy(federated_model)
+			add_update_to_model(model_to_eval, grad_updates[i])
+
+		_, val_acc = evaluate(model_to_eval, eval_loader, device, verbose=False)
+		del model_to_eval
 		val_accs.append(val_acc)
 	return val_accs
 

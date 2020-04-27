@@ -24,7 +24,8 @@ class Worker():
 	def __init__(self, train_loader, model=None, optimizer=None,
 				 standalone_model=None, standalone_optimizer=None,
 				 dssgd_model=None, dssgd_optimizer=None,
-				 loss_fn=None, theta=0.1, grad_clip=0.01, epoch_sample_size=-1,device=None,id=None):
+				 loss_fn=None, theta=0.1, grad_clip=0.01, epoch_sample_size=-1,
+				 device=None,id=None,is_free_rider=False):
 
 		self.train_loader = train_loader
 		self.model = model
@@ -40,8 +41,16 @@ class Worker():
 		self.id = id
 		self.epoch_sample_size = epoch_sample_size
 		self.param_count = sum([p.numel() for p in self.model.parameters()])
+		self.is_free_rider = is_free_rider
 
 	def train(self, epochs, is_pretrain=False):
+		if self.is_free_rider:
+			for model in [self.model, self.dssgd_model, self.standalone_model]:
+				model = model.to(self.device)
+				for param in self.model.parameters():
+					param.data += torch.rand(param.data.shape).to(self.device) * self.grad_clip
+			return
+
 		self.model.train()
 		self.model = self.model.to(self.device)
 
@@ -60,32 +69,28 @@ class Worker():
 				outputs = self.model(batch_data)
 				loss = self.loss_fn(outputs, batch_target)
 				loss.backward()
-				# clip_grad_value_(self.model.parameters(), self.grad_clip)
 				self.optimizer.step()
 				iter += len(batch_data)
 
 				if iter >= self.epoch_sample_size:
+					# specifically for NLP task to terminate for training efficiency
 					break
 
 				# if pretrain, skip the standalone and dssgd
 				if is_pretrain:
 					continue
 
-				self.standalone_optimizer.zero_grad()
-				outputs = self.standalone_model(batch_data)
-				loss = self.loss_fn(outputs, batch_target)
-				loss.backward()
-				# clip_grad_value_(self.standalone_model.parameters(), self.grad_clip)
-				self.standalone_optimizer.step()
+				if not is_pretrain and epoch == 0:
+					# standalone model does not include pre-train
+					# standalone model only trains 1 epoch per communication round
+					self.standalone_optimizer.zero_grad()
+					outputs = self.standalone_model(batch_data)
+					loss = self.loss_fn(outputs, batch_target)
+					loss.backward()
+					self.standalone_optimizer.step()
 
 				self.dssgd_optimizer.zero_grad()
 				outputs = self.dssgd_model(batch_data)
 				loss = self.loss_fn(outputs, batch_target)
 				loss.backward()
-				clip_grad_value_(self.dssgd_model.parameters(), self.grad_clip)
 				self.dssgd_optimizer.step()
-
-
-
-
-
