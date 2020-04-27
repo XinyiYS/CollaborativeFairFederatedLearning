@@ -67,7 +67,8 @@ def collect_and_compile_performance(dirname, compiling_both=False):
 def collate_pngs(dirname, compiling_both=False):
 	try:
 		os.mkdir(os.path.join(dirname, 'figures'))
-	except:
+	except Exception as e:
+		print(e)
 		pass
 	figures_dir = os.path.join(dirname, 'figures')
 	
@@ -127,7 +128,7 @@ if __name__ == '__main__':
 	COMPILING_BOTH = True
 	TEST = True
 	if TEST:
-		dirname = 'logs/gcut_sum'
+		dirname = 'fromserver_logs/adult'
 		# dirname = 'logs/adult/dropna_alpha3/credit_sum'
 		# dirname = 'logs/adult/credit_sum'
 		experiment_results = plot_convergence(dirname)
