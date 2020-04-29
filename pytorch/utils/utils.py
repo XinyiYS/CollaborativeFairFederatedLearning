@@ -80,7 +80,7 @@ def compare_models(model1, model2):
 	return True
 
 
-def evaluate(model, eval_loader, device, loss_fn=nn.CrossEntropyLoss(),verbose=True):
+def evaluate(model, eval_loader, device, loss_fn=nn.CrossEntropyLoss(), verbose=True):
 	model.eval()
 	model = model.to(device)
 	correct = 0

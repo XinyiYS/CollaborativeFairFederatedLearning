@@ -4,6 +4,8 @@ a.py
 
 *.pyc
 
+*Experiments*
+
 *__pycache__*
 
 *Paper*

@@ -22,14 +22,17 @@ class Custom_Dataset(Dataset):
 class Worker():
 
 	def __init__(self, train_loader, model=None, optimizer=None,
-				 standalone_model=None, standalone_optimizer=None,
-				 dssgd_model=None, dssgd_optimizer=None,
-				 loss_fn=None, theta=0.1, grad_clip=0.01, epoch_sample_size=-1,
-				 device=None,id=None,is_free_rider=False):
+		model_pretrain=None, optimizer_pretrain=None,
+		standalone_model=None, standalone_optimizer=None,
+		dssgd_model=None, dssgd_optimizer=None,
+		loss_fn=None, theta=0.1, grad_clip=0.01, epoch_sample_size=-1,
+		device=None,id=None,is_free_rider=False):
 
 		self.train_loader = train_loader
 		self.model = model
 		self.optimizer = optimizer
+		self.model_pretrain = model_pretrain
+		self.optimizer_pretrain = optimizer_pretrain
 		self.standalone_model = standalone_model
 		self.standalone_optimizer = standalone_optimizer
 		self.dssgd_model = dssgd_model
@@ -45,11 +48,14 @@ class Worker():
 
 	def train(self, epochs, is_pretrain=False):
 		if self.is_free_rider:
-			for model in [self.model, self.dssgd_model, self.standalone_model]:
+			for model in [self.model, self.model_pretrain,self.dssgd_model, self.standalone_model]:
 				model = model.to(self.device)
+	
 				for param in self.model.parameters():
 					param.data += torch.rand(param.data.shape).to(self.device) * self.grad_clip
 			return
+		self.model_pretrain.train()
+		self.model_pretrain = self.model_pretrain.to(self.device)
 
 		self.model.train()
 		self.model = self.model.to(self.device)
@@ -65,21 +71,33 @@ class Worker():
 				batch_data, batch_target = batch_data.to(
 					self.device), batch_target.to(self.device)
 				
+				# pretrain model
+				self.optimizer_pretrain.zero_grad()
+				outputs = self.model_pretrain(batch_data)
+				loss = self.loss_fn(outputs, batch_target)
+				loss.backward()
+				self.optimizer_pretrain.step()
+				iter += len(batch_data)
+
+				# if pretrain, skip the rest
+				if is_pretrain:
+					continue
+
+				# no pretrain model
 				self.optimizer.zero_grad()
 				outputs = self.model(batch_data)
 				loss = self.loss_fn(outputs, batch_target)
 				loss.backward()
 				self.optimizer.step()
-				iter += len(batch_data)
 
-				if iter >= self.epoch_sample_size:
-					# specifically for NLP task to terminate for training efficiency
-					break
+				# dssgd model
+				self.dssgd_optimizer.zero_grad()
+				outputs = self.dssgd_model(batch_data)
+				loss = self.loss_fn(outputs, batch_target)
+				loss.backward()
+				self.dssgd_optimizer.step()
 
-				# if pretrain, skip the standalone and dssgd
-				if is_pretrain:
-					continue
-
+				# standalone model
 				if not is_pretrain and epoch == 0:
 					# standalone model does not include pre-train
 					# standalone model only trains 1 epoch per communication round
@@ -89,8 +107,6 @@ class Worker():
 					loss.backward()
 					self.standalone_optimizer.step()
 
-				self.dssgd_optimizer.zero_grad()
-				outputs = self.dssgd_model(batch_data)
-				loss = self.loss_fn(outputs, batch_target)
-				loss.backward()
-				self.dssgd_optimizer.step()
+				if iter >= self.epoch_sample_size:
+					# specifically for NLP task to terminate for training efficiency
+					break
