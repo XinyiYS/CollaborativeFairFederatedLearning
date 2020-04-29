@@ -58,8 +58,8 @@ class MLP(nn.Module):
 
 	def __init__(self, input_dim=85, output_dim=2, device=None):
 		super(MLP, self).__init__()
-		self.fc1 = nn.Linear(input_dim, 32)
-		self.fc2 = nn.Linear(32, output_dim)
+		self.fc1 = nn.Linear(input_dim, 64)
+		self.fc2 = nn.Linear(64, output_dim)
 
 		# self.linear = torch.nn.Linear(input_dim, output_dim)
 

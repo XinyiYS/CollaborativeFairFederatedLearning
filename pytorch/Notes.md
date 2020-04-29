@@ -1,4 +1,20 @@
 
+## Adult dataset
+### Latest settings:
+
+- lr = 0.1
+- grad_clip = 0.01
+- B = 10
+- sample_size_cap = [5, 5000], [10, 10000], [20, 15000]
+- alpha = 5
+- one free-rider with random weights (uniform generated with mean = grad_clip)
+- MLP (64 hidden neurons) with NLLLoss()
+- aggregate mode: 'sum'
+- performance: fairness is very high across n_workers = [5, 10, 20]
+- issue: accuracy performance is in consistent with rr >= CFFL >= standalone
+- TODO: Try a smaller lr
+
+
 ## Adult dataset dropna alpha=3
 
 ###  With gradient cut credit-sum alpha=3 
