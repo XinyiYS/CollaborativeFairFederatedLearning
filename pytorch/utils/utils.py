@@ -47,15 +47,12 @@ def aggregate_gradient_updates(grad_updates, device=None, mode='sum', credits=No
 		if shard_sizes is None:
 			shard_sizes = torch.ones(len(grad_updates))
 		grad_updates = copy.deepcopy(grad_updates)
-
-
 		for i, (grad_update, shard_size) in enumerate(zip(grad_updates, shard_sizes)):
-			grad_updates[i] = [(credit * update) for update in grad_update]
-
-
+			grad_updates[i] = [(shard_size * update) for update in grad_update]
 		for i in range(len(grad_updates[0])):
 			aggregated_gradient_updates.append(torch.stack(
 				[grad_update[i] for grad_update in grad_updates]).mean(dim=0))
+
 	elif mode =='sum':
 		for i in range(len(grad_updates[0])):
 			aggregated_gradient_updates.append(torch.stack(
