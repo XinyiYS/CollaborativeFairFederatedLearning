@@ -102,6 +102,7 @@ class Data_Prepper:
 			from utils.utils import random_split
 			indices_list = random_split(sample_indices=self.train_idx, m_bins=n_workers, equal=False)
 
+		self.indices_list = indices_list
 		worker_train_loaders = [DataLoader(self.train_dataset, batch_size=batch_size, sampler=SubsetRandomSampler(indices)) for indices in indices_list]
 
 		return worker_train_loaders
