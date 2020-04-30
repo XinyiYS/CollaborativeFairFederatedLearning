@@ -52,7 +52,7 @@ class Worker():
 				model = model.to(self.device)
 	
 				for param in self.model.parameters():
-					param.data += torch.rand(param.data.shape).to(self.device) * self.grad_clip
+					param.data += torch.rand(param.data.shape).to(self.device) # * self.grad_clip
 			return
 		self.model_pretrain.train()
 		self.model_pretrain = self.model_pretrain.to(self.device)
