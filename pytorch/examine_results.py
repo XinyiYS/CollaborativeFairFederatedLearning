@@ -120,9 +120,6 @@ def run_all(dirname):
 
 if __name__ == '__main__':
 
-
-
-	# COMPILING_BOTH = False
 	TEST = True
 	if TEST:
 		dirname = 'Experiments_2020-04-30-21:01'

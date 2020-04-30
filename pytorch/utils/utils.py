@@ -30,7 +30,7 @@ def add_gradient_updates(grad_update_1, grad_update_2):
 	return [grad_update_1[i] + grad_update_2[i] for i in range(len(grad_update_1))]
 
 
-def aggregate_gradient_updates(grad_updates, device=None, mode='sum', credits=None):
+def aggregate_gradient_updates(grad_updates, device=None, mode='sum', credits=None, shard_sizes=None):
 	if grad_updates:
 		len_first = len(grad_updates[0])
 		assert all(len(i) == len_first for i in grad_updates), "Different shapes of parameters. Cannot take average."
@@ -43,6 +43,16 @@ def aggregate_gradient_updates(grad_updates, device=None, mode='sum', credits=No
 
 	aggregated_gradient_updates = []
 	if mode=='mean':
+		# default mean is FL-avg: weighted avg according to nk/n
+		if shard_sizes is None:
+			shard_sizes = torch.ones(len(grad_updates))
+		grad_updates = copy.deepcopy(grad_updates)
+
+
+		for i, (grad_update, shard_size) in enumerate(zip(grad_updates, shard_sizes)):
+			grad_updates[i] = [(credit * update) for update in grad_update]
+
+
 		for i in range(len(grad_updates[0])):
 			aggregated_gradient_updates.append(torch.stack(
 				[grad_update[i] for grad_update in grad_updates]).mean(dim=0))

@@ -27,8 +27,7 @@ class Federated_Learner:
 
 		self.worker_train_loaders = self.data_prepper.get_train_loaders(
 			self.args['n_workers'], self.args['split'])
-		self.shard_sizes = [len(
-			worker_train_loader) * worker_train_loader.batch_size for worker_train_loader in self.worker_train_loaders]
+		self.shard_sizes = [len(index_list) for index_list in data_prepper.indices_list]
 		self.init_workers()
 		self.performance_dict = defaultdict(list)
 		self.performance_dict_pretrain = defaultdict(list)
