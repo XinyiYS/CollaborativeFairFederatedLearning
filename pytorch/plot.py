@@ -14,7 +14,9 @@ best_worker_fmt_styles = ['ro-', 'c.-', 'm<-', 'b<-']
 FONTSIZE = 17
 
 Xlabel_NAMES = ['Communication Rounds', 'Epochs', 'Epochs (Communication Rounds)']
-def plot(df, save_dir=None, name='adult', plot_type=1, show=False):
+def plot(df, save_dir=None, name='adult', plot_type=1, show=False, **kwargs):
+	# pass in other use info using kwargs
+	
 	# Data
 	index = np.arange(1, len(df)+1)
 
@@ -35,7 +37,7 @@ def plot(df, save_dir=None, name='adult', plot_type=1, show=False):
 
 	# reformat the yticks
 	if name =='adult':
-		bottom, top = 0.70, 0.85
+		bottom, top = 0.65, 0.85
 	else: # for MNIST
 		# for the classimbalance setting, lowest party has acc ~= 10%
 		bottom, top = 0, 1.0
