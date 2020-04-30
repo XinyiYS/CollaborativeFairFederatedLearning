@@ -10,7 +10,7 @@ from read_convergence import plot_convergence, parse, get_cffl_best
 fairness_keys = [
 		'standlone_vs_rrdssgd_mean',
 		'standalone_vs_final_mean',
-		'sharingcontribution_vs_final_mean', ]
+		]
 
 performance_keys = [
 		'dssgd',
@@ -18,7 +18,7 @@ performance_keys = [
 		'cffl',
 		]
 
-def collect_and_compile_performance(dirname, compiling_both=False):
+def collect_and_compile_performance(dirname):
 
 	fairness_rows = []
 	performance_rows = []
@@ -27,34 +27,35 @@ def collect_and_compile_performance(dirname, compiling_both=False):
 			continue
 
 		setup = parse(folder)
-		if compiling_both and setup['pretrain_epochs'] == 0: continue
+		n_workers = setup['P']
+		fl_epochs = setup['Communication Rounds']
+		theta = setup['theta']
 
-		n_workers = int(folder.split('_')[1][1:])
-		fl_epochs = int(folder.split('-')[1])
-		theta = float(folder.split('_')[6].replace('theta', ''))
 		try:
 			with open(os.path.join(dirname, folder, 'aggregate_dict.txt')) as dict_log:
 				aggregate_dict = json.loads(dict_log.read())
-			f_data_row = ['P' + str(n_workers) + '_' + str(theta)] + [aggregate_dict[f_key][0] for f_key in fairness_keys]
 
-			best_worker_accs = get_cffl_best(dirname, folder)
-			p_data_row = ['P' + str(n_workers) + '_' + str(theta)] + best_worker_accs
+			with open(os.path.join(dirname, folder, 'aggregate_dict_pretrain.txt')) as dict_log:
+				aggregate_dict_pretrain = json.loads(dict_log.read())
+
+			f_data_row = ['P' + str(n_workers) + '_' + str(theta)] + [aggregate_dict[f_key][0] for f_key in fairness_keys]
+			f_data_row.append(aggregate_dict_pretrain['standalone_vs_final_mean'][0])
+
+			p_data_row = ['P' + str(n_workers) + '_' + str(theta)] + get_cffl_best(dirname, folder)
 
 			fairness_rows.append(f_data_row)
 			performance_rows.append(p_data_row)
 		except Exception as e:
 			print(e)
-			pass
-			
-	
-	shorthand_f_keys = ['Distriubted', 'CFFL' ,'Contributions_V_final']
+
+	shorthand_f_keys = ['Distriubted', 'CFFL', 'CFFL pretrain']
 	fair_df = pd.DataFrame(fairness_rows, columns=[' '] + shorthand_f_keys).set_index(' ')
 	fair_df = fair_df.sort_values(' ')
 	print(fair_df.to_markdown())
 	
 	fair_df.to_csv( os.path.join(dirname, 'fairness.csv'))
 
-	shorthand_p_keys = ['Distributed', 'Standalone', 'CFFL']
+	shorthand_p_keys = ['Distributed', 'Standalone', 'CFFL', 'CFFL pretrain']
 	pd.options.display.float_format = '{:,.2f}'.format
 	perf_df = pd.DataFrame(performance_rows, columns=[' '] + shorthand_p_keys).set_index(' ').T
 	perf_df = perf_df[sorted(perf_df.columns)]
@@ -64,7 +65,7 @@ def collect_and_compile_performance(dirname, compiling_both=False):
 	return fair_df, perf_df
 
 
-def collate_pngs(dirname, compiling_both=False):
+def collate_pngs(dirname):
 	try:
 		os.mkdir(os.path.join(dirname, 'figures'))
 	except Exception as e:
@@ -77,7 +78,7 @@ def collate_pngs(dirname, compiling_both=False):
 			continue
 
 		setup = parse(directory)
-		if compiling_both and setup['pretrain_epochs'] == 0: continue
+		# if compiling_both and setup['pretrain_epochs'] == 0: continue
 
 		subdir = os.path.join(dirname, directory)
 
@@ -119,21 +120,15 @@ def run_all(dirname):
 
 if __name__ == '__main__':
 
-	'''
-	1000perpartylr0001
-	1000perparty
-	500perparty
-	'''
 
-	COMPILING_BOTH = True
+
+	# COMPILING_BOTH = False
 	TEST = True
 	if TEST:
-		dirname = 'fromserver_logs/adult'
-		# dirname = 'logs/adult/dropna_alpha3/credit_sum'
-		# dirname = 'logs/adult/credit_sum'
+		dirname = 'Experiments_2020-04-29-23:53'
 		experiment_results = plot_convergence(dirname)
-		collate_pngs(dirname, COMPILING_BOTH)
-		fair_df, perf_df = collect_and_compile_performance(dirname, COMPILING_BOTH)
+		collate_pngs(dirname)
+		fair_df, perf_df = collect_and_compile_performance(dirname)
 	else:
 		dirname = 'logs/adult/na_a3_nopretrain/'
 		for folder in ['credit_sum', 'sum']:

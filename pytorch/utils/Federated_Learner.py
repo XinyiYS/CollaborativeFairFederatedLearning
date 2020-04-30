@@ -276,16 +276,12 @@ class Federated_Learner:
 			self.performance_summary(to_print=(epoch%20==0))
 
 			self.performance_dict['credits'].append(credits.tolist())
-			self.performance_dict['federated_val_acc'].append(
-				federated_val_acc.item())
-			self.performance_dict['credit_threshold'].append(
-				credit_threshold.item())
+			self.performance_dict['federated_val_acc'].append(federated_val_acc.item())
+			self.performance_dict['credit_threshold'].append(credit_threshold.item())
 
 			self.performance_dict_pretrain['credits'].append(credits_pretrain.tolist())
-			self.performance_dict['federated_val_acc'].append(
-				federated_val_acc_pretrain.item())
-			self.performance_dict['credit_threshold'].append(
-				credit_threshold_pretrain.item())
+			self.performance_dict_pretrain['federated_val_acc'].append(federated_val_acc_pretrain.item())
+			self.performance_dict_pretrain['credit_threshold'].append(credit_threshold_pretrain.item())
 			# print()
 
 		self.cffl_test_accs = self.evaluate_workers_performance(
