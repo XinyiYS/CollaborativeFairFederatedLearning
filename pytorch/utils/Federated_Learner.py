@@ -20,6 +20,7 @@ class Federated_Learner:
 		self.device = args['device']
 		self.data_prepper = data_prepper
 		self.n_workers = self.args['n_workers']
+		self.n_freeriders = self.args['n_freeriders']
 
 		self.valid_loader = data_prepper.get_valid_loader()
 		self.test_loader = data_prepper.get_test_loader()
@@ -46,8 +47,6 @@ class Federated_Learner:
 
 		self.federated_model = model_fn(device=device)
 		self.federated_model_pretrain = copy.deepcopy(self.federated_model)
-		# same initialization across experiment runs
-		# self.federated_model.load_state_dict(self.args['model'].state_dict())
 
 		self.workers = []
 		# add in free riders
@@ -60,10 +59,10 @@ class Federated_Learner:
 						device=device,
 						is_free_rider=True
 						)
-		
-		self.workers.append(freerider)
-		self.shard_sizes.insert(0, 0)
-		self.n_workers+=1
+		for i in range(self.n_freeriders):
+			self.workers.append(freerider)
+			self.shard_sizes.insert(0, 0)
+			self.n_workers+=1
 		
 		# possible to enumerate through various model_fns, optimizer_fns, lrs,
 		# thetas, or even devices
@@ -564,9 +563,12 @@ def mask_grad_update_by_order(grad_update, mask_order, mask_percentile=None):
 								for update in grad_update])
 	if not mask_order and mask_percentile:
 		mask_order = int(len(all_update_mod) * mask_percentile)
-
-	topk, indices = torch.topk(all_update_mod, mask_order)
-	return mask_grad_update_by_magnitude(grad_update, topk[-1])
+	
+	if mask_order == 0:
+		return mask_grad_update_by_magnitude(grad_update, 0)
+	else:
+		topk, indices = torch.topk(all_update_mod, mask_order)
+		return mask_grad_update_by_magnitude(grad_update, topk[-1])
 
 
 def mask_grad_update_by_magnitude(grad_update, mask_constant):

@@ -19,18 +19,19 @@ adult_args = {
 	'dataset': 'adult',
 	'sample_size_cap': 5000,
 	'n_workers': 10,
-	'split': 'powerlaw', #classimbalance
+	'split': 'powerlaw',
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size': 10, # use this batch_size
+	'batch_size': 16,
 	'train_val_split_ratio': 0.9,
-	'alpha': 5,
+	'alpha': 3,
 	'epoch_sample_size':float("Inf"),
+	'n_freeriders': 0,
 
 	# model parameters
 	'model_fn': MLP,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(),  #CrossEntropyLoss NLLLoss
-	'lr': 0.1,  # lr 0.01 works for B = 10
+	'lr': 0.001,  # lr 0.01 works for B = 10
 	'grad_clip': 0.01,
 
 	# training parameters
@@ -48,7 +49,7 @@ mnist_args = {
 	'dataset': 'mnist',
 	'sample_size_cap': 3000,
 	'n_workers': 5,
-	'split': 'powerlaw', #or 'powerlaw'
+	'split': 'powerlaw', #or 'classimbalance'
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
 	'batch_size' : 10, 
 	'train_val_split_ratio': 0.9,

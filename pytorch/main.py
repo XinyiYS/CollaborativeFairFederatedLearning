@@ -91,10 +91,13 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 		
 		with open(os.path.join(logdir, 'performance_dict.log'), 'a') as log:
 			log.write(json.dumps(federated_learner.performance_dict))
+			log.write('\n')
 
 		performance_dicts_pretrain.append(federated_learner.performance_dict_pretrain)
 		with open(os.path.join(logdir, 'performance_dict_pretrain.log'), 'a') as log:
 			log.write(json.dumps(federated_learner.performance_dict_pretrain))
+			log.write('\n')
+
 
 	write_aggregate_dict(performance_dicts, os.path.join(logdir, 'aggregate_dict.txt'))
 	write_aggregate_dict(performance_dicts_pretrain, os.path.join(logdir, 'aggregate_dict_pretrain.txt'))
@@ -105,13 +108,9 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 
 
 from arguments import adult_args, mnist_args, names_args, update_gpu
+
 if __name__ == '__main__':
-	# # init steps
-	# for n_workers, sample_size_cap, fl_epochs in [[5, 5000, 100],[10, 10000, 100],[20, 15000, 100]]:
-	# args = adult_args # mnist_args
-	# n_workers, sample_size_cap, fl_epochs = [5, 3000, 20]
-	# for n_workers, sample_size_cap, fl_epochs in [ [5, 5000, 100], [10, 10000, 100]]:
-	
+	# init steps	
 	ts = time.time()
 	st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H:%M')
 	experiment_dir = 'Experiments_{}'.format(st)
@@ -121,9 +120,30 @@ if __name__ == '__main__':
 		pass
 	init_mp()
 
+	# set up arguments for experiments
 	result_list = []
 	args = adult_args # mnist_args
-	for n_workers, sample_size_cap, fl_epochs in[[5, 4000, 100], [10, 6000, 100]]:
+	for n_workers, sample_size_cap, fl_epochs in[[5, 2000, 100], [10, 4000, 100]]:
+
+		args['n_workers'] = n_workers
+		args['sample_size_cap'] = sample_size_cap
+		args['fl_epochs'] = fl_epochs
+		for theta in [0.1, 1]:
+			args['theta'] = theta
+
+			pool = Pool(processes=4)
+			r = pool.apply_async(run_experiments, ((copy.deepcopy(args) ), (5), (experiment_dir)))
+			result_list.append(r)
+	pool.close()
+	pool.join()
+
+	for r in result_list:
+		r.get()
+
+
+	result_list = []
+	args = adult_args # mnist_args
+	for n_workers, sample_size_cap, fl_epochs in[[20, 8000, 100]]:
 
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap

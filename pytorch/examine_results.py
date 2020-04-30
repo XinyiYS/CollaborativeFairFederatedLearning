@@ -26,7 +26,7 @@ def collect_and_compile_performance(dirname):
 		if os.path.isfile(os.path.join(dirname, folder)) or not 'complete.txt' in os.listdir(os.path.join(dirname, folder)):
 			continue
 
-		setup = parse(folder)
+		setup = parse(dirname, folder)
 		n_workers = setup['P']
 		fl_epochs = setup['Communication Rounds']
 		theta = setup['theta']
@@ -77,7 +77,7 @@ def collate_pngs(dirname):
 		if os.path.isfile(os.path.join(dirname, directory)) or not 'complete.txt' in os.listdir(os.path.join(dirname, directory)):
 			continue
 
-		setup = parse(directory)
+		setup = parse(dirname, directory)
 		# if compiling_both and setup['pretrain_epochs'] == 0: continue
 
 		subdir = os.path.join(dirname, directory)
@@ -85,7 +85,7 @@ def collate_pngs(dirname):
 		# convert figure.png to
 		# adult_LR_p5e100_cffl_localepoch5_localbatch16_lr0001_upload1
 		figure_name = '{}_{}_p{}e{}_cffl_localepoch{}_localbatch{}_lr{}_upload{}.png'.format(
-			setup['name'],  setup['model'],
+			setup['dataset'],  setup['model'],
 			setup['P'], setup['Communication Rounds'],
 			setup['E'], setup['B'],
 			str(setup['lr']).replace('.', ''),
@@ -95,14 +95,14 @@ def collate_pngs(dirname):
 		# convert standalone.png to
 		# adult_LR_p5e100_standalone
 		standalone_name = '{}_{}_p{}e{}_standalone.png'.format(
-			setup['name'],  setup['model'],
+			setup['dataset'],  setup['model'],
 			setup['P'], setup['Communication Rounds'])
 		shutil.copy(os.path.join(subdir,'standlone.png'),   os.path.join(figures_dir, standalone_name) )
 
 		# convert convergence_for_one.png to
 		# adult_LR_p5e100_upload1_convergence
 		convergence_name = '{}_{}_p{}e{}_upload{}_convergence.png'.format(
-			setup['name'], setup['model'],
+			setup['dataset'], setup['model'],
 			setup['P'], setup['Communication Rounds'],
 			str(setup['theta']).replace('.', '').rstrip('0'))
 		shutil.copy(os.path.join(subdir,'convergence_for_one.png'),   os.path.join(figures_dir, convergence_name) )
@@ -125,7 +125,7 @@ if __name__ == '__main__':
 	# COMPILING_BOTH = False
 	TEST = True
 	if TEST:
-		dirname = 'Experiments_2020-04-29-23:53'
+		dirname = 'Experiments_2020-04-30-21:01'
 		experiment_results = plot_convergence(dirname)
 		collate_pngs(dirname)
 		fair_df, perf_df = collect_and_compile_performance(dirname)
