@@ -37,11 +37,13 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 
 	
 	keys = ['standalone_vs_final', 'standlone_vs_rrdssgd',
-			'rr_dssgd_avg', 'CFFL_best_worker', 'standalone_best_worker',
+			'rr_dssgd_best', 'CFFL_best_worker', 'standalone_best_worker',
 			# 'sharingcontribution_vs_improvements'
 			# 'sharingcontribution_vs_final'
 			 ]
 
+
+	print("for all without pretraining:")
 	aggregate_dict = {}
 	for key in keys:
 		list_of_performance = [performance_dict[key] for performance_dict in performance_dicts]
@@ -53,7 +55,7 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 		print(key +'_mean', aggregate_dict[key +'_mean'])
 		# print(key +'_std', aggregate_dict[key +'_std'])
 	
-
+	print()
 	print("for all the pretraining included:")
 	aggregate_dict = {}
 	for key in keys:
@@ -94,17 +96,10 @@ if __name__ == '__main__':
 
 	pool = Pool()
 	result_list = []
-	for n_workers, sample_size_cap,fl_epochs in[[5, 3000, 5], [10, 6000, 5]]:
+	for n_workers, sample_size_cap,fl_epochs in[[5, 2000, 100]]: #, [10, 6000, 5]]:
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap
 		args['fl_epochs'] = fl_epochs
-		for lr in [0.01]:
+		for lr in [0.1]:
 			args['lr'] = lr
-			res = pool.apply_async(run_experiments, ((args),(1)))
-			result_list.append(res)
-
-	for res in result_list:
-		res.get()
-
-	pool.close()
-	pool.join()
+			run_experiments(args, 5)

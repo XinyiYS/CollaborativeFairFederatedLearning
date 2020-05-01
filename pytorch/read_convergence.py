@@ -151,6 +151,7 @@ def plot_convergence(dirname):
 		columns = ['party' + str(i + 1) for i in range(n_workers)]
 
 		n_freeriders = 0
+		free_riders = []
 		avg_dfs = {}
 		for key in key_map:
 			avg_accs = np.asarray(performance_dict[key]).mean(axis=0)
@@ -163,7 +164,6 @@ def plot_convergence(dirname):
 			# print(avg_accs.shape)
 
 			avg_dfs[key_map[key]] = pd.DataFrame(data=avg_accs, columns=free_riders + columns)
-
 
 
 

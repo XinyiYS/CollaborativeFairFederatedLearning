@@ -43,9 +43,15 @@ class Federated_Learner:
 		theta = self.args['theta']
 		epoch_sample_size = self.args['epoch_sample_size']
 		grad_clip = self.args['grad_clip']
+		gamma = self.args['gamma']
 
 		self.federated_model = model_fn(device=device)
 		self.federated_model_pretrain = copy.deepcopy(self.federated_model)
+
+		# gamma ** 100 ~= 0.01
+		# self.scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma = 0.955)
+
+
 
 		self.workers = []
 		# add in free riders
@@ -68,22 +74,30 @@ class Federated_Learner:
 		for i, worker_train_loader in enumerate(self.worker_train_loaders):
 			model = copy.deepcopy(self.federated_model)
 			optimizer = optimizer_fn(model.parameters(), lr=lr)
+			scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma = gamma)
+
 
 			model_pretrain = copy.deepcopy(self.federated_model)
 			optimizer_pretrain = optimizer_fn(model_pretrain.parameters(), lr=lr)
+			scheduler_pretrain = torch.optim.lr_scheduler.ExponentialLR(optimizer_pretrain, gamma = gamma)
+
 
 			standalone_model = copy.deepcopy(self.federated_model)
-			standalone_optimizer = optimizer_fn(
-				standalone_model.parameters(), lr=lr)
+			standalone_optimizer = optimizer_fn(standalone_model.parameters(), lr=lr)
+			standalone_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer_pretrain, gamma = gamma)
 
 			dssgd_model = copy.deepcopy(self.federated_model)
-			dssgd_optimizer = optimizer_fn(dssgd_model.parameters(), lr=lr)
+			dssgd_optimizer = optimizer_fn(dssgd_model.parameters(), lr=0.001)
+			# dssgd_optimizer = optimizer_fn(dssgd_model.parameters(), lr=lr)
+			# 0.977 ** 100 ~= 0.1    a smaller decay rate
+			# dssgd_scheduler = torch.optim.lr_scheduler.ExponentialLR(dssgd_optimizer, gamma = gamma)
+			dssgd_scheduler = None
 
 			worker = Worker(train_loader=worker_train_loader,
-							model=model, optimizer=optimizer,
-							model_pretrain=model_pretrain, optimizer_pretrain=optimizer_pretrain,
-							standalone_model=standalone_model, standalone_optimizer=standalone_optimizer,
-							dssgd_model=dssgd_model, dssgd_optimizer=dssgd_optimizer,
+							model=model, optimizer=optimizer, scheduler=scheduler,
+							model_pretrain=model_pretrain, optimizer_pretrain=optimizer_pretrain,scheduler_pretrain=scheduler_pretrain,
+							standalone_model=standalone_model, standalone_optimizer=standalone_optimizer, standalone_scheduler=standalone_scheduler,
+							dssgd_model=dssgd_model, dssgd_optimizer=dssgd_optimizer,dssgd_scheduler=dssgd_scheduler,
 							loss_fn=loss_fn, theta=theta,
 							grad_clip=grad_clip, epoch_sample_size=epoch_sample_size,
 							device=device,
