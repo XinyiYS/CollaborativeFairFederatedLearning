@@ -64,7 +64,6 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 
 	os.mkdir(logdir)
 
-
 	if 'complete.txt' in os.listdir(logdir):
 		return
 
@@ -106,11 +105,16 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 		file.write('complete')
 	return
 
+def get_batches(experiment_args, batch_size=4):
+	experiment_args = np.asarray(experiment_args)
+	from math import ceil
+	return np.array_split(experiment_args, ceil(len(experiment_args)/batch_size))
 
-from arguments import adult_args, mnist_args, names_args, update_gpu
+def run_experiments_full(experiment_args):
+	# experiment_args should include the args for p=5,10,20, theta=0.1, 1
+	# so a total of length 6 or more(depending of settings)
+	# as a complete set of experiments
 
-if __name__ == '__main__':
-	# init steps	
 	ts = time.time()
 	st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H:%M')
 	experiment_dir = 'Experiments_{}'.format(st)
@@ -118,19 +122,81 @@ if __name__ == '__main__':
 		os.mkdir(experiment_dir)
 	except:
 		pass
+
+	batches = get_batches(experiment_args, batch_size=4)
+	for batch in batches:
+		result_list = []
+		pool = Pool(processes=len(batch))
+		for args in batch:
+			r = pool.apply_async(run_experiments, ((copy.deepcopy(args) ), (5), (experiment_dir)))
+			result_list.append(r)
+
+		pool.close()
+		pool.join()
+
+		for r in result_list:
+			r.get()
+
+	return
+
+
+from arguments import adult_args, mnist_args, names_args, update_gpu
+
+if __name__ == '__main__':
+	# init steps	
 	init_mp()
 
-	# set up arguments for experiments
-	result_list = []
-	args = adult_args # mnist_args
-	for n_workers, sample_size_cap, fl_epochs in[[5, 2000, 100], [10, 4000, 100]]:
 
+	# see if we can have high fairness and acc
+	# without lr decay, and use fedavg
+	experiment_args = []
+	args = copy.deepcopy(adult_args) # mnist_args
+	for n_workers, sample_size_cap in [[5, 2000], [10, 4000], [20, 8000]]:
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap
-		args['fl_epochs'] = fl_epochs
+		args['gamma'] = 1
+		args['aggregate_mode'] = 'mean'
+		args['lr'] = 0.001
 		for theta in [0.1, 1]:
 			args['theta'] = theta
 
+			experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args)
+
+
+	# see if we can take out free riders based on different thetas
+
+	experiment_args = []
+	args = copy.deepcopy(adult_args) 
+	for n_workers, sample_size_cap in [[5, 2000], [10, 4000], [20, 8000]]:
+
+		args['n_workers'] = n_workers
+		args['sample_size_cap'] = sample_size_cap
+		args['n_freeriders'] = 1
+		args['aggregate_mode'] = 'sum'
+		for theta in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+			args['theta'] = theta
+
+			experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args)
+
+
+	# see if we can still take out free riders with fedAvg
+	experiment_args = []
+	args = copy.deepcopy(adult_args) 
+	for n_workers, sample_size_cap in [[5, 2000], [10, 4000], [20, 8000]]:
+		args['n_workers'] = n_workers
+		args['sample_size_cap'] = sample_size_cap
+		for theta in [0.1, 1]:
+			args['theta'] = theta
+			args['gamma'] = 1
+			args['aggregate_mode'] = 'mean'
+			args['n_freeriders'] = 1
+			experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args)
+
+	'''
+	# result_list = []
 			pool = Pool(processes=4)
 			r = pool.apply_async(run_experiments, ((copy.deepcopy(args) ), (5), (experiment_dir)))
 			result_list.append(r)
@@ -150,6 +216,10 @@ if __name__ == '__main__':
 		args['fl_epochs'] = fl_epochs
 		for theta in [0.1, 1]:
 			args['theta'] = theta
+			args['n_freeriders'] = 0
+
+			args['aggregate_mode'] = 'mean'
+
 
 			pool = Pool(processes=4)
 			r = pool.apply_async(run_experiments, ((copy.deepcopy(args) ), (5), (experiment_dir)))
@@ -159,3 +229,4 @@ if __name__ == '__main__':
 
 	for r in result_list:
 		r.get()
+	'''

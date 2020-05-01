@@ -21,22 +21,26 @@ class Custom_Dataset(Dataset):
 
 class Worker():
 
-	def __init__(self, train_loader, model=None, optimizer=None,
-		model_pretrain=None, optimizer_pretrain=None,
-		standalone_model=None, standalone_optimizer=None,
-		dssgd_model=None, dssgd_optimizer=None,
+	def __init__(self, train_loader, model=None, optimizer=None,scheduler=None,
+		model_pretrain=None, optimizer_pretrain=None, scheduler_pretrain=None,
+		standalone_model=None, standalone_optimizer=None, standalone_scheduler=None,
+		dssgd_model=None, dssgd_optimizer=None,dssgd_scheduler=None,
 		loss_fn=None, theta=0.1, grad_clip=0.01, epoch_sample_size=-1,
 		device=None,id=None,is_free_rider=False):
 
 		self.train_loader = train_loader
 		self.model = model
 		self.optimizer = optimizer
+		self.scheduler = scheduler
 		self.model_pretrain = model_pretrain
 		self.optimizer_pretrain = optimizer_pretrain
+		self.scheduler_pretrain = scheduler_pretrain
 		self.standalone_model = standalone_model
 		self.standalone_optimizer = standalone_optimizer
+		self.standalone_scheduler = standalone_scheduler
 		self.dssgd_model = dssgd_model
 		self.dssgd_optimizer = dssgd_optimizer
+		self.dssgd_scheduler = dssgd_scheduler
 		self.loss_fn = loss_fn
 		self.theta = theta
 		self.grad_clip = grad_clip		
@@ -110,3 +114,14 @@ class Worker():
 				if iter >= self.epoch_sample_size:
 					# specifically for NLP task to terminate for training efficiency
 					break
+
+			self.scheduler_pretrain.step()
+			if is_pretrain:
+				continue
+			self.scheduler.step()
+
+			# using dssgd makes all local models converge to the same final model
+			# self.dssgd_scheduler.step() 
+
+			if not is_pretrain and epoch==0:
+				self.standalone_scheduler.step()

@@ -23,7 +23,7 @@ adult_args = {
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
 	'batch_size': 16,
 	'train_val_split_ratio': 0.9,
-	'alpha': 3,
+	'alpha': 5,
 	'epoch_sample_size':float("Inf"),
 	'n_freeriders': 0,
 
@@ -31,8 +31,9 @@ adult_args = {
 	'model_fn': MLP,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(),  #CrossEntropyLoss NLLLoss
-	'lr': 0.001,  # lr 0.01 works for B = 10
+	'lr': 0.1,  # lr 0.01 works for B = 10
 	'grad_clip': 0.01,
+	'gamma':0.955,   #0.955**100 ~= 0.01
 
 	# training parameters
 	'pretrain_epochs': 5,

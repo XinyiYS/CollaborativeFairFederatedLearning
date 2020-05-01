@@ -32,16 +32,23 @@ def plot(df, save_dir=None, name='adult', plot_type=1, show=False, **kwargs):
 		plt.legend(loc='lower right')
 
 	plt.xlabel(Xlabel_NAMES[plot_type],  fontsize=FONTSIZE, fontweight='bold')
-	plt.ylabel("Test Accuracy",  fontsize=FONTSIZE, fontweight='bold')
+	
+	ylabel = "Test Accuracy"
+	if 'ylabel' in kwargs:
+		ylabel = kwargs['ylabel']
+	plt.ylabel(ylabel,  fontsize=FONTSIZE, fontweight='bold')
 	
 
 	# reformat the yticks
 	if name =='adult':
-		bottom, top = 0.65, 0.85
+		bottom, top = 0.70, 0.85
 	else: # for MNIST
 		# for the classimbalance setting, lowest party has acc ~= 10%
 		bottom, top = 0, 1.0
 
+	if 'bottom' in kwargs and 'top' in kwargs:
+		bottom = kwargs['bottom']
+		top = kwargs['top']
 
 	plt.ylim(bottom, top)
 	locs, labels = plt.yticks()
@@ -49,7 +56,11 @@ def plot(df, save_dir=None, name='adult', plot_type=1, show=False, **kwargs):
 	y_ticks = np.linspace(bottom, top, n_ticks)
 	plt.yticks(np.round(np.array(locs), 2) ,fontsize=14)		
 
-	plt.title(name.capitalize(), fontsize=FONTSIZE)
+	title = name.capitalize()
+	if 'title' in kwargs:
+		title = kwargs['title'].capitalize()
+
+	plt.title(title, fontsize=FONTSIZE)
 	plt.tight_layout()
 
 	if save_dir:
