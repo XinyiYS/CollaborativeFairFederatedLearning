@@ -6,6 +6,7 @@ import numpy as np
 
 from plot import plot
 
+import matplotlib.pyplot as plt
 
 
 from collections import defaultdict
@@ -189,6 +190,8 @@ def plot_convergence(dirname):
 		credits_figure_dir = os.path.join(dirname, folder, 'credits.png')
 		credits_pretrain_figure_dir = os.path.join(dirname, folder, 'credits_pretrain.png')
 		cffl_figure_dir = os.path.join(dirname, folder, 'figure.png')
+		cffl_pretrain_figure_dir = os.path.join(dirname, folder, 'figure_pretrain.png')
+
 		standlone_figure_dir = os.path.join(dirname, folder, 'standlone.png')
 		worker_figure_dir = os.path.join(dirname, folder, 'convergence_for_one.png')
 
@@ -196,6 +199,9 @@ def plot_convergence(dirname):
 		if os.path.exists(cffl_figure_dir):
 			os.remove(cffl_figure_dir)
 		plot(cffl_df, cffl_figure_dir, name=setup['dataset'], plot_type=0)
+		plot(cffl_df_pretrain, cffl_pretrain_figure_dir, name=setup['dataset'], plot_type=0)
+
+
 
 		if os.path.exists(credits_figure_dir):
 			os.remove(credits_figure_dir)
@@ -215,6 +221,7 @@ def plot_convergence(dirname):
 		if os.path.exists(worker_figure_dir):
 			os.remove(worker_figure_dir)
 		plot(worker_df, worker_figure_dir, name=setup['dataset'], plot_type=2)
+
 	return
 
 
