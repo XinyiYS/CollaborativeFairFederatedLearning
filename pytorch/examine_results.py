@@ -127,11 +127,14 @@ if __name__ == '__main__':
 
 	TEST = True
 	if TEST:
-		# dirname = 'Experiments_2020-05-02-07:02'
-		for dirname in os.listdir():
-			if 'Experiments_2020' in dirname:
-				experiment_results = plot_convergence(dirname)
-				collate_pngs(dirname)
-				fair_df, perf_df = collect_and_compile_performance(dirname)
+		dirname = 'Experiments_2020-05-01-14:23'
+		experiment_results = plot_convergence(dirname)
+		collate_pngs(dirname)
+		fair_df, perf_df = collect_and_compile_performance(dirname)
+		# for dirname in os.listdir():
+			# if 'Experiments_2020' in dirname:
+				# experiment_results = plot_convergence(dirname)
+				# collate_pngs(dirname)
+				# fair_df, perf_df = collect_and_compile_performance(dirname)
 	else:
 		pass
