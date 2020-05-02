@@ -127,7 +127,7 @@ if __name__ == '__main__':
 
 	TEST = True
 	if TEST:
-		dirname = 'Experiments_2020-05-01-14:23'
+		dirname = 'Experiments_2020-05-01-19:15'
 		experiment_results = plot_convergence(dirname)
 		collate_pngs(dirname)
 		fair_df, perf_df = collect_and_compile_performance(dirname)
