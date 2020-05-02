@@ -26,6 +26,7 @@
 	- aggregate mode: 'sum'
 	- lr decay gamma : 0.955
 	- NOTE: To show that lr decay helps with both training stability -> acc and high fairness
+	- folder name: Experiments_2020-05-01-14:23
 
 ### Results
 	|         |   Distriubted |     CFFL |   CFFL pretrain |
@@ -44,7 +45,6 @@
 	| CFFL pretrain |  0.78595  |  0.790232 |  0.780464 |  0.783675 | 0.789652 | 0.792685 |
 
 
-
 ## Settings for experiment 2:
 	- lr = 0.001
 	- grad_clip = 0.01
@@ -54,7 +54,8 @@
 	- MLP (64 hidden neurons) with NLLLoss()
 	- aggregate mode: 'mean' ->fedavg
 	- no lr decay
-	- NOTE: To show that fedavg helps with both training stability -> acc and good fairness
+	- NOTE: To show that fedavg alone helps with both training stability -> acc and good fairness
+	- folder name: Experiments_2020-05-01-22:44
 
 
 ### Results
@@ -72,10 +73,43 @@
 	| Standalone    |  0.762801 |  0.75504  |  0.774175 |  0.781713 | 0.771097 | 0.768332 |
 	| CFFL          |  0.793176 |  0.789161 |  0.789607 |  0.792061 | 0.796655 | 0.797547 |
 	| CFFL pretrain |  0.788359 |  0.785192 |  0.792239 |  0.792596 | 0.788938 | 0.797413 |
-_Note_: using 'fedavg' without lr decay, the fairness is ok, and the acc is good, too.
+_Note_: using 'fedavg' without lr decay, the fairness is ok, and the acc is good, too. Especially, using fedavg can help achieve higher fairness with more parties in the collaboration, as by P20 in the table.
+
 
 
 ## Settings for experiment 3:
+	- lr = 0.1
+	- grad_clip = 0.01
+	- B = 16
+	- sample_size_cap = [5, 2000], [10, 4000], [20, 8000]
+	- alpha = 5
+	- n_freerider = 0
+	- MLP (64 hidden neurons) with NLLLoss()
+	- aggregate mode: 'mean' ->fedavg
+	- lr decay gamma: 0.955
+	- NOTE: To study if fedavg and decay (combined) can produce better fairness and acc
+	- folder name: Experiments_2020-05-01-19:15
+
+
+### Results
+	|         |   Distriubted |     CFFL |   CFFL pretrain |
+	|:--------|--------------:|---------:|----------------:|
+	| P10_0.1 |     0.226601  | 0.713442 |        0.905525 |
+	| P10_1.0 |     0.143061  | 0.710929 |        0.912906 |
+	| P20_0.1 |     0.081461  | 0.742324 |        0.903794 |
+	| P20_1.0 |     0.0851699 | 0.718001 |        0.891763 |
+	| P5_0.1  |     0.0885842 | 0.268299 |        0.853697 |
+	| P5_1.0  |     0.155198  | 0.339107 |        0.903972 |
+	|               |   P10_0.1 |   P10_1.0 |   P20_0.1 |   P20_1.0 |   P5_0.1 |   P5_1.0 |
+	|:--------------|----------:|----------:|----------:|----------:|---------:|---------:|
+	| Distributed   |  0.807449 |  0.80901  |  0.800714 |  0.804906 | 0.805709 | 0.807181 |
+	| Standalone    |  0.762979 |  0.762756 |  0.77074  |  0.768778 | 0.780285 | 0.779081 |
+	| CFFL          |  0.788136 |  0.786574 |  0.789251 |  0.790455 | 0.794157 | 0.794603 |
+	| CFFL pretrain |  0.772926 |  0.773104 |  0.786887 |  0.781624 | 0.793533 | 0.793131 |
+_Notes_ : lr decay or cffl seems to work relatively well when P is smaller (P=5, P=10), fedavg works relatively well when P is larger (P=20). Combining both seems to have a balancing effect on the fairness of settings with different parties in the collaboration. But it does not seems to have a significant impact on acc.
+
+
+## Settings for experiment 4:
 	- lr = 0.1
 	- grad_clip = 0.01
 	- B = 16
@@ -87,6 +121,8 @@ _Note_: using 'fedavg' without lr decay, the fairness is ok, and the acc is good
 	- lr decay gamma: 0.955
 	- theta [0.1, 0.2, 0.3, ..., 1]
 	- NOTE: To study that how thetas affect the ability to detect the free rider
+	- folder name: Experiments_2020-05-01-16:53
+
 
 ### Results
 	|         |   Distriubted |     CFFL |   CFFL pretrain |
@@ -127,8 +163,10 @@ _Note_: using 'fedavg' without lr decay, the fairness is ok, and the acc is good
 	| Standalone    |  0.768778 |  0.773773 |  0.769358 |  0.765254 |  0.767217 |  0.766994 |  0.76909  |  0.769224 |  0.767618 |  0.769625 |  0.767529 |  0.771632 |  0.767351 |  0.766057 |  0.770874 |  0.76463  |  0.769045 |  0.767618 |  0.768376 |  0.763158 | 0.779483 | 0.780018 | 0.776182 | 0.776137 | 0.775736 | 0.781579 | 0.779572 | 0.777832 | 0.780107 | 0.778724 |
 	| CFFL          |  0.728412 |  0.734434 |  0.740098 |  0.738002 |  0.742016 |  0.742864 |  0.741659 |  0.731044 |  0.730508 |  0.743176 |  0.748171 |  0.749286 |  0.754014 |  0.753122 |  0.750401 |  0.75116  |  0.749688 |  0.754996 |  0.750803 |  0.746566 | 0.730776 | 0.718064 | 0.724532 | 0.719625 | 0.722034 | 0.727163 | 0.726628 | 0.726851 | 0.719402 | 0.723595 |
 	| CFFL pretrain |  0.786084 |  0.789607 |  0.788359 |  0.777119 |  0.786084 |  0.788938 |  0.787957 |  0.789161 |  0.786753 |  0.790856 |  0.781178 |  0.791079 |  0.783631 |  0.778234 |  0.791258 |  0.782649 |  0.781311 |  0.783854 |  0.78537  |  0.783274 | 0.793756 | 0.790901 | 0.791302 | 0.790678 | 0.790856 | 0.793176 | 0.793176 | 0.795049 | 0.793443 | 0.792863 |
+_Notes_ : Various thetas __cannot__ effectively take out free rider. Furthermore, because in the end the free rider is still __in__ the reliable set, the fairness measure is _not_ an accurate reflection of true fairness because it includes the free rider.
 
-## Settings for experiment 4:
+
+## Settings for experiment 5:
 	- lr = 0.001
 	- grad_clip = 0.01
 	- B = 16
@@ -138,9 +176,8 @@ _Note_: using 'fedavg' without lr decay, the fairness is ok, and the acc is good
 	- MLP (64 hidden neurons) with NLLLoss()
 	- aggregate mode: 'mean' ->fedavg
 	- no lr decay
-	- NOTE: To study if fedavg can affect the ability to detect the free rider
-
-
+	- NOTE: To study if fedavg alone can affect the ability to detect the free rider
+	- folder name: Experiments_2020-05-02-07:02
 ### Results
 	|         |   Distriubted |     CFFL |   CFFL pretrain |
 	|:--------|--------------:|---------:|----------------:|
@@ -156,5 +193,7 @@ _Note_: using 'fedavg' without lr decay, the fairness is ok, and the acc is good
 	| Standalone    |  0.763872 |  0.73479  |  0.766949 |  0.767038 | 0.778591 | 0.782114 |
 	| CFFL          |  0.763292 |  0.768599 |  0.769447 |  0.772748 | 0.775067 | 0.775781 |
 	| CFFL pretrain |  0.757939 |  0.743265 |  0.767306 |  0.764987 | 0.766949 | 0.768287 |
-	[Finished in 6.1s]
 _Notes_ : using 'fedavg' only without decay still __cannot__ effectively take out free rider.
+
+
+
