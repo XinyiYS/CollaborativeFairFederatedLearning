@@ -84,13 +84,17 @@ def collate_pngs(dirname):
 
 		# convert figure.png to
 		# adult_LR_p5e100_cffl_localepoch5_localbatch16_lr0001_upload1
-		figure_name = '{}_{}_p{}e{}_cffl_localepoch{}_localbatch{}_lr{}_upload{}.png'.format(
+		figure_name = '{}_{}_p{}e{}_cffl_localepoch{}_localbatch{}_lr{}_upload{}_pretrain0.png'.format(
 			setup['dataset'],  setup['model'],
 			setup['P'], setup['Communication Rounds'],
 			setup['E'], setup['B'],
 			str(setup['lr']).replace('.', ''),
 			str(setup['theta']).replace('.', '').rstrip('0'))
+		pastfig_name = figure_name.replace('_pretrain0','')
+		if os.path.exists(os.path.join(figures_dir, pastfig_name)):
+			os.remove(os.path.join(figures_dir, pastfig_name))
 		shutil.copy(os.path.join(subdir,'figure.png'),  os.path.join(figures_dir, figure_name) )
+		shutil.copy(os.path.join(subdir,'figure_pretrain.png'),  os.path.join(figures_dir, figure_name.replace('pretrain0','pretrain1')) )
 
 		# convert standalone.png to
 		# adult_LR_p5e100_standalone
@@ -106,6 +110,7 @@ def collate_pngs(dirname):
 			setup['P'], setup['Communication Rounds'],
 			str(setup['theta']).replace('.', '').rstrip('0'))
 		shutil.copy(os.path.join(subdir,'convergence_for_one.png'),   os.path.join(figures_dir, convergence_name) )
+
 	return
 
 
@@ -122,11 +127,11 @@ if __name__ == '__main__':
 
 	TEST = True
 	if TEST:
-		dirname = 'Experiments_2020-04-30-21:01'
-		experiment_results = plot_convergence(dirname)
-		collate_pngs(dirname)
-		fair_df, perf_df = collect_and_compile_performance(dirname)
+		# dirname = 'Experiments_2020-05-02-07:02'
+		for dirname in os.listdir():
+			if 'Experiments_2020' in dirname:
+				experiment_results = plot_convergence(dirname)
+				collate_pngs(dirname)
+				fair_df, perf_df = collect_and_compile_performance(dirname)
 	else:
-		dirname = 'logs/adult/na_a3_nopretrain/'
-		for folder in ['credit_sum', 'sum']:
-			run_all(os.path.join(dirname, folder))
+		pass
