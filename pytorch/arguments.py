@@ -31,9 +31,11 @@ adult_args = {
 	'model_fn': MLP,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(),  #CrossEntropyLoss NLLLoss
-	'lr': 0.1,  # lr 0.01 works for B = 10
+	'pretraining_lr' : 0.1,  # only used during pretraining for CFFL models, no decay
+	'dssgd_lr': 0.001, # used for dssgd model, no decay
+	'lr': 0.1, # initial lr, with decay
 	'grad_clip': 0.01,
-	'gamma':0.955,   #0.955**100 ~= 0.01
+	'gamma':0.977,   #0.97**100 ~= 0.1
 
 	# training parameters
 	'pretrain_epochs': 5,
@@ -50,20 +52,24 @@ mnist_args = {
 	'dataset': 'mnist',
 	'sample_size_cap': 3000,
 	'n_workers': 5,
-	'split': 'powerlaw', #or 'classimbalance'
+	'split': 'classimbalance', #or 'classimbalance'
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
 	'batch_size' : 10, 
 	'train_val_split_ratio': 0.9,
 	'alpha': 5,
 	'epoch_sample_size':float("Inf"),
+	'n_freeriders': 0,
 
 
 	# model parameters
 	'model_fn': MLP_Net,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(), 
+	'pretraining_lr' : 0.1, # only used during pretraining for CFFL models, no decay
+	'dssgd_lr': 0.001, # used for dssgd model, no decay
 	'lr': 0.001,
 	'grad_clip':0.001,
+	'gamma':0.955,   #0.955**100 ~= 0.01
 
 	# training parameters
 	'pretrain_epochs': 10,
@@ -86,12 +92,18 @@ names_args = {
 	'train_val_split_ratio': 0.9,
 	'alpha': 5,
 	'epoch_sample_size':10,
+	'n_freeriders': 0,
+
 
 	# model parameters
 	'model_fn': RNN,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(), 
+	'pretraining_lr' : 0.1, # only used during pretraining for CFFL models, no decay
+	'dssgd_lr': 0.001, # used for dssgd model, no decay
 	'lr': 0.005,
+	'grad_clip':0.001,
+	'gamma':0.955,   #0.955**100 ~= 0.01
 
 	# training parameters
 	'pretrain_epochs': 0,

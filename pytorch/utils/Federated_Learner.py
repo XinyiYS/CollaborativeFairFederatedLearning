@@ -48,14 +48,9 @@ class Federated_Learner:
 		self.federated_model = model_fn(device=device)
 		self.federated_model_pretrain = copy.deepcopy(self.federated_model)
 
-		# gamma ** 100 ~= 0.01
-		# self.scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma = 0.955)
-
-
 
 		self.workers = []
-		# add in free riders
-		
+		# add in free riders		
 		freerider = Worker(train_loader=None,
 						model=copy.deepcopy(self.federated_model),
 						model_pretrain = copy.deepcopy(self.federated_model),
@@ -87,7 +82,7 @@ class Federated_Learner:
 			standalone_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer_pretrain, gamma = gamma)
 
 			dssgd_model = copy.deepcopy(self.federated_model)
-			dssgd_optimizer = optimizer_fn(dssgd_model.parameters(), lr=0.001)
+			dssgd_optimizer = optimizer_fn(dssgd_model.parameters(), lr=self.args['dssgd_lr'])
 			# dssgd_optimizer = optimizer_fn(dssgd_model.parameters(), lr=lr)
 			# 0.977 ** 100 ~= 0.1    a smaller decay rate
 			# dssgd_scheduler = torch.optim.lr_scheduler.ExponentialLR(dssgd_optimizer, gamma = gamma)
@@ -96,6 +91,8 @@ class Federated_Learner:
 			worker = Worker(train_loader=worker_train_loader,
 							model=model, optimizer=optimizer, scheduler=scheduler,
 							model_pretrain=model_pretrain, optimizer_pretrain=optimizer_pretrain,scheduler_pretrain=scheduler_pretrain,
+							pretraining_lr=self.args['pretraining_lr'],
+
 							standalone_model=standalone_model, standalone_optimizer=standalone_optimizer, standalone_scheduler=standalone_scheduler,
 							dssgd_model=dssgd_model, dssgd_optimizer=dssgd_optimizer,dssgd_scheduler=dssgd_scheduler,
 							loss_fn=loss_fn, theta=theta,
