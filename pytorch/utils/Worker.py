@@ -22,7 +22,7 @@ class Custom_Dataset(Dataset):
 class Worker():
 
 	def __init__(self, train_loader, model=None, optimizer=None,scheduler=None,
-		model_pretrain=None, optimizer_pretrain=None, scheduler_pretrain=None,
+		model_pretrain=None, optimizer_pretrain=None, pretraining_lr=0.01, scheduler_pretrain=None,
 		standalone_model=None, standalone_optimizer=None, standalone_scheduler=None,
 		dssgd_model=None, dssgd_optimizer=None,dssgd_scheduler=None,
 		loss_fn=None, theta=0.1, grad_clip=0.01, epoch_sample_size=-1,
@@ -34,6 +34,7 @@ class Worker():
 		self.scheduler = scheduler
 		self.model_pretrain = model_pretrain
 		self.optimizer_pretrain = optimizer_pretrain
+		self.pretraining_lr = pretraining_lr # specifically for the pretraining period
 		self.scheduler_pretrain = scheduler_pretrain
 		self.standalone_model = standalone_model
 		self.standalone_optimizer = standalone_optimizer
@@ -76,6 +77,12 @@ class Worker():
 					self.device), batch_target.to(self.device)
 				
 				# pretrain model
+
+				# introduce a slower pretraining process
+				if is_pretrain:
+					for g in self.optimizer_pretrain.param_groups:
+					    g['lr'] = self.pretraining_lr
+
 				self.optimizer_pretrain.zero_grad()
 				outputs = self.model_pretrain(batch_data)
 				loss = self.loss_fn(outputs, batch_target)
@@ -115,9 +122,10 @@ class Worker():
 					# specifically for NLP task to terminate for training efficiency
 					break
 
-			self.scheduler_pretrain.step()
 			if is_pretrain:
+				# NO lr decay during pretraining
 				continue
+			self.scheduler_pretrain.step()
 			self.scheduler.step()
 
 			# using dssgd makes all local models converge to the same final model
