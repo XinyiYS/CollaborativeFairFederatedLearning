@@ -22,7 +22,7 @@ class Custom_Dataset(Dataset):
 class Worker():
 
 	def __init__(self, train_loader, model=None, optimizer=None,scheduler=None,
-		model_pretrain=None, optimizer_pretrain=None, pretraining_lr=0.01, scheduler_pretrain=None,
+		model_pretrain=None, optimizer_pretrain=None, pretraining_lr=0.1, scheduler_pretrain=None,
 		standalone_model=None, standalone_optimizer=None, standalone_scheduler=None,
 		dssgd_model=None, dssgd_optimizer=None,dssgd_scheduler=None,
 		loss_fn=None, theta=0.1, grad_clip=0.01, epoch_sample_size=-1,
