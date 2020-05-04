@@ -200,7 +200,6 @@ class Federated_Learner:
 		# print("\nStart federated learning \n")
 		for epoch in range(fl_epochs):
 
-
 			# 1. training locally, return updates, clip and filter the updates
 			grad_updates, grad_updates_pretrain, dssgd_grad_updates = self.train_locally(
 				fl_individual_epochs, requires_update=True)
@@ -218,10 +217,6 @@ class Federated_Learner:
 
 			aggregated_gradient_updates_pretrain = aggregate_gradient_updates(
 				grad_updates_pretrain, device=self.device, mode=aggregate_mode, credits=credits_pretrain)
-
-
-			# credit_weighted_grad_updates =  [credit * update for credit, grad_update in zip(credits, grad_updates) for update in grad_update]
-			# credit_aggregated_gradient_updates = aggregate_gradient_updates(grad_updates, device=self.device, mode='credit-sum', credits=credits)
 
 			# param_frequency = [freq + (update.abs()>0).float()  for freq, update in zip(param_frequency, aggregated_gradient_updates) ]
 
@@ -261,18 +256,10 @@ class Federated_Learner:
 
 			# 3.2 compute credits
 			# credits = compute_credits(credits, federated_val_acc, loo_val_accs, credit_threshold=credit_threshold)
-			credits = compute_credits_sinh(
-				credits, worker_val_accs, credit_threshold=credit_threshold, alpha=self.args['alpha'],)
-			# print("Computed and normalized credits: ", credits.tolist())
-			credit_threshold = torch.div( 1.0, (torch.sum(credits > 0) - 1)) * (2. / 3.)
-			# to avoid NaN when only one player in C
-			credit_threshold = torch.clamp(credit_threshold, min=0, max = 1)
-			# print("New credit threshold is : ", credit_threshold.item())
+			credits, credit_threshold = compute_credits_sinh(credits, worker_val_accs, credit_threshold=credit_threshold, alpha=self.args['alpha'],)
 
 			worker_val_accs_pretrain = one_on_one_evaluate(self.workers, self.federated_model_pretrain, grad_updates_pretrain, unfiltererd_grad_updates_pretrain, self.valid_loader, device)
-			credits_pretrain = compute_credits_sinh(credits_pretrain, worker_val_accs_pretrain, credit_threshold=credit_threshold_pretrain, alpha=self.args['alpha'],)
-			credit_threshold_pretrain = torch.div( 1.0, (torch.sum(credits_pretrain > 0) - 1)) * (2. / 3.)
-			credit_threshold_pretrain = torch.clamp(credit_threshold_pretrain, min=0, max = 1)
+			credits_pretrain, credit_threshold_pretrain = compute_credits_sinh(credits_pretrain, worker_val_accs_pretrain, credit_threshold=credit_threshold_pretrain, alpha=self.args['alpha'],)
 
 			# 4. gradient downloads and uploads according to credits and thetas
 			self.assign_updates_with_filter(credits, aggregated_gradient_updates, grad_updates, unfiltererd_grad_updates)
@@ -453,7 +440,6 @@ class Federated_Learner:
 			self.shard_sizes) * torch.tensor(worker_thetas)).tolist()
 		print('Workers sharing_contributions : ', sharing_contributions)
 
-		self.performance_summary()
 
 		# no pretrain
 		credits = self.performance_dict['credits'][-1]
@@ -529,8 +515,40 @@ class Federated_Learner:
 
 def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fade=1):
 	# print('alpha used is :', alpha, ' current credits are : ', credits, ' current threshold: ', credit_threshold)
-	total = sum(val_accs)
+	reputable_paties = [i for i, credit in enumerate(credits) if credit >= credit_threshold]
+
+	R = len(reputable_paties)
+	total_val_accs = sum([val_accs[i] for i in reputable_paties])
+
+	for i in reputable_paties:
+		credit_epoch = math.sinh(alpha * val_accs[i] / total_val_accs)
+
+		if credit_fade == 1:
+			credits[i] = credits[i] * 0.2 + credit_epoch * 0.8
+		else:
+			credits[i] = (credits[i] + credit_epoch) * 0.5
+
+	# normalize among the reputable parties
+	credits[reputable_paties] /= credits[reputable_paties].sum().float()
+
+	# update the reputable parties
+	reputable_paties = [i for i in reputable_paties if credits[i] >= credit_threshold]
+	if R != reputable_paties:
+		credits[reputable_paties] /= credits[reputable_paties].sum().float()
+
+	# isolate the non-reputable parties by setting their credits to 0	
+	for i in range(len(credits)):
+		if i not in reputable_paties:
+			credits[i] = 0
+
+	credit_threshold = torch.clamp(2./3 * torch.div(1., R-1 ), min=0, max=1 )
+	return credits, credit_threshold
+
+
+
+	'''
 	for i, (credit, val_acc) in enumerate(zip(credits, val_accs)):
+
 		credit_epoch = val_acc / total
 		if credit_fade == 1:
 			credits[i] = credit * 0.2 + credit_epoch * 0.8
@@ -542,7 +560,6 @@ def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fa
 
 		credits[i] = math.sinh(alpha * credits[i])
 
-
 	if torch.sum(credits) == 0:
 		print('credits all zero')
 	credits = credits / torch.sum(credits)
@@ -552,7 +569,7 @@ def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fa
 		print('credits all zero')
 	# print("computed normalized credits are: ", credits/ torch.sum(credits))
 	return credits / torch.sum(credits)
-
+	'''
 
 def clip_gradients_(grad_updates, grad_clip):
 	grad_clip = abs(grad_clip)
