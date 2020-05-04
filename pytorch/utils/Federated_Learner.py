@@ -269,6 +269,7 @@ class Federated_Learner:
 
 			# 5. evaluate the federated_model at the end of each epoch
 			if epoch % 20 == 0:
+				print()
 				print('Epoch {}:'.format(epoch + 1))
 			self.performance_summary(to_print=(epoch%20==0))
 
@@ -543,8 +544,6 @@ def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fa
 
 	credit_threshold = torch.clamp(2./3 * torch.div(1., R-1 ), min=0, max=1 )
 	return credits, credit_threshold
-
-
 
 	'''
 	for i, (credit, val_acc) in enumerate(zip(credits, val_accs)):
