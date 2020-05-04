@@ -266,15 +266,13 @@ class Federated_Learner:
 			# print("Computed and normalized credits: ", credits.tolist())
 			credit_threshold = torch.div( 1.0, (torch.sum(credits > 0) - 1)) * (2. / 3.)
 			# to avoid NaN when only one player in C
-			credit_threshold = min(torch.tensor(2./3), credit_threshold)
+			credit_threshold = torch.clamp(credit_threshold, min=0, max = 1)
 			# print("New credit threshold is : ", credit_threshold.item())
-
 
 			worker_val_accs_pretrain = one_on_one_evaluate(self.workers, self.federated_model_pretrain, grad_updates_pretrain, unfiltererd_grad_updates_pretrain, self.valid_loader, device)
 			credits_pretrain = compute_credits_sinh(credits_pretrain, worker_val_accs_pretrain, credit_threshold=credit_threshold_pretrain, alpha=self.args['alpha'],)
 			credit_threshold_pretrain = torch.div( 1.0, (torch.sum(credits_pretrain > 0) - 1)) * (2. / 3.)
-			credit_threshold_pretrain = min(torch.tensor(1), credit_threshold_pretrain)
-
+			credit_threshold_pretrain = torch.clamp(credit_threshold_pretrain, min=0, max = 1)
 
 			# 4. gradient downloads and uploads according to credits and thetas
 			self.assign_updates_with_filter(credits, aggregated_gradient_updates, grad_updates, unfiltererd_grad_updates)
