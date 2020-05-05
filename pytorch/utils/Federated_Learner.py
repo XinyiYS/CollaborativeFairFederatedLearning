@@ -56,6 +56,7 @@ class Federated_Learner:
 						model_pretrain = copy.deepcopy(self.federated_model),
 						standalone_model=copy.deepcopy(self.federated_model),
 						dssgd_model=copy.deepcopy(self.federated_model),
+						theta=theta,
 						device=device,
 						is_free_rider=True
 						)
@@ -168,7 +169,6 @@ class Federated_Learner:
 		self.performance_dict['shard_sizes'] = self.shard_sizes
 		self.performance_dict_pretrain['shard_sizes'] = self.shard_sizes
 
-
 		# print("Start local pretraining ")
 		self.train_locally(self.args['pretrain_epochs'], is_pretrain=True)
 		self.worker_model_test_accs_before = self.evaluate_workers_performance(
@@ -208,33 +208,29 @@ class Federated_Learner:
 			grad_updates = filter_grad_updates(grad_updates, worker_thetas)
 			grad_updates_pretrain = filter_grad_updates(grad_updates_pretrain, worker_thetas)
 
-			# changes the grad_updates altogether
+			R = [i for i, credit in enumerate(credits) if credit >= credit_threshold]
+			R_pretrain = [i for i, credit in enumerate(credits_pretrain) if credit >= credit_threshold_pretrain]
+
 			aggregated_gradient_updates = aggregate_gradient_updates(
-				grad_updates, device=self.device, mode=aggregate_mode, credits=credits)
+				grad_updates, R=R, device=self.device, mode=aggregate_mode, credits=credits)
 
 			aggregated_gradient_updates_pretrain = aggregate_gradient_updates(
-				grad_updates_pretrain, device=self.device, mode=aggregate_mode, credits=credits_pretrain)
+				grad_updates_pretrain, R=R_pretrain, device=self.device, mode=aggregate_mode, credits=credits_pretrain)
 
 			# param_frequency = [freq + (update.abs()>0).float()  for freq, update in zip(param_frequency, aggregated_gradient_updates) ]
 
-			dssgd_grad_updates = filter_grad_updates(
-				dssgd_grad_updates, worker_thetas)
+			dssgd_grad_updates = filter_grad_updates(dssgd_grad_updates, worker_thetas)
 			# generate a roundrobin sequence
-			rr_sequence = double_seqs[
-				epoch % self.n_workers: epoch % self.n_workers + self.n_workers]
+			rr_sequence = double_seqs[epoch % self.n_workers: epoch % self.n_workers + self.n_workers]
 			self.update_dssgd_model(rr_sequence, dssgd_grad_updates)
 
 			# 2. update the federated_model
-			self.federated_model = add_update_to_model(
-				self.federated_model, aggregated_gradient_updates, device=device)
-
-			# _, federated_val_acc = evaluate(
-			# 	self.federated_model, self.valid_loader, device, verbose=False)
+			self.federated_model = add_update_to_model(self.federated_model, aggregated_gradient_updates, device=device)
+			_, federated_val_acc = evaluate(self.federated_model, self.valid_loader, device, verbose=False)
 			# print("CFFL server model validation accuracy : {:.4%}".format(federated_val_acc))
 
 			self.federated_model_pretrain = add_update_to_model(self.federated_model_pretrain, aggregated_gradient_updates_pretrain, device=device)
 			_, federated_val_acc_pretrain = evaluate(self.federated_model_pretrain, self.valid_loader, device, verbose=False)
-
 
 			dssgd_val_accs = self.evaluate_workers_performance(
 				self.valid_loader, mode='dssgd')
@@ -256,6 +252,7 @@ class Federated_Learner:
 			credits, credit_threshold = compute_credits_sinh(credits, worker_val_accs, credit_threshold=credit_threshold, alpha=self.args['alpha'],)
 
 			worker_val_accs_pretrain = one_on_one_evaluate(self.workers, self.federated_model_pretrain, grad_updates_pretrain, unfiltererd_grad_updates_pretrain, self.valid_loader, device)
+			# print("One-on-one validation accuracies pretrain: ", ["{:.4%}".format(val_acc) for val_acc in worker_val_accs_pretrain])
 			credits_pretrain, credit_threshold_pretrain = compute_credits_sinh(credits_pretrain, worker_val_accs_pretrain, credit_threshold=credit_threshold_pretrain, alpha=self.args['alpha'],)
 
 			# 4. gradient downloads and uploads according to credits and thetas
@@ -264,6 +261,13 @@ class Federated_Learner:
 			self.assign_updates_with_filter(credits_pretrain, aggregated_gradient_updates_pretrain, grad_updates_pretrain, unfiltererd_grad_updates_pretrain, pretrain=True)
 
 
+			# print('For epoch {}:'.format(epoch + 1))
+			# print("credits, credit threshold:", credit_threshold)
+			# print(credits)
+			# print()
+			# print("credits, credit_threshold pretrain:", credit_threshold_pretrain)
+			# print(credits_pretrain)
+	
 			# 5. evaluate the federated_model at the end of each epoch
 			if epoch % 20 == 0:
 				print()
@@ -279,14 +283,11 @@ class Federated_Learner:
 			self.performance_dict_pretrain['credit_threshold'].append(credit_threshold_pretrain.item())
 			# print()
 
-		self.cffl_test_accs = self.evaluate_workers_performance(
-			self.test_loader)
+		self.cffl_test_accs = self.evaluate_workers_performance(self.test_loader)
 
-		self.cffl_test_accs_w_pretrain = self.evaluate_workers_performance(
-			self.test_loader, mode='pretrain')
+		self.cffl_test_accs_w_pretrain = self.evaluate_workers_performance(self.test_loader, mode='pretrain')
 
-		self.worker_standalone_test_accs = self.evaluate_workers_performance(
-			self.test_loader, mode='standalone')
+		self.worker_standalone_test_accs = self.evaluate_workers_performance(self.test_loader, mode='standalone')
 		return
 
 	def update_dssgd_model(self, sequence, dssgd_grad_updates):
@@ -300,10 +301,23 @@ class Federated_Learner:
 		download the largest magnitude updates <credits[i] * num_param> from the server
 		and filter out its own updates in the local model
 		and apply to its local model
+
+		Two cases:
+		1) reputable parties, i.e.
+		 credit >= credit_threshold and credit != 0:
+		 	downloads corresponding number of updates
+		 	filters out own updates
+		 	add to own model 
+
+		2) non-reputable parties, i.e. 
+		 credit == 0:
+		 	downloads corresponding number of updates which is zero vectors
+		 	filters out own updates which is zero vector anyway
+		 	add to own model
 		"""
 
 		for i, (credit, worker, worker_update, worker_update_unfiltered) in enumerate(zip(credits, self.workers, grad_updates, unfiltererd_grad_updates)):
-			if credit == 0 or torch.isnan(credit):
+			if torch.isnan(credit):
 				credit = 0
 
 			agg_grad_update = copy.deepcopy(aggregated_gradient_updates)
@@ -403,20 +417,14 @@ class Federated_Learner:
 		self.cffl_test_accs_w_pretrain = self.evaluate_workers_performance(self.test_loader, mode='pretrain')
 
 		# no pretrain
-		self.performance_dict['DSSGD_model_test_accs'].append(
-			self.dssgd_models_test_accs)
-		self.performance_dict['worker_standalone_test_accs'].append(
-			self.worker_standalone_test_accs)
-		self.performance_dict['cffl_test_accs'].append(
-			self.cffl_test_accs)
+		self.performance_dict['DSSGD_model_test_accs'].append(self.dssgd_models_test_accs)
+		self.performance_dict['worker_standalone_test_accs'].append(self.worker_standalone_test_accs)
+		self.performance_dict['cffl_test_accs'].append(self.cffl_test_accs)
 
 		# with pretrain
-		self.performance_dict_pretrain['DSSGD_model_test_accs'].append(
-			self.dssgd_models_test_accs)
-		self.performance_dict_pretrain['worker_standalone_test_accs'].append(
-			self.worker_standalone_test_accs)
-		self.performance_dict_pretrain['cffl_test_accs'].append(
-			self.cffl_test_accs_w_pretrain)
+		self.performance_dict_pretrain['DSSGD_model_test_accs'].append(self.dssgd_models_test_accs)
+		self.performance_dict_pretrain['worker_standalone_test_accs'].append(self.worker_standalone_test_accs)
+		self.performance_dict_pretrain['cffl_test_accs'].append(self.cffl_test_accs_w_pretrain)
 
 		if to_print:
 			print('Below are testset accuracies: ---')
@@ -513,12 +521,11 @@ class Federated_Learner:
 
 def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fade=1):
 	# print('alpha used is :', alpha, ' current credits are : ', credits, ' current threshold: ', credit_threshold)
-	reputable_paties = [i for i, credit in enumerate(credits) if credit >= credit_threshold]
+	R = [i for i, credit in enumerate(credits) if credit >= credit_threshold] # reputable parties
+	R_size = len(R)
+	total_val_accs = sum([val_accs[i] for i in R])
 
-	R = len(reputable_paties)
-	total_val_accs = sum([val_accs[i] for i in reputable_paties])
-
-	for i in reputable_paties:
+	for i in R:
 		credit_epoch = math.sinh(alpha * val_accs[i] / total_val_accs)
 
 		if credit_fade == 1:
@@ -527,19 +534,19 @@ def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fa
 			credits[i] = (credits[i] + credit_epoch) * 0.5
 
 	# normalize among the reputable parties
-	credits[reputable_paties] /= credits[reputable_paties].sum().float()
+	credits[R] /= credits[R].sum().float()
 
 	# update the reputable parties
-	reputable_paties = [i for i in reputable_paties if credits[i] >= credit_threshold]
-	if R != reputable_paties:
-		credits[reputable_paties] /= credits[reputable_paties].sum().float()
+	R = [i for i in R if credits[i] >= credit_threshold]
+	if R_size != len(R):
+		credits[R] /= credits[R].sum().float()
 
 	# isolate the non-reputable parties by setting their credits to 0	
 	for i in range(len(credits)):
-		if i not in reputable_paties:
+		if i not in R:
 			credits[i] = 0
 
-	credit_threshold = torch.clamp(2./3 * torch.div(1., R-1 ), min=0, max=1 )
+	credit_threshold = torch.clamp(2./3 * torch.div(1., R_size-1 ), min=0, max=1 )
 	return credits, credit_threshold
 
 	'''
@@ -589,7 +596,7 @@ def mask_grad_update_by_order(grad_update, mask_order, mask_percentile=None):
 		mask_order = int(len(all_update_mod) * mask_percentile)
 	
 	if mask_order == 0:
-		return mask_grad_update_by_magnitude(grad_update, 0)
+		return mask_grad_update_by_magnitude(grad_update, float('inf'))
 	else:
 		topk, indices = torch.topk(all_update_mod, mask_order)
 		return mask_grad_update_by_magnitude(grad_update, topk[-1])

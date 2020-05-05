@@ -30,23 +30,30 @@ def add_gradient_updates(grad_update_1, grad_update_2):
 	return [grad_update_1[i] + grad_update_2[i] for i in range(len(grad_update_1))]
 
 
-def aggregate_gradient_updates(grad_updates, device=None, mode='sum', credits=None, shard_sizes=None):
+def aggregate_gradient_updates(grad_updates, R, device=None, mode='sum', credits=None, shard_sizes=None):
 	if grad_updates:
 		len_first = len(grad_updates[0])
-		assert all(len(i) == len_first for i in grad_updates), "Different shapes of parameters. Cannot take average."
+		assert all(len(i) == len_first for i in grad_updates), "Different shapes of parameters. Cannot aggregate."
 	else:
 		return
 
+	grad_updates_ = [copy.deepcopy(grad_update) for i, grad_update in enumerate(grad_updates) if i in R]
+
 	if device:
-		for i, grad_update in enumerate(grad_updates):
-			grad_updates[i] = [param.to(device) for param in grad_update]
+		for i, grad_update in enumerate(grad_updates_):
+			grad_updates_[i] = [param.to(device) for param in grad_update]
+
+	if credits is not None:
+		credits = [credit for i, credit in enumerate(credits) if i in R]
+	if shard_sizes is not None:
+		shard_sizes = [shard_size for i,shard_size in enumerate(shard_sizes) if i in R]
 
 	aggregated_gradient_updates = []
 	if mode=='mean':
 		# default mean is FL-avg: weighted avg according to nk/n
 		if shard_sizes is None:
 			shard_sizes = torch.ones(len(grad_updates))
-		grad_updates_ = copy.deepcopy(grad_updates)
+
 		for i, (grad_update, shard_size) in enumerate(zip(grad_updates_, shard_sizes)):
 			grad_updates_[i] = [(shard_size * update) for update in grad_update]
 		for i in range(len(grad_updates_[0])):
@@ -54,19 +61,19 @@ def aggregate_gradient_updates(grad_updates, device=None, mode='sum', credits=No
 				[grad_update[i] for grad_update in grad_updates_]).mean(dim=0))
 
 	elif mode =='sum':
-		for i in range(len(grad_updates[0])):
+		for i in range(len(grad_updates_[0])):
 			aggregated_gradient_updates.append(torch.stack(
-				[grad_update[i] for grad_update in grad_updates]).sum(dim=0))
+				[grad_update[i] for grad_update in grad_updates_]).sum(dim=0))
 
 	elif mode == 'credit-sum':
 		# first changes the grad_updates altogether
-		for i, (grad_update, credit) in enumerate(zip(grad_updates, credits)):
-			grad_updates[i] = [(credit * update) for update in grad_update]
+		for i, (grad_update, credit) in enumerate(zip(grad_updates_, credits)):
+			grad_updates_[i] = [(credit * update) for update in grad_update]
 
 		# then compute the credit weight sum
-		for i in range(len(grad_updates[0])):
+		for i in range(len(grad_updates_[0])):
 			aggregated_gradient_updates.append(torch.stack(
-				[grad_update[i] for grad_update in grad_updates]).sum(dim=0))
+				[grad_update[i] for grad_update in grad_updates_]).sum(dim=0))
 
 	return aggregated_gradient_updates
 
