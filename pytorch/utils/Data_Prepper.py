@@ -4,7 +4,7 @@ from torch.utils.data.sampler import SubsetRandomSampler
 
 
 class Data_Prepper:
-	def __init__(self, name, train_batch_size, sample_size_cap=-1, test_batch_size=1000, valid_batch_size=None, train_val_split_ratio=0.8,):
+	def __init__(self, name, train_batch_size, sample_size_cap=-1, test_batch_size=1000, valid_batch_size=None, train_val_split_ratio=0.8,device=None):
 		self.name = name
 		self.train_dataset, self.test_dataset = self.prepare_dataset(name)
 		self.sample_size_cap = sample_size_cap
@@ -25,10 +25,10 @@ class Data_Prepper:
 		self.train_idx, self.valid_idx = self.get_train_valid_indices(self.train_dataset, self.train_val_split_ratio, sample_size_cap=self.sample_size_cap, shuffle=shuffle)
 
 	def init_valid_loader(self):
-		self.valid_loader = DataLoader(self.train_dataset, batch_size=self.valid_batch_size, sampler=SubsetRandomSampler(self.valid_idx))
+		self.valid_loader = DataLoader(self.train_dataset, batch_size=self.valid_batch_size, sampler=SubsetRandomSampler(self.valid_idx), pin_memory=True)
 
 	def init_test_loader(self):
-		self.test_loader = DataLoader(self.test_dataset, batch_size=self.test_batch_size)
+		self.test_loader = DataLoader(self.test_dataset, batch_size=self.test_batch_size, pin_memory=True)
 
 	def get_valid_loader(self):
 		return self.valid_loader
@@ -103,7 +103,7 @@ class Data_Prepper:
 			indices_list = random_split(sample_indices=self.train_idx, m_bins=n_workers, equal=False)
 
 		self.indices_list = indices_list
-		worker_train_loaders = [DataLoader(self.train_dataset, batch_size=batch_size, sampler=SubsetRandomSampler(indices)) for indices in indices_list]
+		worker_train_loaders = [DataLoader(self.train_dataset, batch_size=batch_size, sampler=SubsetRandomSampler(indices), pin_memory=True) for indices in indices_list]
 
 		return worker_train_loaders
 

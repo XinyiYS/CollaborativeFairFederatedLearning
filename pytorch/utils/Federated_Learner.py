@@ -450,10 +450,9 @@ class Federated_Learner:
 		# no pretrain
 		credits = self.performance_dict['credits'][-1]
 		remaining_workers_indices = [i for i, credit in enumerate(credits)]
-		remaining_standalone_test_accs =  [ self.worker_standalone_test_accs[i] for i in remaining_workers_indices]
-		remaining_dssgd_test_accs =  [ self.dssgd_models_test_accs[i] for i in remaining_workers_indices]
-		remaining_cffl_test_accs =  [ self.cffl_test_accs[i] for i in remaining_workers_indices]
-
+		remaining_standalone_test_accs =  [ self.worker_standalone_test_accs[i].item() for i in remaining_workers_indices]
+		remaining_dssgd_test_accs =  [ self.dssgd_models_test_accs[i].item() for i in remaining_workers_indices]
+		remaining_cffl_test_accs =  [ self.cffl_test_accs[i].item() for i in remaining_workers_indices]
 
 		from scipy.stats import pearsonr
 		corrs = pearsonr(remaining_standalone_test_accs,
@@ -465,21 +464,20 @@ class Federated_Learner:
 		self.performance_dict['standalone_vs_final'].append(corrs[0])
 
 
-		self.performance_dict['CFFL_best_worker'] = max(self.cffl_test_accs)
+		self.performance_dict['CFFL_best_worker'] = max(self.cffl_test_accs).item()
 		best_worker_id = np.argmax(self.cffl_test_accs)
-		self.performance_dict['standalone_best_worker'] = self.worker_standalone_test_accs[best_worker_id]
+		self.performance_dict['standalone_best_worker'] = self.worker_standalone_test_accs[best_worker_id].item()
 
-		self.performance_dict['rr_dssgd_best'] = self.dssgd_models_test_accs[best_worker_id]
+		self.performance_dict['rr_dssgd_best'] = self.dssgd_models_test_accs[best_worker_id].item()
 
 		# with pretrain
 		credits_pretrain = self.performance_dict_pretrain['credits'][-1]
 		remaining_workers_indices = [i for i, credit in enumerate(credits_pretrain)]
-		remaining_standalone_test_accs =  [ self.worker_standalone_test_accs[i] for i in remaining_workers_indices]
-		remaining_dssgd_test_accs =  [ self.dssgd_models_test_accs[i] for i in remaining_workers_indices]
-		remaining_cffl_test_accs_w_pretrain =  [ self.cffl_test_accs_w_pretrain[i] for i in remaining_workers_indices]
+		remaining_standalone_test_accs =  [ self.worker_standalone_test_accs[i].item() for i in remaining_workers_indices]
+		remaining_dssgd_test_accs =  [ self.dssgd_models_test_accs[i].item() for i in remaining_workers_indices]
+		remaining_cffl_test_accs_w_pretrain =  [ self.cffl_test_accs_w_pretrain[i].item() for i in remaining_workers_indices]
 
-		corrs = pearsonr(remaining_standalone_test_accs,
-						 remaining_dssgd_test_accs)
+		corrs = pearsonr(remaining_standalone_test_accs, remaining_dssgd_test_accs)
 		self.performance_dict_pretrain['standlone_vs_rrdssgd'].append(corrs[0])
 
 		corrs = pearsonr(remaining_standalone_test_accs,
@@ -487,11 +485,11 @@ class Federated_Learner:
 		self.performance_dict_pretrain['standalone_vs_final'].append(corrs[0])
 
 
-		self.performance_dict_pretrain['CFFL_best_worker'] = max(self.cffl_test_accs_w_pretrain)
+		self.performance_dict_pretrain['CFFL_best_worker'] = max(self.cffl_test_accs_w_pretrain).item()
 		best_worker_id = np.argmax(self.cffl_test_accs_w_pretrain)
 
-		self.performance_dict_pretrain['standalone_best_worker'] = self.worker_standalone_test_accs[best_worker_id]
-		self.performance_dict_pretrain['rr_dssgd_best'] = self.dssgd_models_test_accs[best_worker_id]
+		self.performance_dict_pretrain['standalone_best_worker'] = self.worker_standalone_test_accs[best_worker_id].item()
+		self.performance_dict_pretrain['rr_dssgd_best'] = self.dssgd_models_test_accs[best_worker_id].item()
 
 
 		keys = ['standalone_best_worker', 'CFFL_best_worker', 'rr_dssgd_best', 'standlone_vs_rrdssgd', 'standalone_vs_final']
@@ -510,13 +508,13 @@ class Federated_Learner:
 	def evaluate_workers_performance(self, eval_loader, mode=None):
 		device = self.args['device']
 		if mode == 'standalone':
-			return [evaluate(worker.standalone_model, eval_loader, device, verbose=False)[1].tolist() for worker in self.workers]
+			return [evaluate(worker.standalone_model, eval_loader, device, verbose=False)[1] for worker in self.workers]
 		elif mode == 'dssgd':
-			return [evaluate(worker.dssgd_model, eval_loader, device, verbose=False)[1].tolist() for worker in self.workers]
+			return [evaluate(worker.dssgd_model, eval_loader, device, verbose=False)[1] for worker in self.workers]
 		elif mode == 'pretrain':
-			return [evaluate(worker.model_pretrain, eval_loader, device, verbose=False)[1].tolist() for worker in self.workers]
+			return [evaluate(worker.model_pretrain, eval_loader, device, verbose=False)[1] for worker in self.workers]
 		else:
-			return [evaluate(worker.model, eval_loader, device, verbose=False)[1].tolist() for worker in self.workers]
+			return [evaluate(worker.model, eval_loader, device, verbose=False)[1] for worker in self.workers]
 
 
 def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fade=1):
