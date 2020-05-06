@@ -23,12 +23,12 @@ def compute_grad_update(old_model, new_model, device=None):
 		old_model, new_model = old_model.to(device), new_model.to(device)
 	return [(new_param.data - old_param.data) for old_param, new_param in zip(old_model.parameters(), new_model.parameters())]
 
-
-def add_gradient_updates(grad_update_1, grad_update_2):
+def add_gradient_updates(grad_update_1, grad_update_2, weight = 1.0):
 	assert len(grad_update_1) == len(
 		grad_update_2), "Lengths of the two grad_updates not equal"
-	return [grad_update_1[i] + grad_update_2[i] for i in range(len(grad_update_1))]
-
+	
+	for param_1, param_2 in zip(grad_update_1, grad_update_2):
+		param_1.data += param_2.data * weight
 
 def aggregate_gradient_updates(grad_updates, R, device=None, mode='sum', credits=None, shard_sizes=None):
 	if grad_updates:
@@ -94,7 +94,7 @@ def compare_models(model1, model2):
 	return True
 
 
-def evaluate(model, eval_loader, device, loss_fn=nn.CrossEntropyLoss(), verbose=True):
+def evaluate(model, eval_loader, device, loss_fn=None, verbose=True):
 	model.eval()
 	model = model.to(device)
 	correct = 0
@@ -102,7 +102,10 @@ def evaluate(model, eval_loader, device, loss_fn=nn.CrossEntropyLoss(), verbose=
 	for i, (batch_data, batch_target) in enumerate(eval_loader):
 		batch_data, batch_target = batch_data.to(device), batch_target.to(device)
 		outputs = model(batch_data)
-		loss = loss_fn(outputs, batch_target)
+		if loss_fn:
+			loss = loss_fn(outputs, batch_target)
+		else:
+			loss = None
 		_, predicted = torch.max(outputs.data, 1)
 		total += len(batch_target)
 		# for gpu, bring the predicted and labels back to cpu for python

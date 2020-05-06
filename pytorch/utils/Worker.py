@@ -53,10 +53,10 @@ class Worker():
 
 	def train(self, epochs, is_pretrain=False):
 		if self.is_free_rider:
-			for model in [self.model, self.model_pretrain,self.dssgd_model, self.standalone_model]:
+			for model in [self.model, self.model_pretrain, self.dssgd_model, self.standalone_model]:
 				model = model.to(self.device)
 	
-				for param in self.model.parameters():
+				for param in model.parameters():
 					param.data += (torch.rand(param.data.shape) * 2 - 1).to(self.device) # * self.grad_clip
 			return
 		self.model_pretrain.train()
