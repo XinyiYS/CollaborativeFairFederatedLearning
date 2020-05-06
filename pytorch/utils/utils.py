@@ -119,10 +119,10 @@ def one_on_one_evaluate(workers, federated_model, grad_updates, unfiltererd_grad
 	for i, worker in enumerate(workers):
 		if worker.theta == 1:
 			model_to_eval = copy.deepcopy(worker.model)
-			add_update_to_model(model_to_eval, unfiltererd_grad_updates[i])
+			add_update_to_model(model_to_eval, unfiltererd_grad_updates[i], device=device)
 		else:
 			model_to_eval = copy.deepcopy(federated_model)
-			add_update_to_model(model_to_eval, grad_updates[i])
+			add_update_to_model(model_to_eval, grad_updates[i], device=device)
 
 		_, val_acc = evaluate(model_to_eval, eval_loader, device, verbose=False)
 		del model_to_eval

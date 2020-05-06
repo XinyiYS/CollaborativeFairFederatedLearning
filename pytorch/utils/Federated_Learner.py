@@ -129,6 +129,7 @@ class Federated_Learner:
 
 				grad_updates_pretrain.append(compute_grad_update(model_pretrain_before, 
 					model_pretrain_after, device=self.device))
+				worker.model_pretrain.load_state_dict(model_pretrain_before.state_dict())
 				del model_pretrain_before, model_pretrain_after
 
 				dssgd_grad_updates.append(compute_grad_update(
@@ -224,21 +225,12 @@ class Federated_Learner:
 			rr_sequence = double_seqs[epoch % self.n_workers: epoch % self.n_workers + self.n_workers]
 			self.update_dssgd_model(rr_sequence, dssgd_grad_updates)
 
-			# 2. update the federated_model
-			self.federated_model = add_update_to_model(self.federated_model, aggregated_gradient_updates, device=device)
-			_, federated_val_acc = evaluate(self.federated_model, self.valid_loader, device, verbose=False)
-			# print("CFFL server model validation accuracy : {:.4%}".format(federated_val_acc))
-
-			self.federated_model_pretrain = add_update_to_model(self.federated_model_pretrain, aggregated_gradient_updates_pretrain, device=device)
-			_, federated_val_acc_pretrain = evaluate(self.federated_model_pretrain, self.valid_loader, device, verbose=False)
-
-			dssgd_val_accs = self.evaluate_workers_performance(
-				self.valid_loader, mode='dssgd')
+			dssgd_val_accs = self.evaluate_workers_performance(self.valid_loader, mode='dssgd')
 			self.performance_dict['dssgd_val_accs'].append(dssgd_val_accs)
 			self.performance_dict_pretrain['dssgd_val_accs'].append(dssgd_val_accs)
 			# print("DSSGD models validation accuracies: ", ["{:.4%}".format(dssgd_val_acc) for dssgd_val_acc in dssgd_val_accs ])
 
-			# 3.1 carry out evaluations
+			# 2.1 carry out evaluations
 			'''
 			loo_val_accs = leave_one_out_evaluate(self.federated_model, grad_updates, self.valid_loader, device)
 			print("Leave-one-out validation accuracies : ", ["{:.4%}".format(loo_val_acc) for loo_val_acc in loo_val_accs]   )
@@ -247,7 +239,7 @@ class Federated_Learner:
 				self.workers, self.federated_model, grad_updates, unfiltererd_grad_updates, self.valid_loader, device)
 			# print("One-on-one validation accuracies : ", ["{:.4%}".format(val_acc) for val_acc in worker_val_accs])
 
-			# 3.2 compute credits
+			# 2.2 compute credits
 			# credits = compute_credits(credits, federated_val_acc, loo_val_accs, credit_threshold=credit_threshold)
 			credits, credit_threshold = compute_credits_sinh(credits, worker_val_accs, credit_threshold=credit_threshold, alpha=self.args['alpha'],)
 
@@ -255,10 +247,21 @@ class Federated_Learner:
 			# print("One-on-one validation accuracies pretrain: ", ["{:.4%}".format(val_acc) for val_acc in worker_val_accs_pretrain])
 			credits_pretrain, credit_threshold_pretrain = compute_credits_sinh(credits_pretrain, worker_val_accs_pretrain, credit_threshold=credit_threshold_pretrain, alpha=self.args['alpha'],)
 
-			# 4. gradient downloads and uploads according to credits and thetas
+			# 3. gradient downloads and uploads according to credits and thetas
 			self.assign_updates_with_filter(credits, aggregated_gradient_updates, grad_updates, unfiltererd_grad_updates)
 			
 			self.assign_updates_with_filter(credits_pretrain, aggregated_gradient_updates_pretrain, grad_updates_pretrain, unfiltererd_grad_updates_pretrain, pretrain=True)
+
+
+
+
+			# 4. update the federated_model only after the evaluation is complete
+			self.federated_model = add_update_to_model(self.federated_model, aggregated_gradient_updates, device=device)
+			_, federated_val_acc = evaluate(self.federated_model, self.valid_loader, device, verbose=False)
+			# print("CFFL server model validation accuracy : {:.4%}".format(federated_val_acc))
+
+			self.federated_model_pretrain = add_update_to_model(self.federated_model_pretrain, aggregated_gradient_updates_pretrain, device=device)
+			_, federated_val_acc_pretrain = evaluate(self.federated_model_pretrain, self.valid_loader, device, verbose=False)
 
 
 			# print('For epoch {}:'.format(epoch + 1))
