@@ -140,7 +140,7 @@ class Federated_Learner:
 				# add the clipped grad to local model
 				add_update_to_model(worker.model, clipped_grad_update)
 
-				fed_val_acc = self.one_on_one_evaluate(self.federated_model, worker.model, clipped_grad_update, worker.theta)
+				fed_val_acc = self.one_on_one_evaluate(self.federated_model, worker.model, filtered_grad_update, worker.theta)
 				worker_val_accs.append(fed_val_acc)
 
 				# minus the uploaded grad updates
@@ -172,7 +172,7 @@ class Federated_Learner:
 				
 				add_update_to_model(worker.model_pretrain, clipped_grad_update)
 
-				fed_val_acc = self.one_on_one_evaluate(self.federated_model_pretrain, worker.model_pretrain, clipped_grad_update, worker.theta)
+				fed_val_acc = self.one_on_one_evaluate(self.federated_model_pretrain, worker.model_pretrain, filtered_grad_update, worker.theta)
 				worker_val_accs_pretrain.append(fed_val_acc)
 
 				# minus the uploaded grad updates
@@ -301,12 +301,12 @@ class Federated_Learner:
 		self.convert_tensors_in_dicts()
 		return
 
-	def one_on_one_evaluate(self, federated_model, worker_model, clipped_grad_update, theta):
+	def one_on_one_evaluate(self, federated_model, worker_model, filtered_grad_update, theta):
 		if theta == 1:
 			fed_val_acc = evaluate(worker_model, self.valid_loader, self.device, verbose=False)[1]
 		else:
 			model_to_eval = copy.deepcopy(federated_model)
-			add_update_to_model(model_to_eval, clipped_grad_update, device=self.device)
+			add_update_to_model(model_to_eval, filtered_grad_update, device=self.device)
 			fed_val_acc = evaluate(model_to_eval, self.valid_loader, self.device, verbose=False)[1]
 			del model_to_eval
 		return fed_val_acc
