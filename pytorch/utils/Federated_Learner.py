@@ -8,9 +8,9 @@ from torch import nn, optim
 from utils.Data_Prepper import Data_Prepper
 from utils.Worker import Worker
 
-from utils.utils import evaluate, averge_models, aggregate_gradient_updates, \
+from utils.utils import evaluate, averge_models, \
 	add_update_to_model, compute_grad_update, compare_models,  \
-	leave_one_out_evaluate, add_gradient_updates
+	add_gradient_updates
 
 
 class Federated_Learner:
