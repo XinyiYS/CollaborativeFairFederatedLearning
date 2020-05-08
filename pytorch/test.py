@@ -20,10 +20,14 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 	
 	performance_dicts = []
 	performance_dicts_pretrain = []
-	for i in range(repeat):
 
+	# for the repeats of the experiment
+	# only need to prepare the data once
+	data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'], sample_size_cap=args['sample_size_cap'], train_val_split_ratio=args['train_val_split_ratio'],device=args['device'])
+
+	for i in range(repeat):
+		print()
 		print("Experiment : No.{}/{}".format(str(i+1) ,str(repeat)))
-		data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'], sample_size_cap=args['sample_size_cap'], train_val_split_ratio=args['train_val_split_ratio'])
 		federated_learner = Federated_Learner(args, data_prep)
 
 		# train
@@ -89,15 +93,17 @@ if __name__ == '__main__':
 	# run_experiments(args, 5)
 
 	result_list = []
-	for n_workers, sample_size_cap,fl_epochs in[[5, 2000, 100]]: #, [10, 6000, 5]]:
+	for n_workers, sample_size_cap,fl_epochs in[ [5, 2000, 100]]: #, [10, 6000, 5]]:
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap
 		args['fl_epochs'] = fl_epochs
 		args['train_val_split_ratio']= 0.9
 		args['gamma'] = 0.977
-		args['n_freeriders'] = 1 
+		args['n_freeriders'] = 1
 		args['theta'] = 0.5
-		args['pretraining_lr'] = 0.01
-		for lr in [0.1]:
+		args['alpha'] = 5
+		args['batch_size'] = 32
+		args['pretraining_lr'] = 0.05
+		for lr in [0.2]:
 			args['lr'] = lr
-			run_experiments(args, 5)
+			run_experiments(args, 2)
