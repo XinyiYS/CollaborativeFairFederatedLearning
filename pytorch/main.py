@@ -55,10 +55,10 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 
 	# init steps
 	model_name = str(args['model_fn']).split('.')[-1][:-2]
-	subdir = "{}_p{}_e{}-{}-{}_b{}_size{}_lr{}_theta{}_{}runs_{}_a{}_{}".format(args['dataset']+'@'+args['split'],args['n_workers'], 
+	subdir = "{}_p{}_e{}-{}-{}_b{}_size{}_lr{}_theta{}_{}runs_{}_a{}_fr{}_{}".format(args['dataset']+'@'+args['split'],args['n_workers'], 
 							args['pretrain_epochs'], args['fl_epochs'], args['fl_individual_epochs'],
 							args['batch_size'], args['sample_size_cap'], args['lr'], args['theta'],
-							str(repeat), args['aggregate_mode'], args['alpha'],model_name,
+							str(repeat), args['aggregate_mode'], args['alpha'],args['n_freeriders'], model_name,
 							)
 	logdir = os.path.join(logs_dir, subdir)
 
@@ -76,9 +76,16 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 
 	performance_dicts = []
 	performance_dicts_pretrain = []
+	
+
+	# for the repeats of the experiment
+	# only need to prepare the data once
+	data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'], sample_size_cap=args['sample_size_cap'], train_val_split_ratio=args['train_val_split_ratio'])
+
 	for i in range(repeat):
+		print()
 		print("Experiment : No.{}/{}".format(str(i+1) ,str(repeat)))
-		data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'], sample_size_cap=args['sample_size_cap'], train_val_split_ratio=args['train_val_split_ratio'])
+		# data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'], sample_size_cap=args['sample_size_cap'], train_val_split_ratio=args['train_val_split_ratio'])
 		federated_learner = Federated_Learner(args, data_prep)
 
 		# train

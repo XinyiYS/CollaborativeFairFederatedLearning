@@ -116,7 +116,7 @@ def evaluate(model, eval_loader, device, loss_fn=None, verbose=True):
 		print("Loss: {:.6f}. Accuracy: {:.4%}.".format(loss, accuracy))
 	return loss, accuracy
 
-
+'''
 def one_on_one_evaluate(workers, federated_model, grad_updates, unfiltererd_grad_updates, eval_loader, device):
 	val_accs = []
 	for i, worker in enumerate(workers):
@@ -147,7 +147,7 @@ def leave_one_out_evaluate(federated_model, grad_updates, eval_loader, device):
 	# marginal_contributions = curr_val_acc - torch.tensor(loo_val_accs) 
 
 	return  loo_val_accs
-
+'''
 import numpy as np
 np.random.seed(1111)
 
