@@ -150,6 +150,19 @@ class Data_Prepper:
 				]))
 			return train, test
 
+		elif name == "sst":
+			import torchtext.data as data
+			text_field = data.Field(lower=True)
+			label_field = data.Field(sequential=False)
+			import torchtext.datasets as datasets
+			train_data, dev_data, test_data = datasets.SST.splits(text_field, label_field, fine_grained=True)
+
+			# import mydatasets
+			# train_data, dev_data = mydatasets.MR.splits(text_field, label_field)
+			# text_field.build_vocab(train_data, dev_data)
+			# label_field.build_vocab(train_data, dev_data)
+
+
 		elif name == 'names':
 
 			from utils.load_names import get_train_test

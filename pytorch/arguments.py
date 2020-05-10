@@ -112,3 +112,38 @@ names_args = {
 	'aggregate_mode':'sum',  # 'mean', 'sum', credit-sum
 }
 
+
+sst_args = {
+	# system parameters
+	'gpu': 0,
+	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
+	# setting parameters
+	'dataset': 'sst',
+	'sample_size_cap': 5000,
+	'n_workers': 5,
+	'split': 'powerlaw', #or 'powerlaw' classimbalance
+	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
+	'batch_size' : 1, 
+	'train_val_split_ratio': 0.9,
+	'alpha': 5,
+	'epoch_sample_size':10,
+	'n_freeriders': 0,
+
+
+	# model parameters
+	'model_fn': CNN_Text,
+	'optimizer_fn': optim.Adam,
+	'loss_fn': nn.NLLLoss(), 
+	'pretraining_lr' : 0.1, # only used during pretraining for CFFL models, no decay
+	'dssgd_lr': 0.001, # used for dssgd model, no decay
+	'lr': 0.001,
+	'grad_clip':0.001,
+	'gamma':0.955,   #0.955**100 ~= 0.01
+
+	# training parameters
+	'pretrain_epochs': 0,
+	'fl_epochs': 100,
+	'fl_individual_epochs': 5,
+	'aggregate_mode':'sum',  # 'mean', 'sum', credit-sum
+}
+
