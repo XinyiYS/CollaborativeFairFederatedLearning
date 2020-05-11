@@ -110,12 +110,12 @@ class CNN_Text(nn.Module):
         super(CNN_Text,self).__init__()
         self.args = args
         
-        V = args.embed_num
-        D = args.embed_dim
-        C = args.class_num
+        V = 20000 #args.embed_num
+        D = 300 #args.embed_dim
+        C = 5 #args.class_num =5 for sst
         Ci = 1
-        Co = args.kernel_num
-        Ks = args.kernel_sizes
+        Co = 128 #args.kernel_num
+        Ks = [3,4,5] #args.kernel_sizes
 
         self.embed = nn.Embedding(V, D)
         self.convs1 = [nn.Conv2d(Ci, Co, (K, D)) for K in Ks]

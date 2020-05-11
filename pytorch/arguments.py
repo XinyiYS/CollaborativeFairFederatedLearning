@@ -132,6 +132,12 @@ sst_args = {
 
 	# model parameters
 	'model_fn': CNN_Text,
+	'embed_num': 20000,
+	'embed_dim': 300,
+	'class_num': 5,
+	'kernel_num': 128,
+	'kernel_sizes': [3,4,5],
+
 	'optimizer_fn': optim.Adam,
 	'loss_fn': nn.NLLLoss(), 
 	'pretraining_lr' : 0.1, # only used during pretraining for CFFL models, no decay
