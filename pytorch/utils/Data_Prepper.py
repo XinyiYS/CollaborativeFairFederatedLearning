@@ -1,20 +1,34 @@
+import os
+import random
 import numpy as np
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 
+from torchtext.data import Field, BucketIterator
 
 class Data_Prepper:
-	def __init__(self, name, train_batch_size, sample_size_cap=-1, test_batch_size=1000, valid_batch_size=None, train_val_split_ratio=0.8,device=None):
+	def __init__(self, name, train_batch_size, n_workers, sample_size_cap=-1, test_batch_size=1000, valid_batch_size=None, train_val_split_ratio=0.8, device=None):
 		self.name = name
-		self.train_dataset, self.test_dataset = self.prepare_dataset(name)
-		self.sample_size_cap = sample_size_cap
-		self.train_val_split_ratio = train_val_split_ratio
-
+		self.device = device
+		self.n_workers = n_workers
 		self.init_batch_size(train_batch_size, test_batch_size, valid_batch_size)
 
-		self.init_train_valid_idx()
-		self.init_valid_loader()
-		self.init_test_loader()
+		if name == 'sst':
+
+			self.train_datasets, self.validation_dataset, self.test_dataset = self.prepare_dataset(name)
+
+			self.valid_loader = BucketIterator(self.validation_dataset, batch_size = 300, sort_key=lambda x: len(x.text), device=self.device  )
+			self.test_loader = BucketIterator(self.test_dataset, batch_size = 300, sort_key=lambda x: len(x.text), device=self.device)
+
+		else:
+			self.train_dataset, self.test_dataset = self.prepare_dataset(name)
+			self.sample_size_cap = sample_size_cap
+			self.train_val_split_ratio = train_val_split_ratio
+
+
+			self.init_train_valid_idx()
+			self.init_valid_loader()
+			self.init_test_loader()
 
 	def init_batch_size(self, train_batch_size, test_batch_size, valid_batch_size):
 		self.train_batch_size = train_batch_size
@@ -82,17 +96,17 @@ class Data_Prepper:
 			indices_list = [party_index_list for party_id, party_index_list in party_indices.items()] 
 
 		elif split == 'powerlaw':
-			from scipy.stats import powerlaw
-			import math
-			a = 1.65911332899
-			party_size = int(len(self.train_idx) / n_workers)
-			b = np.linspace(powerlaw.ppf(0.01, a), powerlaw.ppf(0.99, a), n_workers)
-			shard_sizes = list(map(math.ceil, b/sum(b)*party_size*n_workers))
-			indices_list = []
-			accessed = 0
-			for worker_id in range(n_workers):
-				indices_list.append(self.train_idx[accessed:accessed + shard_sizes[worker_id]])
-				accessed += shard_sizes[worker_id]
+			if self.name == 'sst':
+				# sst split is different from other datasets, so return here				
+
+				self.train_loaders = [BucketIterator(train_dataset, batch_size=self.train_batch_size, device=self.device, sort_key=lambda x: len(x.text),train=True) for train_dataset in self.train_datasets]
+				self.shard_sizes = [(len(train_dataset)) for train_dataset in self.train_datasets ]
+				worker_train_loaders = self.train_loaders
+				return worker_train_loaders
+
+			else:
+				indices_list = powerlaw(self.train_idx, n_workers)
+
 
 		elif split in ['balanced','equal']:
 			from utils.utils import random_split
@@ -102,7 +116,7 @@ class Data_Prepper:
 			from utils.utils import random_split
 			indices_list = random_split(sample_indices=self.train_idx, m_bins=n_workers, equal=False)
 
-		self.indices_list = indices_list
+		self.shard_sizes = [len(indices) for indices in indices_list]
 		worker_train_loaders = [DataLoader(self.train_dataset, batch_size=batch_size, sampler=SubsetRandomSampler(indices), pin_memory=True) for indices in indices_list]
 
 		return worker_train_loaders
@@ -149,13 +163,26 @@ class Data_Prepper:
 					transforms.Normalize((0.1307,), (0.3081,))
 				]))
 			return train, test
-
 		elif name == "sst":
 			import torchtext.data as data
 			text_field = data.Field(lower=True)
 			label_field = data.Field(sequential=False)
 			import torchtext.datasets as datasets
+
+			train_folder = "P{}_powerlaw".format(self.n_workers)
+
+			create_data_txts_for_sst(self.n_workers)
 			train_data, dev_data, test_data = datasets.SST.splits(text_field, label_field, fine_grained=True)
+
+			train_datasets = [datasets.SST('.data/sst/{}/P{}.txt'.format(train_folder, i), text_field=text_field, label_field=label_field)  for i in range(self.n_workers)  ]
+			# validation_data = datasets.SST('./data/sst/trees/dev.txt')
+			# test_data = datasets.SST('./data/sst/trees/test.txt')
+
+			text_field.build_vocab(  *(train_datasets + [dev_data]))
+			label_field.build_vocab( *(train_datasets + [dev_data]))
+
+			return train_datasets, dev_data, test_data
+			
 
 			# import mydatasets
 			# train_data, dev_data = mydatasets.MR.splits(text_field, label_field)
@@ -203,3 +230,46 @@ class Data_Prepper:
 
 			return train_set, test_set
 
+
+
+def powerlaw(sample_indices, n_workers, alpha=1.65911332899):
+	# the smaller the alpha, the more extreme the division
+
+	from scipy.stats import powerlaw
+	import math
+	party_size = int(len(sample_indices) / n_workers)
+	b = np.linspace(powerlaw.ppf(0.01, alpha), powerlaw.ppf(0.99, alpha), n_workers)
+	shard_sizes = list(map(math.ceil, b/sum(b)*party_size*n_workers))
+	indices_list = []
+	accessed = 0
+	for worker_id in range(n_workers):
+		indices_list.append(sample_indices[accessed:accessed + shard_sizes[worker_id]])
+		accessed += shard_sizes[worker_id]
+	return indices_list
+
+
+def create_data_txts_for_sst(n_workers, dirname='.data/sst'):
+	train_txt = 'trees/train.txt'
+	with open(os.path.join(dirname, train_txt), 'r') as file:
+		train_samples = file.readlines()
+
+	all_indices = list(range(len(train_samples)))
+	random.seed(1111)
+	n_samples_each = 8000 // 20
+	sample_indices = random.sample(all_indices, n_samples_each * n_workers)
+
+	foldername = "P{}_powerlaw".format(n_workers)
+	if foldername in os.listdir(dirname):
+		pass
+	else:
+		try:
+			os.mkdir(os.path.join(dirname, foldername))
+		except:
+			pass
+
+		indices_list = powerlaw(sample_indices, n_workers)
+		for i, indices in enumerate(indices_list):
+			with open(os.path.join(dirname, foldername,'P{}.txt'.format(i)) , 'w') as file:
+				[file.write(train_samples[index]) for index in indices]
+
+	return

@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils import clip_grad_value_, clip_grad_norm_
-
+from torchtext.data import Batch
 import utils
 
 
@@ -51,7 +51,7 @@ class Worker():
 		self.param_count = sum([p.numel() for p in self.model.parameters()])
 		self.is_free_rider = is_free_rider
 
-	def train(self, epochs, is_pretrain=False):
+	def train(self, epochs, is_pretrain=False, save_gpu=False):
 		if self.is_free_rider:
 			for model in [self.model, self.model_pretrain, self.dssgd_model, self.standalone_model]:
 				model = model.to(self.device)
@@ -72,9 +72,11 @@ class Worker():
 		self.dssgd_model = self.dssgd_model.to(self.device)
 		for epoch in range(int(epochs)):
 			iter = 0
-			for i, (batch_data, batch_target) in enumerate(self.train_loader):
-				batch_data, batch_target = batch_data.to(
-					self.device), batch_target.to(self.device)
+			for i, batch in enumerate(self.train_loader):
+				if isinstance(batch, Batch):
+					batch_data, batch_target = batch.text.to(self.device), batch.label.to(self.device)
+				else:
+					batch_data, batch_target = batch[0].to(self.device), batch[1].to(self.device)
 				
 				# pretrain model
 
@@ -133,3 +135,11 @@ class Worker():
 
 			if not is_pretrain and epoch==0:
 				self.standalone_scheduler.step()
+
+
+		if 'cuda' in str(self.device) and save_gpu:
+			cpu = torch.device('cpu')
+			self.model_pretrain = self.model_pretrain.to(cpu)
+			self.model = self.model.to(cpu)
+			self.standalone_model = self.standalone_model.to(cpu)
+			self.dssgd_model = self.dssgd_model.to(cpu)

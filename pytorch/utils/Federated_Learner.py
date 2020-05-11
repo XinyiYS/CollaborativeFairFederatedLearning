@@ -18,6 +18,7 @@ class Federated_Learner:
 	def __init__(self, args, data_prepper):
 		self.args = args
 		self.device = args['device']
+		self.save_gpu =  args['save_gpu'] if 'save_gpu' in args else False
 		self.data_prepper = data_prepper
 		self.n_workers = self.args['n_workers']
 		self.n_freeriders = self.args['n_freeriders']
@@ -27,7 +28,7 @@ class Federated_Learner:
 
 		self.worker_train_loaders = self.data_prepper.get_train_loaders(
 			self.args['n_workers'], self.args['split'])
-		self.shard_sizes = [len(index_list) for index_list in data_prepper.indices_list]
+		self.shard_sizes = self.data_prepper.shard_sizes
 		self.init_workers()
 		self.performance_dict = defaultdict(list)
 		self.performance_dict_pretrain = defaultdict(list)
@@ -104,7 +105,7 @@ class Federated_Learner:
 			self.workers.append(worker)
 		return
 
-	def train_locally(self, epochs, is_pretrain=False):
+	def train_locally(self, epochs, is_pretrain=False, save_gpu=False):
 
 		if is_pretrain:
 			for i, worker in enumerate(self.workers):
@@ -126,7 +127,7 @@ class Federated_Learner:
 			dssgd_model_before = copy.deepcopy(worker.dssgd_model)
 			model_pretrain_before = copy.deepcopy(worker.model_pretrain)
 
-			worker.train(epochs, is_pretrain=is_pretrain)
+			worker.train(epochs, is_pretrain=is_pretrain, save_gpu=save_gpu)
 			model_after = copy.deepcopy(worker.model)
 			dssgd_model_after = copy.deepcopy(worker.dssgd_model)
 			model_pretrain_after = copy.deepcopy(worker.model_pretrain)
@@ -141,7 +142,7 @@ class Federated_Learner:
 			filtered_grad_update = mask_grad_update_by_order(clipped_grad_update, mask_order=None, mask_percentile=worker.theta) 
 			
 			# add the clipped grad to local model
-			add_update_to_model(worker.model, clipped_grad_update)
+			add_update_to_model(worker.model, clipped_grad_update, device=self.device)
 
 			fed_val_acc = self.one_on_one_evaluate(self.federated_model, worker.model, filtered_grad_update, worker.theta)
 			worker_val_accs.append(fed_val_acc)
@@ -163,7 +164,6 @@ class Federated_Learner:
 					weight = self.shard_sizes[i] *1. / sum(self.shard_sizes)
 				add_gradient_updates(self.aggregated_gradient_updates, filtered_grad_update, weight)
 
-
 			# repeat for with pretraining
 
 			worker.model_pretrain.load_state_dict(model_pretrain_before.state_dict())
@@ -173,7 +173,7 @@ class Federated_Learner:
 			clipped_grad_update = clip_gradient_update(raw_grad_update, self.args['grad_clip'])
 			filtered_grad_update = mask_grad_update_by_order(clipped_grad_update, mask_order=None, mask_percentile=worker.theta) 
 			
-			add_update_to_model(worker.model_pretrain, clipped_grad_update)
+			add_update_to_model(worker.model_pretrain, clipped_grad_update, device=self.device)
 
 			fed_val_acc = self.one_on_one_evaluate(self.federated_model_pretrain, worker.model_pretrain, filtered_grad_update, worker.theta)
 			worker_val_accs_pretrain.append(fed_val_acc)
@@ -233,7 +233,7 @@ class Federated_Learner:
 		self.performance_dict_pretrain['shard_sizes'] = self.shard_sizes
 
 		# print("Start local pretraining ")
-		self.train_locally(self.args['pretrain_epochs'], is_pretrain=True)
+		self.train_locally(self.args['pretrain_epochs'], is_pretrain=True, save_gpu=self.save_gpu)
 		self.worker_model_test_accs_before = self.evaluate_workers_performance(self.test_loader)
 		self.performance_dict['worker_model_test_accs_before'] = self.worker_model_test_accs_before
 
@@ -255,7 +255,7 @@ class Federated_Learner:
 		# print("\nStart federated learning \n")
 		for epoch in range(fl_epochs):
 			# 1. training locally and update the federated_model
-			worker_val_accs, worker_val_accs_pretrain, dssgd_val_accs = self.train_locally(fl_individual_epochs)
+			worker_val_accs, worker_val_accs_pretrain, dssgd_val_accs = self.train_locally(fl_individual_epochs,save_gpu=self.save_gpu)
 
 			# 2. update the credits and credit_threshold
 			# and update the reputable parties set

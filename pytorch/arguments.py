@@ -1,7 +1,7 @@
 import torch
 from torch import nn, optim
 
-from utils.models import LogisticRegression, MLP, MLP_Net, CNN_Net, RNN
+from utils.models import LogisticRegression, MLP, MLP_Net, CNN_Net, RNN, CNN_Text
 
 use_cuda = True
 cuda_available = torch.cuda.is_available()
@@ -117,6 +117,7 @@ sst_args = {
 	# system parameters
 	'gpu': 0,
 	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
+	'save_gpu': True,
 	# setting parameters
 	'dataset': 'sst',
 	'sample_size_cap': 5000,

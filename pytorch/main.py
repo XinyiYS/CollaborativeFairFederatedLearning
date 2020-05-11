@@ -80,7 +80,7 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 
 	# for the repeats of the experiment
 	# only need to prepare the data once
-	data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'], sample_size_cap=args['sample_size_cap'], train_val_split_ratio=args['train_val_split_ratio'])
+	data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'], n_workers=args['n_workers'], sample_size_cap=args['sample_size_cap'], train_val_split_ratio=args['train_val_split_ratio'], device=args['device'])
 
 	for i in range(repeat):
 		print()
@@ -153,40 +153,36 @@ if __name__ == '__main__':
 	# init steps	
 	init_mp()
 
+	# see if we can detect and isolate freeriders
 
-	# see if we can have good acc, fair
-	# and better figures
-	# with smaller sample size
-	# and smaller init learning rate
+	# experiment_args = []
+	# args = copy.deepcopy(adult_args) # mnist_args
+	# for n_workers, sample_size_cap in [[5, 2000], [10, 4000], [20, 8000]]:
+	# 	args['n_workers'] = n_workers
+	# 	args['sample_size_cap'] = sample_size_cap
+	# 	args['aggregate_mode'] = 'sum'
+	# 	args['n_freeriders'] = 0
+	# 	args['alpha'] = 1
+	# 	args['lr'] = 0.1
+	# 	args['gamma'] = 1
+	# 	for theta in [0.1, 1]:
+	# 		args['theta'] = theta
+
+	# 		experiment_args.append(copy.deepcopy(args))
+	# run_experiments_full(experiment_args)
+
+
 	experiment_args = []
 	args = copy.deepcopy(adult_args) # mnist_args
-	for n_workers, sample_size_cap in [[5, 2000], [10, 4000],[20, 8000]]:
+	for n_workers, sample_size_cap in [[5, 500], [10, 1000], [20, 2000]]:
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap
-		args['aggregate_mode'] = 'sum'
+		args['n_freeriders'] = 0
+		args['alpha'] = 5
 		args['lr'] = 0.1
+		args['batch_size'] = 16
 		args['gamma'] = 0.977
 		for theta in [0.1, 1]:
-			args['theta'] = theta
-
-			experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args)
-
-
-
-
-	# see if we can have good acc, fair
-
-	experiment_args = []
-	args = copy.deepcopy(adult_args) # mnist_args
-	for n_workers, sample_size_cap in [[5, 2000], [10, 4000],[20, 8000]]:
-		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		args['aggregate_mode'] = 'sum'
-		args['n_freeriders'] = 1 
-		args['lr'] = 0.1
-		args['gamma'] = 0.977
-		for theta in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]:
 			args['theta'] = theta
 
 			experiment_args.append(copy.deepcopy(args))

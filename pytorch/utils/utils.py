@@ -3,6 +3,7 @@ import torch
 from torch import nn
 from .Worker import Custom_Dataset
 from torch.utils.data import DataLoader
+from torchtext.data import Batch
 
 def averge_models(models, device=None):
 	final_model = copy.deepcopy(models[0])
@@ -99,9 +100,15 @@ def evaluate(model, eval_loader, device, loss_fn=None, verbose=True):
 	model = model.to(device)
 	correct = 0
 	total = 0
-	for i, (batch_data, batch_target) in enumerate(eval_loader):
-		batch_data, batch_target = batch_data.to(device), batch_target.to(device)
+	for i, batch in enumerate(eval_loader):
+		if isinstance(batch, Batch):
+			batch_data, batch_target = batch.text.to(device), batch.label.to(device)
+		else:
+			batch_data, batch_target = batch[0].to(device), batch[1].to(device)
+
+
 		outputs = model(batch_data)
+
 		if loss_fn:
 			loss = loss_fn(outputs, batch_target)
 		else:
@@ -110,6 +117,8 @@ def evaluate(model, eval_loader, device, loss_fn=None, verbose=True):
 		total += len(batch_target)
 		# for gpu, bring the predicted and labels back to cpu for python
 		# operations to work
+		# print(predicted.shape)
+		# print(batch_target.shape)
 		correct += (predicted == batch_target).sum()
 	accuracy = 1. * correct / total
 	if verbose:
