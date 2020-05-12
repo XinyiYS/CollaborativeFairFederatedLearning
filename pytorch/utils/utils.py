@@ -101,11 +101,14 @@ def evaluate(model, eval_loader, device, loss_fn=None, verbose=True):
 	correct = 0
 	total = 0
 	for i, batch in enumerate(eval_loader):
-		if isinstance(batch, Batch):
-			batch_data, batch_target = batch.text.to(device), batch.label.to(device)
-		else:
-			batch_data, batch_target = batch[0].to(device), batch[1].to(device)
 
+		if isinstance(batch, Batch):
+			batch_data, batch_target = batch.text, batch.label
+			# batch_data.data.t_(), batch_target.data.sub_(1)  # batch first, index align
+		else:
+			batch_data, batch_target = batch[0], batch[1]
+
+		batch_data, batch_target = batch_data.to(device), batch_target.to(device)
 
 		outputs = model(batch_data)
 
@@ -113,13 +116,10 @@ def evaluate(model, eval_loader, device, loss_fn=None, verbose=True):
 			loss = loss_fn(outputs, batch_target)
 		else:
 			loss = None
-		_, predicted = torch.max(outputs.data, 1)
+
+		correct += (torch.max(outputs, 1)[1].view(batch_target.size()).data == batch_target.data).sum()
 		total += len(batch_target)
-		# for gpu, bring the predicted and labels back to cpu for python
-		# operations to work
-		# print(predicted.shape)
-		# print(batch_target.shape)
-		correct += (predicted == batch_target).sum()
+
 	accuracy = 1. * correct / total
 	if verbose:
 		print("Loss: {:.6f}. Accuracy: {:.4%}.".format(loss, accuracy))

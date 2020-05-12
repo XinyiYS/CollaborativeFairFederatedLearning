@@ -46,7 +46,10 @@ class Federated_Learner:
 		grad_clip = self.args['grad_clip']
 		gamma = self.args['gamma']
 
-		self.federated_model = model_fn(device=device)
+		if self.data_prepper.name in ['sst', 'mr']:
+			self.federated_model = model_fn(args=self.data_prepper.args, device=device)
+		else:
+			self.federated_model = model_fn(device=device)
 		self.federated_model_pretrain = copy.deepcopy(self.federated_model)
 
 

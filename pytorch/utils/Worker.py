@@ -74,9 +74,12 @@ class Worker():
 			iter = 0
 			for i, batch in enumerate(self.train_loader):
 				if isinstance(batch, Batch):
-					batch_data, batch_target = batch.text.to(self.device), batch.label.to(self.device)
+					batch_data, batch_target = batch.text, batch.label
+					# batch_data.data.t_(), batch_target.data.sub_(1)  # batch first, index align
 				else:
-					batch_data, batch_target = batch[0].to(self.device), batch[1].to(self.device)
+					batch_data, batch_target = batch[0], batch[1]
+
+				batch_data, batch_target = batch_data.to(self.device), batch_target.to(self.device)
 				
 				# pretrain model
 

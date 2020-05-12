@@ -109,15 +109,17 @@ class CNN_Text(nn.Module):
 	
 	def __init__(self, args=None, device=None):
 		super(CNN_Text,self).__init__()
+
+		
 		self.args = args
 		self.device = device
 		
-		V = 20000 #args.embed_num
-		D = 300 #args.embed_dim
-		C = 5 #args.class_num =5 for sst
+		V = args.embed_num
+		D = args.embed_dim
+		C = args.class_num
 		Ci = 1
-		Co = 128 #args.kernel_num
-		Ks = [3,4,5] #args.kernel_sizes
+		Co = args.kernel_num
+		Ks = args.kernel_sizes
 
 		self.embed = nn.Embedding(V, D)
 		self.convs1 = nn.ModuleList([nn.Conv2d(Ci, Co, (K, D)) for K in Ks])
@@ -127,7 +129,7 @@ class CNN_Text(nn.Module):
 		self.conv14 = nn.Conv2d(Ci, Co, (4, D))
 		self.conv15 = nn.Conv2d(Ci, Co, (5, D))
 		'''
-		self.dropout = nn.Dropout(0.2)
+		self.dropout = nn.Dropout(0.5)
 		# self.dropout = nn.Dropout(args.dropout)
 		self.fc1 = nn.Linear(len(Ks)*Co, C)
 
@@ -140,7 +142,7 @@ class CNN_Text(nn.Module):
 	def forward(self, x):
 
 		x = self.embed(x) # (W,N,D)
-		x = x.permute(1,0,2) # (N,W,D)
+		x = x.permute(1,0,2) # -> (N,W,D)
 
 		if not self.args or self.args.static:
 			x = Variable(x).to(self.device)

@@ -1,6 +1,8 @@
 import os
 import random
+import argparse
 import numpy as np
+import pandas as pd
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 
@@ -8,23 +10,32 @@ from torchtext.data import Field, BucketIterator
 
 class Data_Prepper:
 	def __init__(self, name, train_batch_size, n_workers, sample_size_cap=-1, test_batch_size=1000, valid_batch_size=None, train_val_split_ratio=0.8, device=None):
+		self.args = None
 		self.name = name
 		self.device = device
 		self.n_workers = n_workers
 		self.init_batch_size(train_batch_size, test_batch_size, valid_batch_size)
 
-		if name == 'sst':
+		if name in ['sst', 'mr']:
+			parser = argparse.ArgumentParser(description='CNN text classificer')
+			self.args = parser.parse_args()
 
 			self.train_datasets, self.validation_dataset, self.test_dataset = self.prepare_dataset(name)
 
 			self.valid_loader = BucketIterator(self.validation_dataset, batch_size = 300, sort_key=lambda x: len(x.text), device=self.device  )
 			self.test_loader = BucketIterator(self.test_dataset, batch_size = 300, sort_key=lambda x: len(x.text), device=self.device)
 
+			self.args.embed_num = len(self.args.text_field.vocab)
+			self.args.class_num = len(self.args.label_field.vocab) - 1
+			self.args.embed_dim = 128
+			self.args.kernel_num = 100
+			self.args.kernel_sizes = [3,4,5]
+			self.args.static = False
+
 		else:
 			self.train_dataset, self.test_dataset = self.prepare_dataset(name)
 			self.sample_size_cap = sample_size_cap
 			self.train_val_split_ratio = train_val_split_ratio
-
 
 			self.init_train_valid_idx()
 			self.init_valid_loader()
@@ -96,13 +107,12 @@ class Data_Prepper:
 			indices_list = [party_index_list for party_id, party_index_list in party_indices.items()] 
 
 		elif split == 'powerlaw':
-			if self.name == 'sst':
-				# sst split is different from other datasets, so return here				
+			if self.name in ['sst', 'mr']:
+				# sst and mr split is different from other datasets, so return here				
 
 				self.train_loaders = [BucketIterator(train_dataset, batch_size=self.train_batch_size, device=self.device, sort_key=lambda x: len(x.text),train=True) for train_dataset in self.train_datasets]
 				self.shard_sizes = [(len(train_dataset)) for train_dataset in self.train_datasets ]
-				worker_train_loaders = self.train_loaders
-				return worker_train_loaders
+				return self.train_loaders
 
 			else:
 				indices_list = powerlaw(self.train_idx, n_workers)
@@ -163,6 +173,8 @@ class Data_Prepper:
 					transforms.Normalize((0.1307,), (0.3081,))
 				]))
 			return train, test
+
+
 		elif name == "sst":
 			import torchtext.data as data
 			text_field = data.Field(lower=True)
@@ -178,16 +190,62 @@ class Data_Prepper:
 			# validation_data = datasets.SST('./data/sst/trees/dev.txt')
 			# test_data = datasets.SST('./data/sst/trees/test.txt')
 
-			text_field.build_vocab(  *(train_datasets + [dev_data]))
-			label_field.build_vocab( *(train_datasets + [dev_data]))
+			text_field.build_vocab(*(train_datasets + [dev_data, test_data]))
+			label_field.build_vocab(*(train_datasets + [dev_data, test_data]))
+
+			self.args.text_field = text_field
+			self.args.label_field = label_field
+			self.args.class_num = len(label_field.vocab) - 1
 
 			return train_datasets, dev_data, test_data
-			
 
-			# import mydatasets
-			# train_data, dev_data = mydatasets.MR.splits(text_field, label_field)
-			# text_field.build_vocab(train_data, dev_data)
-			# label_field.build_vocab(train_data, dev_data)
+		elif name == 'mr':
+
+			import torchtext.data as data
+			from utils import mydatasets
+
+			text_field = data.Field(lower=True)
+			label_field = data.Field(sequential=False)
+
+			dirname = '.data/mr'
+
+			fields = [('text', text_field), ('label', label_field)]
+
+			create_data_csvs_for_mr(self.n_workers, dirname=dirname)
+			train_datasets = []
+			for i in range(self.n_workers):
+				df = pd.read_csv(os.path.join(dirname, "P{}_powerlaw".format(self.n_workers), 'P{}.csv'.format(i)))
+
+				examples = [data.Example.fromlist([row['text'], row['label']], fields) for index, row in df.iterrows()]
+				dataset = mydatasets.TarDataset(examples, fields)						
+				train_datasets.append(dataset)
+
+
+			val_df = pd.read_csv(os.path.join(dirname, 'val.csv'))
+			examples = [data.Example.fromlist([row['text'], row['label']], fields) for index, row in val_df.iterrows()]
+			val_dataset = mydatasets.TarDataset(examples, fields)	
+
+			test_df = pd.read_csv(os.path.join(dirname, 'val.csv'))
+			examples = [data.Example.fromlist([row['text'], row['label']], fields) for index, row in test_df.iterrows()]
+			test_dataset = mydatasets.TarDataset(examples, fields)	
+
+			text_field.build_vocab( *(train_datasets + [val_dataset, test_dataset] ))
+			label_field.build_vocab( *(train_datasets + [val_dataset, test_dataset] ))
+
+			self.args.text_field = text_field
+			self.args.label_field = label_field
+			self.args.class_num = len(label_field.vocab) - 1
+
+			return train_datasets, val_dataset, test_dataset
+
+			'''
+			train_data, dev_data = mydatasets.MR.splits(text_field, label_field)
+			text_field.build_vocab(train_data, dev_data)
+			label_field.build_vocab(train_data, dev_data)
+			print(train_data)
+			print(dev_data)
+			# train_iter, dev_iter = data.Iterator.splits((train_data, dev_data),  batch_sizes=(batch_size, len(dev_data)))
+			'''
 
 
 		elif name == 'names':
@@ -210,7 +268,7 @@ class Data_Prepper:
 
 			print("Train class counts: ", end='') 
 			for key, value in reference_dict.items():
-			    print("{} : {}, ".format(value,  train_class_counts[int(key)]), end='')
+				print("{} : {}, ".format(value,  train_class_counts[int(key)]), end='')
 			print()
 			'''
 
@@ -219,7 +277,7 @@ class Data_Prepper:
 			print("Test class counts: ", end='') 
 
 			for key, value in reference_dict.items():
-			    print("{} : {}, ".format(value,  test_class_counts[int(key)]), end='')
+				print("{} : {}, ".format(value,  test_class_counts[int(key)]), end='')
 			print()
 			print("Total of {} categories".format(len(reference_dict)))
 			'''
@@ -229,8 +287,6 @@ class Data_Prepper:
 			test_set = Custom_Dataset(X_test, y_test)
 
 			return train_set, test_set
-
-
 
 def powerlaw(sample_indices, n_workers, alpha=1.65911332899):
 	# the smaller the alpha, the more extreme the division
@@ -272,4 +328,61 @@ def create_data_txts_for_sst(n_workers, dirname='.data/sst'):
 			with open(os.path.join(dirname, foldername,'P{}.txt'.format(i)) , 'w') as file:
 				[file.write(train_samples[index]) for index in indices]
 
+	return
+
+def get_df(pos, neg):
+	data_rows = []
+	for text in pos:
+		data_rows.append(['positive', text.rstrip()])
+	for text in neg:
+		data_rows.append(['negative', text.rstrip()])
+	return pd.DataFrame(data=data_rows, columns=['label', 'text'])
+
+def create_data_csvs_for_mr(n_workers, dirname='.data/mr'):
+	pos = 'rt-polaritydata/rt-polarity.pos'
+	neg = 'rt-polaritydata/rt-polarity.neg'
+
+	with open(os.path.join(dirname, pos), 'r', encoding='latin-1') as file:
+		pos_samples =  file.readlines()
+
+	with open(os.path.join(dirname, neg), 'r', encoding='latin-1') as file:
+		neg_samples =  file.readlines()
+
+	random.seed(1111)
+	random.shuffle(pos_samples)
+	random.shuffle(neg_samples)
+
+	train, val, text = [], [], []
+	N = len(pos_samples)
+
+	split_points = [4000, (N-4000)//2+4000 ]
+	train, val, test = np.array_split(pos_samples,split_points)
+	train_, val_, test_ = np.array_split( neg_samples,split_points)
+
+	train_df = get_df(train, train_)
+	val_df = get_df(val, val_)
+	test_df = get_df(test, test_)
+
+	val_df.to_csv( os.path.join(dirname, 'val.csv') , index=False)
+	test_df.to_csv( os.path.join(dirname, 'test.csv') , index=False)
+
+
+	# shuffle the train samples
+	train_df = train_df.sample(frac=1)
+
+	n_samples_each = len(train) // 20
+	sample_indices = list(range(n_samples_each * n_workers))
+	foldername = "P{}_powerlaw".format(n_workers)
+	foldername = os.path.join(dirname, foldername)
+	if foldername in os.listdir(dirname):
+		pass
+	else:
+		try:
+			os.mkdir(foldername)
+		except:
+			pass
+		indices_list = powerlaw(sample_indices, n_workers)
+		for i, indices in enumerate(indices_list):
+			sub_df = train_df.iloc[indices]
+			sub_df.to_csv(os.path.join(foldername,'P{}.csv'.format(i)), index=False)
 	return
