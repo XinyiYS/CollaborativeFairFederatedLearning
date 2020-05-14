@@ -130,11 +130,16 @@ def run_experiments_full(experiment_args):
 	except:
 		pass
 
+	for args in experiment_args:
+		run_experiments(args, 5, experiment_dir)
+
+	'''
 	groups = get_parallel_groups(experiment_args, parallel_size=4)
 	for group in groups:
 		result_list = []
 		pool = Pool(processes=len(group))
 		for args in group:
+
 			r = pool.apply_async(run_experiments, ((copy.deepcopy(args)), (5), (experiment_dir)))
 			result_list.append(r)
 
@@ -143,6 +148,7 @@ def run_experiments_full(experiment_args):
 
 		for r in result_list:
 			r.get()
+	'''
 
 	return
 
@@ -151,7 +157,9 @@ from arguments import adult_args, mnist_args, names_args, update_gpu
 
 if __name__ == '__main__':
 	# init steps	
+	'''
 	init_mp()
+	'''
 
 	# see if we can detect and isolate freeriders
 
