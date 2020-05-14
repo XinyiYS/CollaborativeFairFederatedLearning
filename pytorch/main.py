@@ -105,10 +105,10 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 		file.write('complete')
 	return
 
-def get_batches(experiment_args, batch_size=4):
+def get_parallel_groups(experiment_args, parallel_size=4):
 	experiment_args = np.asarray(experiment_args)
 	from math import ceil
-	return np.array_split(experiment_args, ceil(len(experiment_args)/batch_size))
+	return np.array_split(experiment_args, ceil(len(experiment_args)/parallel_size))
 
 def run_experiments_full(experiment_args):
 	# experiment_args should include the args for p=5,10,20, theta=0.1, 1
@@ -123,12 +123,12 @@ def run_experiments_full(experiment_args):
 	except:
 		pass
 
-	batches = get_batches(experiment_args, batch_size=4)
-	for batch in batches:
+	groups = get_parallel_groups(experiment_args, parallel_size=4)
+	for group in groups:
 		result_list = []
-		pool = Pool(processes=len(batch))
-		for args in batch:
-			r = pool.apply_async(run_experiments, ((copy.deepcopy(args) ), (5), (experiment_dir)))
+		pool = Pool(processes=len(group))
+		for args in group:
+			r = pool.apply_async(run_experiments, ((copy.deepcopy(args)), (1), (experiment_dir)))
 			result_list.append(r)
 
 		pool.close()
@@ -140,93 +140,50 @@ def run_experiments_full(experiment_args):
 	return
 
 
-from arguments import adult_args, mnist_args, names_args, update_gpu
+from arguments import adult_args, mnist_args, names_args, update_gpu, mnist_cnn_args, cifar_cnn_args
 
 if __name__ == '__main__':
 	# init steps	
 	init_mp()
 
 
-	# see if we can have high fairness and acc
-	# without lr decay, and use fedavg
+	# see if we can have good acc, fair
+	# and better figures
+	# with smaller sample size
+	# and smaller init learning rate
 	experiment_args = []
-	args = copy.deepcopy(adult_args) # mnist_args
-	for n_workers, sample_size_cap in [[5, 2000], [10, 4000], [20, 8000]]:
+	# args = copy.deepcopy(adult_args) # mnist_args
+	# args = copy.deepcopy(mnist_cnn_args) # mnist_args
+	args = copy.deepcopy(mnist_args)
+	# for n_workers, sample_size_cap in [[5, 3000], [10, 6000],[20, 12000]]:
+	for n_workers, sample_size_cap in [[5, 3000]]:
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap
-		args['gamma'] = 1
-		args['aggregate_mode'] = 'mean'
-		args['lr'] = 0.001
-		for theta in [0.1, 1]:
-			args['theta'] = theta
-
-			experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args)
-
-
-	# see if we can take out free riders based on different thetas
-
-	experiment_args = []
-	args = copy.deepcopy(adult_args) 
-	for n_workers, sample_size_cap in [[5, 2000], [10, 4000], [20, 8000]]:
-
-		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		args['n_freeriders'] = 1
 		args['aggregate_mode'] = 'sum'
-		for theta in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+		args['lr'] = 0.1
+		args['gamma'] = 0.977
+		for theta in [0.1, 1]:
 			args['theta'] = theta
 
 			experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args)
 
 
-	# see if we can still take out free riders with fedAvg
-	experiment_args = []
-	args = copy.deepcopy(adult_args) 
-	for n_workers, sample_size_cap in [[5, 2000], [10, 4000], [20, 8000]]:
-		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		for theta in [0.1, 1]:
-			args['theta'] = theta
-			args['gamma'] = 1
-			args['aggregate_mode'] = 'mean'
-			args['n_freeriders'] = 1
-			experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args)
-
-	'''
-	# result_list = []
-			pool = Pool(processes=4)
-			r = pool.apply_async(run_experiments, ((copy.deepcopy(args) ), (5), (experiment_dir)))
-			result_list.append(r)
-	pool.close()
-	pool.join()
-
-	for r in result_list:
-		r.get()
 
 
-	result_list = []
-	args = adult_args # mnist_args
-	for n_workers, sample_size_cap, fl_epochs in[[20, 8000, 100]]:
+	# see if we can have good acc, fair
 
-		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		args['fl_epochs'] = fl_epochs
-		for theta in [0.1, 1]:
-			args['theta'] = theta
-			args['n_freeriders'] = 0
+	# experiment_args = []
+	# args = copy.deepcopy(adult_args) # mnist_args
+	# for n_workers, sample_size_cap in [[5, 2000], [10, 4000],[20, 8000]]:
+	# 	args['n_workers'] = n_workers
+	# 	args['sample_size_cap'] = sample_size_cap
+	# 	args['aggregate_mode'] = 'sum'
+	# 	args['n_freeriders'] = 1 
+	# 	args['lr'] = 0.1
+	# 	args['gamma'] = 0.977
+	# 	for theta in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]:
+	# 		args['theta'] = theta
 
-			args['aggregate_mode'] = 'mean'
-
-
-			pool = Pool(processes=4)
-			r = pool.apply_async(run_experiments, ((copy.deepcopy(args) ), (5), (experiment_dir)))
-			result_list.append(r)
-	pool.close()
-	pool.join()
-
-	for r in result_list:
-		r.get()
-	'''
+	# 		experiment_args.append(copy.deepcopy(args))
+	# run_experiments_full(experiment_args)

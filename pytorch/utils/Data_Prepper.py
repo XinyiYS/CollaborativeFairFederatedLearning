@@ -137,19 +137,24 @@ class Data_Prepper:
 		elif name == 'mnist':
 			from torchvision import datasets, transforms
 
-			train = datasets.MNIST('datasets/', train=True, transform=transforms.Compose([
+			train = datasets.MNIST('datasets/', train=True, download=True, transform=transforms.Compose([
 				   transforms.Pad((2,2,2,2)),
 				   transforms.ToTensor(),
 				   transforms.Normalize((0.1307,), (0.3081,))
 							   ]))
 
-			test = datasets.MNIST('datasets/', train=False, transform=transforms.Compose([
+			test = datasets.MNIST('datasets/', train=False, download=True, transform=transforms.Compose([
 					transforms.Pad((2,2,2,2)),
 					transforms.ToTensor(),
 					transforms.Normalize((0.1307,), (0.3081,))
 				]))
 			return train, test
-
+		elif name == 'cifar10':
+			from torchvision import datasets, transforms
+			apply_transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+			train = datasets.CIFAR10('datasets/cifar/', train=True, download=True,transform=apply_transform)
+			test = datasets.CIFAR10('datasets/cifar/', train=False, download=True,transform=apply_transform)
+			return train, test        
 		elif name == 'names':
 
 			from utils.load_names import get_train_test

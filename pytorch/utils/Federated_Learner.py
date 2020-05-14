@@ -10,7 +10,7 @@ from utils.Worker import Worker
 
 from utils.utils import evaluate, averge_models, aggregate_gradient_updates, \
 	add_update_to_model, compute_grad_update, compare_models,  \
-	leave_one_out_evaluate, one_on_one_evaluate, compute_shapley
+	leave_one_out_evaluate, one_on_one_evaluate
 
 
 class Federated_Learner:
