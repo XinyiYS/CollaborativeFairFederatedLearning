@@ -1,22 +1,3 @@
-<<<<<<< HEAD
-import numpy as np
-from torch.utils.data import DataLoader
-from torch.utils.data.sampler import SubsetRandomSampler
-
-
-class Data_Prepper:
-	def __init__(self, name, train_batch_size, sample_size_cap=-1, test_batch_size=1000, valid_batch_size=None, train_val_split_ratio=0.8,):
-		self.name = name
-		self.train_dataset, self.test_dataset = self.prepare_dataset(name)
-		self.sample_size_cap = sample_size_cap
-		self.train_val_split_ratio = train_val_split_ratio
-
-		self.init_batch_size(train_batch_size, test_batch_size, valid_batch_size)
-
-		self.init_train_valid_idx()
-		self.init_valid_loader()
-		self.init_test_loader()
-=======
 import os
 import random
 import argparse
@@ -59,7 +40,6 @@ class Data_Prepper:
 			self.init_train_valid_idx()
 			self.init_valid_loader()
 			self.init_test_loader()
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 
 	def init_batch_size(self, train_batch_size, test_batch_size, valid_batch_size):
 		self.train_batch_size = train_batch_size
@@ -70,17 +50,10 @@ class Data_Prepper:
 		self.train_idx, self.valid_idx = self.get_train_valid_indices(self.train_dataset, self.train_val_split_ratio, sample_size_cap=self.sample_size_cap, shuffle=shuffle)
 
 	def init_valid_loader(self):
-<<<<<<< HEAD
-		self.valid_loader = DataLoader(self.train_dataset, batch_size=self.valid_batch_size, sampler=SubsetRandomSampler(self.valid_idx))
-
-	def init_test_loader(self):
-		self.test_loader = DataLoader(self.test_dataset, batch_size=self.test_batch_size)
-=======
 		self.valid_loader = DataLoader(self.train_dataset, batch_size=self.valid_batch_size, sampler=SubsetRandomSampler(self.valid_idx), pin_memory=True)
 
 	def init_test_loader(self):
 		self.test_loader = DataLoader(self.test_dataset, batch_size=self.test_batch_size, pin_memory=True)
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 
 	def get_valid_loader(self):
 		return self.valid_loader
@@ -134,19 +107,6 @@ class Data_Prepper:
 			indices_list = [party_index_list for party_id, party_index_list in party_indices.items()] 
 
 		elif split == 'powerlaw':
-<<<<<<< HEAD
-			from scipy.stats import powerlaw
-			import math
-			a = 1.65911332899
-			party_size = int(len(self.train_idx) / n_workers)
-			b = np.linspace(powerlaw.ppf(0.01, a), powerlaw.ppf(0.99, a), n_workers)
-			shard_sizes = list(map(math.ceil, b/sum(b)*party_size*n_workers))
-			indices_list = []
-			accessed = 0
-			for worker_id in range(n_workers):
-				indices_list.append(self.train_idx[accessed:accessed + shard_sizes[worker_id]])
-				accessed += shard_sizes[worker_id]
-=======
 			if self.name in ['sst', 'mr']:
 				# sst and mr split is different from other datasets, so return here				
 
@@ -157,7 +117,6 @@ class Data_Prepper:
 			else:
 				indices_list = powerlaw(self.train_idx, n_workers)
 
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 
 		elif split in ['balanced','equal']:
 			from utils.utils import random_split
@@ -167,13 +126,8 @@ class Data_Prepper:
 			from utils.utils import random_split
 			indices_list = random_split(sample_indices=self.train_idx, m_bins=n_workers, equal=False)
 
-<<<<<<< HEAD
-		self.indices_list = indices_list
-		worker_train_loaders = [DataLoader(self.train_dataset, batch_size=batch_size, sampler=SubsetRandomSampler(indices)) for indices in indices_list]
-=======
 		self.shard_sizes = [len(indices) for indices in indices_list]
 		worker_train_loaders = [DataLoader(self.train_dataset, batch_size=batch_size, sampler=SubsetRandomSampler(indices), pin_memory=True) for indices in indices_list]
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 
 		return worker_train_loaders
 
@@ -207,36 +161,26 @@ class Data_Prepper:
 		elif name == 'mnist':
 			from torchvision import datasets, transforms
 
-<<<<<<< HEAD
-			train = datasets.MNIST('datasets/', train=True, download=True, transform=transforms.Compose([
-=======
 			train = datasets.MNIST('datasets/', train=True, transform=transforms.Compose([
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 				   transforms.Pad((2,2,2,2)),
 				   transforms.ToTensor(),
 				   transforms.Normalize((0.1307,), (0.3081,))
 							   ]))
 
-<<<<<<< HEAD
-			test = datasets.MNIST('datasets/', train=False, download=True, transform=transforms.Compose([
-=======
 			test = datasets.MNIST('datasets/', train=False, transform=transforms.Compose([
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 					transforms.Pad((2,2,2,2)),
 					transforms.ToTensor(),
 					transforms.Normalize((0.1307,), (0.3081,))
 				]))
 			return train, test
-<<<<<<< HEAD
 		elif name == 'cifar10':
 			from torchvision import datasets, transforms
 			apply_transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-			train = datasets.CIFAR10('datasets/cifar/', train=True, download=True,transform=apply_transform)
-			test = datasets.CIFAR10('datasets/cifar/', train=False, download=True,transform=apply_transform)
-			return train, test        
-=======
-
-
+			# train = datasets.CIFAR10('/Users/lvlingjuan/Dropbox/pytorch/datasets/cifar', train=True, download=True,transform=apply_transform)
+			# test = datasets.CIFAR10('/Users/lvlingjuan/Dropbox/pytorch/datasets/cifar', train=False, download=True,transform=apply_transform)
+			train = datasets.CIFAR10('datasets/cifar', train=True, download=True,transform=apply_transform)
+			test = datasets.CIFAR10('datasets/cifar', train=False, download=True,transform=apply_transform)
+			return train, test   
 		elif name == "sst":
 			import torchtext.data as data
 			text_field = data.Field(lower=True)
@@ -310,7 +254,6 @@ class Data_Prepper:
 			'''
 
 
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 		elif name == 'names':
 
 			from utils.load_names import get_train_test
@@ -331,11 +274,7 @@ class Data_Prepper:
 
 			print("Train class counts: ", end='') 
 			for key, value in reference_dict.items():
-<<<<<<< HEAD
-			    print("{} : {}, ".format(value,  train_class_counts[int(key)]), end='')
-=======
 				print("{} : {}, ".format(value,  train_class_counts[int(key)]), end='')
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 			print()
 			'''
 
@@ -344,11 +283,7 @@ class Data_Prepper:
 			print("Test class counts: ", end='') 
 
 			for key, value in reference_dict.items():
-<<<<<<< HEAD
-			    print("{} : {}, ".format(value,  test_class_counts[int(key)]), end='')
-=======
 				print("{} : {}, ".format(value,  test_class_counts[int(key)]), end='')
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 			print()
 			print("Total of {} categories".format(len(reference_dict)))
 			'''
@@ -359,8 +294,6 @@ class Data_Prepper:
 
 			return train_set, test_set
 
-<<<<<<< HEAD
-=======
 def powerlaw(sample_indices, n_workers, alpha=1.65911332899):
 	# the smaller the alpha, the more extreme the division
 
@@ -459,4 +392,3 @@ def create_data_csvs_for_mr(n_workers, dirname='.data/mr'):
 			sub_df = train_df.iloc[indices]
 			sub_df.to_csv(os.path.join(foldername,'P{}.csv'.format(i)), index=False)
 	return
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59

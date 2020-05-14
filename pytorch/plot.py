@@ -6,12 +6,8 @@ import pandas as pd
 all_party_fmt_styles = ['', '--','-.', 'o-', 'v-',
 			 '^-', '<-','>-', '1-','2-',
 			 '3-','4-','s-','p-','*-',
-<<<<<<< HEAD
-			 'h-', 'H-', '+-', 'X-','D-']
-=======
 			 'h-', 'H-', '+-', 'X-','D-',
 			 'x-','d-','P-','|-','_-']
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 
 best_worker_fmt_styles = ['ro-', 'c.-', 'm<-', 'b<-']
 
@@ -25,10 +21,6 @@ def plot(df, save_dir=None, name='adult', plot_type=1, show=False, **kwargs):
 	# Data
 	index = np.arange(1, len(df)+1)
 
-<<<<<<< HEAD
-
-=======
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 	fmt_styles = best_worker_fmt_styles if plot_type == 2 else all_party_fmt_styles
 
 	for column, fmt in zip(df.columns, fmt_styles):
@@ -80,10 +72,7 @@ def plot(df, save_dir=None, name='adult', plot_type=1, show=False, **kwargs):
 
 
 
-<<<<<<< HEAD
-=======
 
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 '''
 def plot_one(df, save_dir=None, show=False, name='Adult'):
 	# Data

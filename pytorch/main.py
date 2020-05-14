@@ -55,17 +55,10 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 
 	# init steps
 	model_name = str(args['model_fn']).split('.')[-1][:-2]
-<<<<<<< HEAD
-	subdir = "{}_p{}_e{}-{}-{}_b{}_size{}_lr{}_theta{}_{}runs_{}_a{}_{}".format(args['dataset']+'@'+args['split'],args['n_workers'], 
-							args['pretrain_epochs'], args['fl_epochs'], args['fl_individual_epochs'],
-							args['batch_size'], args['sample_size_cap'], args['lr'], args['theta'],
-							str(repeat), args['aggregate_mode'], args['alpha'],model_name,
-=======
 	subdir = "{}_p{}_e{}-{}-{}_b{}_size{}_lr{}_theta{}_{}runs_{}_a{}_fr{}_{}".format(args['dataset']+'@'+args['split'],args['n_workers'], 
 							args['pretrain_epochs'], args['fl_epochs'], args['fl_individual_epochs'],
 							args['batch_size'], args['sample_size_cap'], args['lr'], args['theta'],
 							str(repeat), args['aggregate_mode'], args['alpha'],args['n_freeriders'], model_name,
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 							)
 	logdir = os.path.join(logs_dir, subdir)
 
@@ -83,11 +76,6 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 
 	performance_dicts = []
 	performance_dicts_pretrain = []
-<<<<<<< HEAD
-	for i in range(repeat):
-		print("Experiment : No.{}/{}".format(str(i+1) ,str(repeat)))
-		data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'], sample_size_cap=args['sample_size_cap'], train_val_split_ratio=args['train_val_split_ratio'])
-=======
 	
 
 	# for the repeats of the experiment
@@ -98,7 +86,6 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 		print()
 		print("Experiment : No.{}/{}".format(str(i+1) ,str(repeat)))
 		# data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'], sample_size_cap=args['sample_size_cap'], train_val_split_ratio=args['train_val_split_ratio'])
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 		federated_learner = Federated_Learner(args, data_prep)
 
 		# train
@@ -143,69 +130,30 @@ def run_experiments_full(experiment_args):
 	except:
 		pass
 
-<<<<<<< HEAD
-=======
 	for args in experiment_args:
-		run_experiments(args, 5, experiment_dir)
+		run_experiments(args, 1, experiment_dir)
+	# groups = get_parallel_groups(experiment_args, parallel_size=4)
+	# for group in groups:
+	# 	result_list = []
+	# 	pool = Pool(processes=len(group))
+	# 	for args in group:
+	# 		r = pool.apply_async(run_experiments, ((copy.deepcopy(args)), (5), (experiment_dir)))
+	# 		result_list.append(r)
 
-	'''
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
-	groups = get_parallel_groups(experiment_args, parallel_size=4)
-	for group in groups:
-		result_list = []
-		pool = Pool(processes=len(group))
-		for args in group:
-<<<<<<< HEAD
-			r = pool.apply_async(run_experiments, ((copy.deepcopy(args)), (1), (experiment_dir)))
-=======
+	# 	pool.close()
+	# 	pool.join()
 
-			r = pool.apply_async(run_experiments, ((copy.deepcopy(args)), (5), (experiment_dir)))
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
-			result_list.append(r)
-
-		pool.close()
-		pool.join()
-
-		for r in result_list:
-			r.get()
-<<<<<<< HEAD
-=======
-	'''
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
+	# 	for r in result_list:
+	# 		r.get()
 
 	return
 
 
-<<<<<<< HEAD
-from arguments import adult_args, mnist_args, names_args, update_gpu, mnist_cnn_args, cifar_cnn_args
+from arguments import adult_args, mnist_args, names_args, update_gpu, cifar_cnn_args
 
 if __name__ == '__main__':
 	# init steps	
 	init_mp()
-
-
-	# see if we can have good acc, fair
-	# and better figures
-	# with smaller sample size
-	# and smaller init learning rate
-	experiment_args = []
-	# args = copy.deepcopy(adult_args) # mnist_args
-	# args = copy.deepcopy(mnist_cnn_args) # mnist_args
-	args = copy.deepcopy(mnist_args)
-	# for n_workers, sample_size_cap in [[5, 3000], [10, 6000],[20, 12000]]:
-	for n_workers, sample_size_cap in [[5, 3000]]:
-		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		args['aggregate_mode'] = 'sum'
-		args['lr'] = 0.1
-=======
-from arguments import adult_args, mnist_args, names_args, update_gpu
-
-if __name__ == '__main__':
-	# init steps	
-	'''
-	init_mp()
-	'''
 
 	# see if we can detect and isolate freeriders
 
@@ -227,41 +175,19 @@ if __name__ == '__main__':
 
 
 	experiment_args = []
-	args = copy.deepcopy(adult_args) # mnist_args
-	for n_workers, sample_size_cap in [[5, 500], [10, 1000], [20, 2000]]:
+	# args = copy.deepcopy(adult_args) # mnist_args
+	args = copy.deepcopy(cifar_cnn_args) # mnist_args
+	# for n_workers, sample_size_cap in [[5, 500], [10, 1000], [20, 2000]]:
+	for n_workers, sample_size_cap in [[5, 10000], [10, 20000], [20, 40000]]:
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap
 		args['n_freeriders'] = 0
 		args['alpha'] = 5
 		args['lr'] = 0.1
-		args['batch_size'] = 16
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
+		args['batch_size'] = 128
 		args['gamma'] = 0.977
 		for theta in [0.1, 1]:
 			args['theta'] = theta
 
 			experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args)
-<<<<<<< HEAD
-
-
-
-
-	# see if we can have good acc, fair
-
-	# experiment_args = []
-	# args = copy.deepcopy(adult_args) # mnist_args
-	# for n_workers, sample_size_cap in [[5, 2000], [10, 4000],[20, 8000]]:
-	# 	args['n_workers'] = n_workers
-	# 	args['sample_size_cap'] = sample_size_cap
-	# 	args['aggregate_mode'] = 'sum'
-	# 	args['n_freeriders'] = 1 
-	# 	args['lr'] = 0.1
-	# 	args['gamma'] = 0.977
-	# 	for theta in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]:
-	# 		args['theta'] = theta
-
-	# 		experiment_args.append(copy.deepcopy(args))
-	# run_experiments_full(experiment_args)
-=======
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59

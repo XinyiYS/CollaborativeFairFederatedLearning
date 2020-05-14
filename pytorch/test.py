@@ -20,12 +20,6 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 	
 	performance_dicts = []
 	performance_dicts_pretrain = []
-<<<<<<< HEAD
-	for i in range(repeat):
-
-		print("Experiment : No.{}/{}".format(str(i+1) ,str(repeat)))
-		data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'], sample_size_cap=args['sample_size_cap'], train_val_split_ratio=args['train_val_split_ratio'])
-=======
 
 	# for the repeats of the experiment
 	# only need to prepare the data once
@@ -34,7 +28,6 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 	for i in range(repeat):
 		print()
 		print("Experiment : No.{}/{}".format(str(i+1) ,str(repeat)))
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 		federated_learner = Federated_Learner(args, data_prep)
 
 		# train
@@ -82,15 +75,6 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 	return
 
 
-<<<<<<< HEAD
-from arguments import adult_args, mnist_args, names_args, update_gpu
-
-from torch.multiprocessing import Pool, Process, set_start_method
-try:
-	 set_start_method('spawn')
-except RuntimeError:
-	pass
-=======
 from arguments import adult_args, mnist_args, names_args, update_gpu, sst_args
 
 # from torch.multiprocessing import Pool, Process, set_start_method
@@ -99,34 +83,10 @@ from arguments import adult_args, mnist_args, names_args, update_gpu, sst_args
 # except RuntimeError:
 	# pass
 # pool = Pool()
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 
 
 if __name__ == '__main__':
 	# init steps
-<<<<<<< HEAD
-	# args = mnist_args
-	args = adult_args
-	# n_workers, sample_size_cap, fl_epochs = [5, 2000, 20]
-	theta = 0.1
-	# args['n_workers'] = n_workers
-	# args['sample_size_cap'] = sample_size_cap
-	# args['fl_epochs'] = fl_epochs
-	args['theta'] = theta
-	args['alpha'] = 5
-	args['gpu'] = 0
-	# run_experiments(args, 5)
-
-	pool = Pool()
-	result_list = []
-	for n_workers, sample_size_cap,fl_epochs in[[5, 2000, 100]]: #, [10, 6000, 5]]:
-		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		args['fl_epochs'] = fl_epochs
-		for lr in [0.1]:
-			args['lr'] = lr
-			run_experiments(args, 5)
-=======
 	args = sst_args
 	# args = adult_args
 	args['gpu'] = 0
@@ -147,4 +107,3 @@ if __name__ == '__main__':
 		for lr in [0.1]:
 			args['lr'] = lr
 			run_experiments(args, 2)
->>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
