@@ -3,6 +3,10 @@ import torch
 from torch import nn
 from .Worker import Custom_Dataset
 from torch.utils.data import DataLoader
+<<<<<<< HEAD
+=======
+from torchtext.data import Batch
+>>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 
 def averge_models(models, device=None):
 	final_model = copy.deepcopy(models[0])
@@ -23,6 +27,7 @@ def compute_grad_update(old_model, new_model, device=None):
 		old_model, new_model = old_model.to(device), new_model.to(device)
 	return [(new_param.data - old_param.data) for old_param, new_param in zip(old_model.parameters(), new_model.parameters())]
 
+<<<<<<< HEAD
 
 def add_gradient_updates(grad_update_1, grad_update_2):
 	assert len(grad_update_1) == len(
@@ -40,13 +45,43 @@ def aggregate_gradient_updates(grad_updates, device=None, mode='sum', credits=No
 	if device:
 		for i, grad_update in enumerate(grad_updates):
 			grad_updates[i] = [param.to(device) for param in grad_update]
+=======
+def add_gradient_updates(grad_update_1, grad_update_2, weight = 1.0):
+	assert len(grad_update_1) == len(
+		grad_update_2), "Lengths of the two grad_updates not equal"
+	
+	for param_1, param_2 in zip(grad_update_1, grad_update_2):
+		param_1.data += param_2.data * weight
+
+def aggregate_gradient_updates(grad_updates, R, device=None, mode='sum', credits=None, shard_sizes=None):
+	if grad_updates:
+		len_first = len(grad_updates[0])
+		assert all(len(i) == len_first for i in grad_updates), "Different shapes of parameters. Cannot aggregate."
+	else:
+		return
+
+	grad_updates_ = [copy.deepcopy(grad_update) for i, grad_update in enumerate(grad_updates) if i in R]
+
+	if device:
+		for i, grad_update in enumerate(grad_updates_):
+			grad_updates_[i] = [param.to(device) for param in grad_update]
+
+	if credits is not None:
+		credits = [credit for i, credit in enumerate(credits) if i in R]
+	if shard_sizes is not None:
+		shard_sizes = [shard_size for i,shard_size in enumerate(shard_sizes) if i in R]
+>>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 
 	aggregated_gradient_updates = []
 	if mode=='mean':
 		# default mean is FL-avg: weighted avg according to nk/n
 		if shard_sizes is None:
 			shard_sizes = torch.ones(len(grad_updates))
+<<<<<<< HEAD
 		grad_updates_ = copy.deepcopy(grad_updates)
+=======
+
+>>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 		for i, (grad_update, shard_size) in enumerate(zip(grad_updates_, shard_sizes)):
 			grad_updates_[i] = [(shard_size * update) for update in grad_update]
 		for i in range(len(grad_updates_[0])):
@@ -54,6 +89,7 @@ def aggregate_gradient_updates(grad_updates, device=None, mode='sum', credits=No
 				[grad_update[i] for grad_update in grad_updates_]).mean(dim=0))
 
 	elif mode =='sum':
+<<<<<<< HEAD
 		for i in range(len(grad_updates[0])):
 			aggregated_gradient_updates.append(torch.stack(
 				[grad_update[i] for grad_update in grad_updates]).sum(dim=0))
@@ -67,6 +103,21 @@ def aggregate_gradient_updates(grad_updates, device=None, mode='sum', credits=No
 		for i in range(len(grad_updates[0])):
 			aggregated_gradient_updates.append(torch.stack(
 				[grad_update[i] for grad_update in grad_updates]).sum(dim=0))
+=======
+		for i in range(len(grad_updates_[0])):
+			aggregated_gradient_updates.append(torch.stack(
+				[grad_update[i] for grad_update in grad_updates_]).sum(dim=0))
+
+	elif mode == 'credit-sum':
+		# first changes the grad_updates altogether
+		for i, (grad_update, credit) in enumerate(zip(grad_updates_, credits)):
+			grad_updates_[i] = [(credit * update) for update in grad_update]
+
+		# then compute the credit weight sum
+		for i in range(len(grad_updates_[0])):
+			aggregated_gradient_updates.append(torch.stack(
+				[grad_update[i] for grad_update in grad_updates_]).sum(dim=0))
+>>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 
 	return aggregated_gradient_updates
 
@@ -87,11 +138,16 @@ def compare_models(model1, model2):
 	return True
 
 
+<<<<<<< HEAD
 def evaluate(model, eval_loader, device, loss_fn=nn.CrossEntropyLoss(), verbose=True):
+=======
+def evaluate(model, eval_loader, device, loss_fn=None, verbose=True):
+>>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 	model.eval()
 	model = model.to(device)
 	correct = 0
 	total = 0
+<<<<<<< HEAD
 	for i, (batch_data, batch_target) in enumerate(eval_loader):
 		batch_data, batch_target = batch_data.to(device), batch_target.to(device)
 		outputs = model(batch_data)
@@ -101,21 +157,54 @@ def evaluate(model, eval_loader, device, loss_fn=nn.CrossEntropyLoss(), verbose=
 		# for gpu, bring the predicted and labels back to cpu for python
 		# operations to work
 		correct += (predicted == batch_target).sum()
+=======
+	for i, batch in enumerate(eval_loader):
+
+		if isinstance(batch, Batch):
+			batch_data, batch_target = batch.text, batch.label
+			# batch_data.data.t_(), batch_target.data.sub_(1)  # batch first, index align
+		else:
+			batch_data, batch_target = batch[0], batch[1]
+
+		batch_data, batch_target = batch_data.to(device), batch_target.to(device)
+
+		outputs = model(batch_data)
+
+		if loss_fn:
+			loss = loss_fn(outputs, batch_target)
+		else:
+			loss = None
+
+		correct += (torch.max(outputs, 1)[1].view(batch_target.size()).data == batch_target.data).sum()
+		total += len(batch_target)
+
+>>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 	accuracy = 1. * correct / total
 	if verbose:
 		print("Loss: {:.6f}. Accuracy: {:.4%}.".format(loss, accuracy))
 	return loss, accuracy
 
+<<<<<<< HEAD
 
+=======
+'''
+>>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 def one_on_one_evaluate(workers, federated_model, grad_updates, unfiltererd_grad_updates, eval_loader, device):
 	val_accs = []
 	for i, worker in enumerate(workers):
 		if worker.theta == 1:
 			model_to_eval = copy.deepcopy(worker.model)
+<<<<<<< HEAD
 			add_update_to_model(model_to_eval, unfiltererd_grad_updates[i])
 		else:
 			model_to_eval = copy.deepcopy(federated_model)
 			add_update_to_model(model_to_eval, grad_updates[i])
+=======
+			add_update_to_model(model_to_eval, unfiltererd_grad_updates[i], device=device)
+		else:
+			model_to_eval = copy.deepcopy(federated_model)
+			add_update_to_model(model_to_eval, grad_updates[i], device=device)
+>>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 
 		_, val_acc = evaluate(model_to_eval, eval_loader, device, verbose=False)
 		del model_to_eval
@@ -137,7 +226,11 @@ def leave_one_out_evaluate(federated_model, grad_updates, eval_loader, device):
 	# marginal_contributions = curr_val_acc - torch.tensor(loo_val_accs) 
 
 	return  loo_val_accs
+<<<<<<< HEAD
 
+=======
+'''
+>>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 import numpy as np
 np.random.seed(1111)
 

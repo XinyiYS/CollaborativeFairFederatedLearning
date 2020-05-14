@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import numpy as np
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
@@ -15,6 +16,50 @@ class Data_Prepper:
 		self.init_train_valid_idx()
 		self.init_valid_loader()
 		self.init_test_loader()
+=======
+import os
+import random
+import argparse
+import numpy as np
+import pandas as pd
+from torch.utils.data import DataLoader
+from torch.utils.data.sampler import SubsetRandomSampler
+
+from torchtext.data import Field, BucketIterator
+
+class Data_Prepper:
+	def __init__(self, name, train_batch_size, n_workers, sample_size_cap=-1, test_batch_size=1000, valid_batch_size=None, train_val_split_ratio=0.8, device=None):
+		self.args = None
+		self.name = name
+		self.device = device
+		self.n_workers = n_workers
+		self.init_batch_size(train_batch_size, test_batch_size, valid_batch_size)
+
+		if name in ['sst', 'mr']:
+			parser = argparse.ArgumentParser(description='CNN text classificer')
+			self.args = parser.parse_args()
+
+			self.train_datasets, self.validation_dataset, self.test_dataset = self.prepare_dataset(name)
+
+			self.valid_loader = BucketIterator(self.validation_dataset, batch_size = 300, sort_key=lambda x: len(x.text), device=self.device  )
+			self.test_loader = BucketIterator(self.test_dataset, batch_size = 300, sort_key=lambda x: len(x.text), device=self.device)
+
+			self.args.embed_num = len(self.args.text_field.vocab)
+			self.args.class_num = len(self.args.label_field.vocab) - 1
+			self.args.embed_dim = 128
+			self.args.kernel_num = 100
+			self.args.kernel_sizes = [3,4,5]
+			self.args.static = False
+
+		else:
+			self.train_dataset, self.test_dataset = self.prepare_dataset(name)
+			self.sample_size_cap = sample_size_cap
+			self.train_val_split_ratio = train_val_split_ratio
+
+			self.init_train_valid_idx()
+			self.init_valid_loader()
+			self.init_test_loader()
+>>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 
 	def init_batch_size(self, train_batch_size, test_batch_size, valid_batch_size):
 		self.train_batch_size = train_batch_size
@@ -25,10 +70,17 @@ class Data_Prepper:
 		self.train_idx, self.valid_idx = self.get_train_valid_indices(self.train_dataset, self.train_val_split_ratio, sample_size_cap=self.sample_size_cap, shuffle=shuffle)
 
 	def init_valid_loader(self):
+<<<<<<< HEAD
 		self.valid_loader = DataLoader(self.train_dataset, batch_size=self.valid_batch_size, sampler=SubsetRandomSampler(self.valid_idx))
 
 	def init_test_loader(self):
 		self.test_loader = DataLoader(self.test_dataset, batch_size=self.test_batch_size)
+=======
+		self.valid_loader = DataLoader(self.train_dataset, batch_size=self.valid_batch_size, sampler=SubsetRandomSampler(self.valid_idx), pin_memory=True)
+
+	def init_test_loader(self):
+		self.test_loader = DataLoader(self.test_dataset, batch_size=self.test_batch_size, pin_memory=True)
+>>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 
 	def get_valid_loader(self):
 		return self.valid_loader
@@ -82,6 +134,7 @@ class Data_Prepper:
 			indices_list = [party_index_list for party_id, party_index_list in party_indices.items()] 
 
 		elif split == 'powerlaw':
+<<<<<<< HEAD
 			from scipy.stats import powerlaw
 			import math
 			a = 1.65911332899
@@ -93,6 +146,18 @@ class Data_Prepper:
 			for worker_id in range(n_workers):
 				indices_list.append(self.train_idx[accessed:accessed + shard_sizes[worker_id]])
 				accessed += shard_sizes[worker_id]
+=======
+			if self.name in ['sst', 'mr']:
+				# sst and mr split is different from other datasets, so return here				
+
+				self.train_loaders = [BucketIterator(train_dataset, batch_size=self.train_batch_size, device=self.device, sort_key=lambda x: len(x.text),train=True) for train_dataset in self.train_datasets]
+				self.shard_sizes = [(len(train_dataset)) for train_dataset in self.train_datasets ]
+				return self.train_loaders
+
+			else:
+				indices_list = powerlaw(self.train_idx, n_workers)
+
+>>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 
 		elif split in ['balanced','equal']:
 			from utils.utils import random_split
@@ -102,8 +167,13 @@ class Data_Prepper:
 			from utils.utils import random_split
 			indices_list = random_split(sample_indices=self.train_idx, m_bins=n_workers, equal=False)
 
+<<<<<<< HEAD
 		self.indices_list = indices_list
 		worker_train_loaders = [DataLoader(self.train_dataset, batch_size=batch_size, sampler=SubsetRandomSampler(indices)) for indices in indices_list]
+=======
+		self.shard_sizes = [len(indices) for indices in indices_list]
+		worker_train_loaders = [DataLoader(self.train_dataset, batch_size=batch_size, sampler=SubsetRandomSampler(indices), pin_memory=True) for indices in indices_list]
+>>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 
 		return worker_train_loaders
 
@@ -137,24 +207,110 @@ class Data_Prepper:
 		elif name == 'mnist':
 			from torchvision import datasets, transforms
 
+<<<<<<< HEAD
 			train = datasets.MNIST('datasets/', train=True, download=True, transform=transforms.Compose([
+=======
+			train = datasets.MNIST('datasets/', train=True, transform=transforms.Compose([
+>>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 				   transforms.Pad((2,2,2,2)),
 				   transforms.ToTensor(),
 				   transforms.Normalize((0.1307,), (0.3081,))
 							   ]))
 
+<<<<<<< HEAD
 			test = datasets.MNIST('datasets/', train=False, download=True, transform=transforms.Compose([
+=======
+			test = datasets.MNIST('datasets/', train=False, transform=transforms.Compose([
+>>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 					transforms.Pad((2,2,2,2)),
 					transforms.ToTensor(),
 					transforms.Normalize((0.1307,), (0.3081,))
 				]))
 			return train, test
+<<<<<<< HEAD
 		elif name == 'cifar10':
 			from torchvision import datasets, transforms
 			apply_transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 			train = datasets.CIFAR10('datasets/cifar/', train=True, download=True,transform=apply_transform)
 			test = datasets.CIFAR10('datasets/cifar/', train=False, download=True,transform=apply_transform)
 			return train, test        
+=======
+
+
+		elif name == "sst":
+			import torchtext.data as data
+			text_field = data.Field(lower=True)
+			label_field = data.Field(sequential=False)
+			import torchtext.datasets as datasets
+
+			train_folder = "P{}_powerlaw".format(self.n_workers)
+
+			create_data_txts_for_sst(self.n_workers)
+			train_data, dev_data, test_data = datasets.SST.splits(text_field, label_field, fine_grained=True)
+
+			train_datasets = [datasets.SST('.data/sst/{}/P{}.txt'.format(train_folder, i), text_field=text_field, label_field=label_field)  for i in range(self.n_workers)  ]
+			# validation_data = datasets.SST('./data/sst/trees/dev.txt')
+			# test_data = datasets.SST('./data/sst/trees/test.txt')
+
+			text_field.build_vocab(*(train_datasets + [dev_data, test_data]))
+			label_field.build_vocab(*(train_datasets + [dev_data, test_data]))
+
+			self.args.text_field = text_field
+			self.args.label_field = label_field
+			self.args.class_num = len(label_field.vocab) - 1
+
+			return train_datasets, dev_data, test_data
+
+		elif name == 'mr':
+
+			import torchtext.data as data
+			from utils import mydatasets
+
+			text_field = data.Field(lower=True)
+			label_field = data.Field(sequential=False)
+
+			dirname = '.data/mr'
+
+			fields = [('text', text_field), ('label', label_field)]
+
+			create_data_csvs_for_mr(self.n_workers, dirname=dirname)
+			train_datasets = []
+			for i in range(self.n_workers):
+				df = pd.read_csv(os.path.join(dirname, "P{}_powerlaw".format(self.n_workers), 'P{}.csv'.format(i)))
+
+				examples = [data.Example.fromlist([row['text'], row['label']], fields) for index, row in df.iterrows()]
+				dataset = mydatasets.TarDataset(examples, fields)						
+				train_datasets.append(dataset)
+
+
+			val_df = pd.read_csv(os.path.join(dirname, 'val.csv'))
+			examples = [data.Example.fromlist([row['text'], row['label']], fields) for index, row in val_df.iterrows()]
+			val_dataset = mydatasets.TarDataset(examples, fields)	
+
+			test_df = pd.read_csv(os.path.join(dirname, 'val.csv'))
+			examples = [data.Example.fromlist([row['text'], row['label']], fields) for index, row in test_df.iterrows()]
+			test_dataset = mydatasets.TarDataset(examples, fields)	
+
+			text_field.build_vocab( *(train_datasets + [val_dataset, test_dataset] ))
+			label_field.build_vocab( *(train_datasets + [val_dataset, test_dataset] ))
+
+			self.args.text_field = text_field
+			self.args.label_field = label_field
+			self.args.class_num = len(label_field.vocab) - 1
+
+			return train_datasets, val_dataset, test_dataset
+
+			'''
+			train_data, dev_data = mydatasets.MR.splits(text_field, label_field)
+			text_field.build_vocab(train_data, dev_data)
+			label_field.build_vocab(train_data, dev_data)
+			print(train_data)
+			print(dev_data)
+			# train_iter, dev_iter = data.Iterator.splits((train_data, dev_data),  batch_sizes=(batch_size, len(dev_data)))
+			'''
+
+
+>>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 		elif name == 'names':
 
 			from utils.load_names import get_train_test
@@ -175,7 +331,11 @@ class Data_Prepper:
 
 			print("Train class counts: ", end='') 
 			for key, value in reference_dict.items():
+<<<<<<< HEAD
 			    print("{} : {}, ".format(value,  train_class_counts[int(key)]), end='')
+=======
+				print("{} : {}, ".format(value,  train_class_counts[int(key)]), end='')
+>>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 			print()
 			'''
 
@@ -184,7 +344,11 @@ class Data_Prepper:
 			print("Test class counts: ", end='') 
 
 			for key, value in reference_dict.items():
+<<<<<<< HEAD
 			    print("{} : {}, ".format(value,  test_class_counts[int(key)]), end='')
+=======
+				print("{} : {}, ".format(value,  test_class_counts[int(key)]), end='')
+>>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
 			print()
 			print("Total of {} categories".format(len(reference_dict)))
 			'''
@@ -195,3 +359,104 @@ class Data_Prepper:
 
 			return train_set, test_set
 
+<<<<<<< HEAD
+=======
+def powerlaw(sample_indices, n_workers, alpha=1.65911332899):
+	# the smaller the alpha, the more extreme the division
+
+	from scipy.stats import powerlaw
+	import math
+	party_size = int(len(sample_indices) / n_workers)
+	b = np.linspace(powerlaw.ppf(0.01, alpha), powerlaw.ppf(0.99, alpha), n_workers)
+	shard_sizes = list(map(math.ceil, b/sum(b)*party_size*n_workers))
+	indices_list = []
+	accessed = 0
+	for worker_id in range(n_workers):
+		indices_list.append(sample_indices[accessed:accessed + shard_sizes[worker_id]])
+		accessed += shard_sizes[worker_id]
+	return indices_list
+
+
+def create_data_txts_for_sst(n_workers, dirname='.data/sst'):
+	train_txt = 'trees/train.txt'
+	with open(os.path.join(dirname, train_txt), 'r') as file:
+		train_samples = file.readlines()
+
+	all_indices = list(range(len(train_samples)))
+	random.seed(1111)
+	n_samples_each = 8000 // 20
+	sample_indices = random.sample(all_indices, n_samples_each * n_workers)
+
+	foldername = "P{}_powerlaw".format(n_workers)
+	if foldername in os.listdir(dirname):
+		pass
+	else:
+		try:
+			os.mkdir(os.path.join(dirname, foldername))
+		except:
+			pass
+
+		indices_list = powerlaw(sample_indices, n_workers)
+		for i, indices in enumerate(indices_list):
+			with open(os.path.join(dirname, foldername,'P{}.txt'.format(i)) , 'w') as file:
+				[file.write(train_samples[index]) for index in indices]
+
+	return
+
+def get_df(pos, neg):
+	data_rows = []
+	for text in pos:
+		data_rows.append(['positive', text.rstrip()])
+	for text in neg:
+		data_rows.append(['negative', text.rstrip()])
+	return pd.DataFrame(data=data_rows, columns=['label', 'text'])
+
+def create_data_csvs_for_mr(n_workers, dirname='.data/mr'):
+	pos = 'rt-polaritydata/rt-polarity.pos'
+	neg = 'rt-polaritydata/rt-polarity.neg'
+
+	with open(os.path.join(dirname, pos), 'r', encoding='latin-1') as file:
+		pos_samples =  file.readlines()
+
+	with open(os.path.join(dirname, neg), 'r', encoding='latin-1') as file:
+		neg_samples =  file.readlines()
+
+	random.seed(1111)
+	random.shuffle(pos_samples)
+	random.shuffle(neg_samples)
+
+	train, val, text = [], [], []
+	N = len(pos_samples)
+
+	split_points = [4000, (N-4000)//2+4000 ]
+	train, val, test = np.array_split(pos_samples,split_points)
+	train_, val_, test_ = np.array_split( neg_samples,split_points)
+
+	train_df = get_df(train, train_)
+	val_df = get_df(val, val_)
+	test_df = get_df(test, test_)
+
+	val_df.to_csv( os.path.join(dirname, 'val.csv') , index=False)
+	test_df.to_csv( os.path.join(dirname, 'test.csv') , index=False)
+
+
+	# shuffle the train samples
+	train_df = train_df.sample(frac=1)
+
+	n_samples_each = len(train) // 20
+	sample_indices = list(range(n_samples_each * n_workers))
+	foldername = "P{}_powerlaw".format(n_workers)
+	foldername = os.path.join(dirname, foldername)
+	if foldername in os.listdir(dirname):
+		pass
+	else:
+		try:
+			os.mkdir(foldername)
+		except:
+			pass
+		indices_list = powerlaw(sample_indices, n_workers)
+		for i, indices in enumerate(indices_list):
+			sub_df = train_df.iloc[indices]
+			sub_df.to_csv(os.path.join(foldername,'P{}.csv'.format(i)), index=False)
+	return
+>>>>>>> fa32bac1bd7bbb67c64a1b6c47fdb6b1fcf01b59
