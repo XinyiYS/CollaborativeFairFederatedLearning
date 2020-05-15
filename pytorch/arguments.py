@@ -123,7 +123,7 @@ sst_args = {
 	# system parameters
 	'gpu': 0,
 	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
-	'save_gpu': True,
+	'save_gpu': False,
 	# setting parameters
 	'dataset': 'sst',
 	'sample_size_cap': 5000,
@@ -133,7 +133,7 @@ sst_args = {
 	'batch_size' : 1, 
 	'train_val_split_ratio': 0.9,
 	'alpha': 5,
-	'epoch_sample_size':10,
+	'epoch_sample_size':float("Inf"),
 	'n_freeriders': 0,
 
 
@@ -154,7 +154,7 @@ sst_args = {
 	'gamma':0.955,   #0.955**100 ~= 0.01
 
 	# training parameters
-	'pretrain_epochs': 0,
+	'pretrain_epochs': 1,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 	'aggregate_mode':'sum',  # 'mean', 'sum', credit-sum
@@ -166,7 +166,7 @@ mr_args = {
 	# system parameters
 	'gpu': 0,
 	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
-	'save_gpu': True,
+	'save_gpu': False,
 	# setting parameters
 	'dataset': 'mr',
 	'sample_size_cap': 5000,
@@ -176,7 +176,7 @@ mr_args = {
 	'batch_size' : 64, 
 	'train_val_split_ratio': 0.9,
 	'alpha': 5,
-	'epoch_sample_size':10,
+	'epoch_sample_size':float("Inf"),
 	'n_freeriders': 0,
 
 
@@ -189,7 +189,7 @@ mr_args = {
 	'kernel_sizes': [3,4,5],
 
 	'optimizer_fn': optim.Adam,
-	'loss_fn': nn.NLLLoss(), 
+	'loss_fn': nn.CrossEntropyLoss(), 
 	'pretraining_lr' : 0.1, # only used during pretraining for CFFL models, no decay
 	'dssgd_lr': 0.001, # used for dssgd model, no decay
 	'lr': 0.001,
@@ -197,7 +197,7 @@ mr_args = {
 	'gamma':0.955,   #0.955**100 ~= 0.01
 
 	# training parameters
-	'pretrain_epochs': 5,
+	'pretrain_epochs': 1,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 	'aggregate_mode':'sum',  # 'mean', 'sum', credit-sum

@@ -162,7 +162,8 @@ def run_experiments_full(experiment_args):
 	'''
 
 
-from arguments import adult_args, mnist_args, names_args, update_gpu, cifar_cnn_args
+from arguments import adult_args, mnist_args, names_args, update_gpu, cifar_cnn_args, mr_args,
+sst_args
 
 if __name__ == '__main__':
 	# init steps	
@@ -179,11 +180,39 @@ if __name__ == '__main__':
 		args['batch_size'] = 64
 		args['gamma'] = 0.977
 		args['theta']= 0.1
-		args['fl_epochs'] = 1
 
 		experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args)
 	
+
+	experiment_args = []	
+	args = copy.deepcopy(mr_args)
+	for n_workers in [5, 10, 20]:
+		args['n_workers'] = n_workers
+		args['n_freeriders'] = 0
+		args['alpha'] = 5
+		args['lr'] = 1e-5
+		args['batch_size'] = 128
+		args['gamma'] = 0.977
+
+		experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args)
+
+
+
+	experiment_args = []	
+	args = copy.deepcopy(sst_args)
+	for n_workers in [5, 10, 20]:
+		args['n_workers'] = n_workers
+		args['n_freeriders'] = 0
+		args['alpha'] = 5
+		args['lr'] = 1e-5
+		args['batch_size'] = 128
+		args['gamma'] = 0.977
+
+		experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args)
+
 	'''
 	args = copy.deepcopy(cifar_cnn_args)
 	for n_workers, sample_size_cap in [[5, 10000], [10, 20000], [20, 40000]]:
