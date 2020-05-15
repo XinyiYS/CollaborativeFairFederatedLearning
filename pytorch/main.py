@@ -55,10 +55,10 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 
 	# init steps
 	model_name = str(args['model_fn']).split('.')[-1][:-2]
-	subdir = "{}_p{}_e{}-{}-{}_b{}_size{}_lr{}_theta{}_{}runs_{}_a{}_{}".format(args['dataset']+'@'+args['split'],args['n_workers'], 
+	subdir = "{}_p{}_e{}-{}-{}_b{}_size{}_lr{}_theta{}_{}runs_{}_a{}_fr{}_{}".format(args['dataset']+'@'+args['split'],args['n_workers'], 
 							args['pretrain_epochs'], args['fl_epochs'], args['fl_individual_epochs'],
 							args['batch_size'], args['sample_size_cap'], args['lr'], args['theta'],
-							str(repeat), args['aggregate_mode'], args['alpha'],model_name,
+							str(repeat), args['aggregate_mode'], args['alpha'],args['n_freeriders'], model_name,
 							)
 	logdir = os.path.join(logs_dir, subdir)
 
@@ -76,9 +76,16 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 
 	performance_dicts = []
 	performance_dicts_pretrain = []
+	
+
+	# for the repeats of the experiment
+	# only need to prepare the data once
+	data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'], n_workers=args['n_workers'], sample_size_cap=args['sample_size_cap'], train_val_split_ratio=args['train_val_split_ratio'], device=args['device'])
+
 	for i in range(repeat):
+		print()
 		print("Experiment : No.{}/{}".format(str(i+1) ,str(repeat)))
-		data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'], sample_size_cap=args['sample_size_cap'], train_val_split_ratio=args['train_val_split_ratio'])
+		# data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'], sample_size_cap=args['sample_size_cap'], train_val_split_ratio=args['train_val_split_ratio'])
 		federated_learner = Federated_Learner(args, data_prep)
 
 		# train
@@ -105,10 +112,10 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 		file.write('complete')
 	return
 
-def get_batches(experiment_args, batch_size=4):
+def get_parallel_groups(experiment_args, parallel_size=4):
 	experiment_args = np.asarray(experiment_args)
 	from math import ceil
-	return np.array_split(experiment_args, ceil(len(experiment_args)/batch_size))
+	return np.array_split(experiment_args, ceil(len(experiment_args)/parallel_size))
 
 def run_experiments_full(experiment_args):
 	# experiment_args should include the args for p=5,10,20, theta=0.1, 1
@@ -123,110 +130,62 @@ def run_experiments_full(experiment_args):
 	except:
 		pass
 
-	batches = get_batches(experiment_args, batch_size=4)
-	for batch in batches:
-		result_list = []
-		pool = Pool(processes=len(batch))
-		for args in batch:
-			r = pool.apply_async(run_experiments, ((copy.deepcopy(args) ), (5), (experiment_dir)))
-			result_list.append(r)
+	for args in experiment_args:
+		run_experiments(args, 5, experiment_dir)
+	# groups = get_parallel_groups(experiment_args, parallel_size=4)
+	# for group in groups:
+	# 	result_list = []
+	# 	pool = Pool(processes=len(group))
+	# 	for args in group:
+	# 		r = pool.apply_async(run_experiments, ((copy.deepcopy(args)), (5), (experiment_dir)))
+	# 		result_list.append(r)
 
-		pool.close()
-		pool.join()
+	# 	pool.close()
+	# 	pool.join()
 
-		for r in result_list:
-			r.get()
+	# 	for r in result_list:
+	# 		r.get()
 
 	return
 
 
-from arguments import adult_args, mnist_args, names_args, update_gpu
+from arguments import adult_args, mnist_args, names_args, update_gpu, cifar_cnn_args
 
 if __name__ == '__main__':
 	# init steps	
-	init_mp()
+	# init_mp()
 
+	# see if we can detect and isolate freeriders
 
-	# see if we can have high fairness and acc
-	# without lr decay, and use fedavg
-	experiment_args = []
-	args = copy.deepcopy(adult_args) # mnist_args
-	for n_workers, sample_size_cap in [[5, 2000], [10, 4000], [20, 8000]]:
+	# args = copy.deepcopy(adult_args) # mnist_args
+	experiment_args = []	
+	args = copy.deepcopy(cifar_cnn_args) # mnist_args
+	# for n_workers, sample_size_cap in [[5, 500], [10, 1000], [20, 2000]]:
+	for n_workers, sample_size_cap in [[5, 10000], [10, 20000], [20, 40000]]:
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap
-		args['gamma'] = 1
-		args['aggregate_mode'] = 'mean'
-		args['lr'] = 0.001
-		for theta in [0.1, 1]:
-			args['theta'] = theta
+		args['n_freeriders'] = 0
+		args['alpha'] = 5
+		args['lr'] = 0.1
+		args['batch_size'] = 128
+		args['gamma'] = 0.977
+		args['theta']= 0.1		
 
-			experiment_args.append(copy.deepcopy(args))
+		experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args)
-
-
-	# see if we can take out free riders based on different thetas
-
-	experiment_args = []
-	args = copy.deepcopy(adult_args) 
-	for n_workers, sample_size_cap in [[5, 2000], [10, 4000], [20, 8000]]:
-
+	
+	'''
+	args = copy.deepcopy(cifar_cnn_args)
+	for n_workers, sample_size_cap in [[5, 10000], [10, 20000], [20, 40000]]:
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap
 		args['n_freeriders'] = 1
-		args['aggregate_mode'] = 'sum'
-		for theta in [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
-			args['theta'] = theta
-
-			experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args)
-
-
-	# see if we can still take out free riders with fedAvg
-	experiment_args = []
-	args = copy.deepcopy(adult_args) 
-	for n_workers, sample_size_cap in [[5, 2000], [10, 4000], [20, 8000]]:
-		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		for theta in [0.1, 1]:
-			args['theta'] = theta
-			args['gamma'] = 1
-			args['aggregate_mode'] = 'mean'
-			args['n_freeriders'] = 1
-			experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args)
-
-	'''
-	# result_list = []
-			pool = Pool(processes=4)
-			r = pool.apply_async(run_experiments, ((copy.deepcopy(args) ), (5), (experiment_dir)))
-			result_list.append(r)
-	pool.close()
-	pool.join()
-
-	for r in result_list:
-		r.get()
-
-
-	result_list = []
-	args = adult_args # mnist_args
-	for n_workers, sample_size_cap, fl_epochs in[[20, 8000, 100]]:
-
-		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		args['fl_epochs'] = fl_epochs
-		for theta in [0.1, 1]:
-			args['theta'] = theta
-			args['n_freeriders'] = 0
-
-			args['aggregate_mode'] = 'mean'
-
-
-			pool = Pool(processes=4)
-			r = pool.apply_async(run_experiments, ((copy.deepcopy(args) ), (5), (experiment_dir)))
-			result_list.append(r)
-	pool.close()
-	pool.join()
-
-	for r in result_list:
-		r.get()
+		args['alpha'] = 5
+		args['lr'] = 0.1
+		args['batch_size'] = 128
+		args['gamma'] = 0.977
+		args['theta'] = 0.1
+		
+		experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args)	
 	'''
