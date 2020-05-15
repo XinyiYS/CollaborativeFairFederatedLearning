@@ -1,9 +1,9 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils import clip_grad_value_, clip_grad_norm_
-
+from torchtext.data import Batch
 import utils
-
+import torch.nn as nn
 
 class Custom_Dataset(Dataset):
 
@@ -51,14 +51,35 @@ class Worker():
 		self.param_count = sum([p.numel() for p in self.model.parameters()])
 		self.is_free_rider = is_free_rider
 
-	def train(self, epochs, is_pretrain=False):
+		'''
+		if torch.cuda.device_count()>1:
+			self.device_ids = [device_id for device_id in range(torch.cuda.device_count())]
+			print("Let's use {} gpus".format(len(self.device_ids)))
+			torch.cuda.set_device(self.device_ids[0])
+		'''
+
+	def train(self, epochs, is_pretrain=False, save_gpu=False):
 		if self.is_free_rider:
-			for model in [self.model, self.model_pretrain,self.dssgd_model, self.standalone_model]:
+			for model in [self.model, self.model_pretrain, self.dssgd_model, self.standalone_model]:
+				'''
+				if len(self.device_ids) > 1 and not isinstance(model.torch.nn.DataParallel):
+					model = nn.DataParallel(model)
+				'''
 				model = model.to(self.device)
 	
-				for param in self.model.parameters():
-					param.data += torch.rand(param.data.shape).to(self.device) # * self.grad_clip
+				for param in model.parameters():
+					param.data += (torch.rand(param.data.shape) * 2 - 1).to(self.device) # * self.grad_clip
 			return
+		'''
+		if len(self.device_ids) > 1:
+			
+			if not isinstance(self.model_pretrain, torch.nn.DataParallel):	
+				self.model_pretrain = nn.DataParallel(self.model_pretrain, device_ids=self.device_ids)	
+			if not isinstance(self.dssgd_model, torch.nn.DataParallel):
+				self.dssgd_model = nn.DataParallel(self.dssgd_model, device_ids=self.device_ids)	
+			if not isinstance(self.standalone_model, torch.nn.DataParallel):
+				self.standalone_model = nn.DataParallel(self.standalone_model, device_ids=self.device_ids)	
+		'''
 		self.model_pretrain.train()
 		self.model_pretrain = self.model_pretrain.to(self.device)
 
@@ -72,9 +93,14 @@ class Worker():
 		self.dssgd_model = self.dssgd_model.to(self.device)
 		for epoch in range(int(epochs)):
 			iter = 0
-			for i, (batch_data, batch_target) in enumerate(self.train_loader):
-				batch_data, batch_target = batch_data.to(
-					self.device), batch_target.to(self.device)
+			for i, batch in enumerate(self.train_loader):
+				if isinstance(batch, Batch):
+					batch_data, batch_target = batch.text, batch.label
+					# batch_data.data.t_(), batch_target.data.sub_(1)  # batch first, index align
+				else:
+					batch_data, batch_target = batch[0], batch[1]
+
+				batch_data, batch_target = batch_data.to(self.device), batch_target.to(self.device)
 				
 				# pretrain model
 
@@ -133,3 +159,11 @@ class Worker():
 
 			if not is_pretrain and epoch==0:
 				self.standalone_scheduler.step()
+
+
+		if 'cuda' in str(self.device) and save_gpu:
+			cpu = torch.device('cpu')
+			self.model_pretrain = self.model_pretrain.to(cpu)
+			self.model = self.model.to(cpu)
+			self.standalone_model = self.standalone_model.to(cpu)
+			self.dssgd_model = self.dssgd_model.to(cpu)
