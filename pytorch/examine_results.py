@@ -114,27 +114,12 @@ def collate_pngs(dirname):
 	return
 
 
-
-def run_all(dirname):
-	print('Running performance scripts for {}'.format(dirname))
+def examine(dirname):
 	experiment_results = plot_convergence(dirname)
 	collate_pngs(dirname)
 	fair_df, perf_df = collect_and_compile_performance(dirname)
-	print()
-	return
+
 
 if __name__ == '__main__':
-
-	TEST = True
-	if TEST:
 		dirname = 'Experiments_2020-05-01-19:15'
-		experiment_results = plot_convergence(dirname)
-		collate_pngs(dirname)
-		fair_df, perf_df = collect_and_compile_performance(dirname)
-		# for dirname in os.listdir():
-			# if 'Experiments_2020' in dirname:
-				# experiment_results = plot_convergence(dirname)
-				# collate_pngs(dirname)
-				# fair_df, perf_df = collect_and_compile_performance(dirname)
-	else:
-		pass
+		examine(dirname)

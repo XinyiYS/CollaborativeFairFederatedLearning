@@ -14,7 +14,7 @@ from utils.Worker import Worker
 from utils.Data_Prepper import Data_Prepper
 from utils.Federated_Learner import Federated_Learner
 # from utils.models import LogisticRegression, MLP_LogReg, MLP_Net, CNN_Net
-
+from examine_results import examine
 
 from torch.multiprocessing import Pool, Process, set_start_method
 
@@ -110,6 +110,7 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 
 	with open(os.path.join(logdir, 'complete.txt'), 'w') as file:
 		file.write('complete')
+
 	return
 
 def get_parallel_groups(experiment_args, parallel_size=4):
@@ -118,9 +119,7 @@ def get_parallel_groups(experiment_args, parallel_size=4):
 	return np.array_split(experiment_args, ceil(len(experiment_args)/parallel_size))
 
 def run_experiments_full(experiment_args):
-	# experiment_args should include the args for p=5,10,20, theta=0.1, 1
-	# so a total of length 6 or more(depending of settings)
-	# as a complete set of experiments
+
 
 	ts = time.time()
 	st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H:%M')
@@ -132,21 +131,35 @@ def run_experiments_full(experiment_args):
 
 	for args in experiment_args:
 		run_experiments(args, 5, experiment_dir)
-	# groups = get_parallel_groups(experiment_args, parallel_size=4)
-	# for group in groups:
-	# 	result_list = []
-	# 	pool = Pool(processes=len(group))
-	# 	for args in group:
-	# 		r = pool.apply_async(run_experiments, ((copy.deepcopy(args)), (5), (experiment_dir)))
-	# 		result_list.append(r)
 
-	# 	pool.close()
-	# 	pool.join()
-
-	# 	for r in result_list:
-	# 		r.get()
-
+	try:
+		examine(experiment_dir)
+	except Exception as e:
+		print(str(e))
 	return
+
+
+
+	'''
+	# experiment_args should include the args for p=5,10,20, theta=0.1, 1
+	# so a total of length 6 or more(depending of settings)
+	# as a complete set of experiments
+
+	groups = get_parallel_groups(experiment_args, parallel_size=4)
+	for group in groups:
+		result_list = []
+		pool = Pool(processes=len(group))
+		for args in group:
+			r = pool.apply_async(run_experiments, ((copy.deepcopy(args)), (5), (experiment_dir)))
+			result_list.append(r)
+
+		pool.close()
+		pool.join()
+
+		for r in result_list:
+			r.get()
+
+	'''
 
 
 from arguments import adult_args, mnist_args, names_args, update_gpu, cifar_cnn_args
@@ -166,6 +179,7 @@ if __name__ == '__main__':
 		args['batch_size'] = 64
 		args['gamma'] = 0.977
 		args['theta']= 0.1
+		args['fl_epochs'] = 1
 
 		experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args)
