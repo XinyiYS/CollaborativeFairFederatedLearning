@@ -131,7 +131,7 @@ def run_experiments_full(experiment_args):
 		pass
 
 	for args in experiment_args:
-		run_experiments(args, 5, experiment_dir)
+		run_experiments(args, 1, experiment_dir)
 	# groups = get_parallel_groups(experiment_args, parallel_size=4)
 	# for group in groups:
 	# 	result_list = []
@@ -157,8 +157,25 @@ if __name__ == '__main__':
 
 	# see if we can detect and isolate freeriders
 
+	# experiment_args = []
 	# args = copy.deepcopy(adult_args) # mnist_args
-	experiment_args = []	
+	# for n_workers, sample_size_cap in [[5, 2000], [10, 4000], [20, 8000]]:
+	# 	args['n_workers'] = n_workers
+	# 	args['sample_size_cap'] = sample_size_cap
+	# 	args['aggregate_mode'] = 'sum'
+	# 	args['n_freeriders'] = 0
+	# 	args['alpha'] = 1
+	# 	args['lr'] = 0.1
+	# 	args['gamma'] = 1
+	# 	for theta in [0.1, 1]:
+	# 		args['theta'] = theta
+
+	# 		experiment_args.append(copy.deepcopy(args))
+	# run_experiments_full(experiment_args)
+
+
+	experiment_args = []
+	# args = copy.deepcopy(adult_args) # mnist_args
 	args = copy.deepcopy(cifar_cnn_args) # mnist_args
 	# for n_workers, sample_size_cap in [[5, 500], [10, 1000], [20, 2000]]:
 	for n_workers, sample_size_cap in [[5, 10000], [10, 20000], [20, 40000]]:
@@ -169,23 +186,8 @@ if __name__ == '__main__':
 		args['lr'] = 0.1
 		args['batch_size'] = 128
 		args['gamma'] = 0.977
-		args['theta']= 0.1		
+		for theta in [0.1, 1]:
+			args['theta'] = theta
 
-		experiment_args.append(copy.deepcopy(args))
+			experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args)
-	
-	'''
-	args = copy.deepcopy(cifar_cnn_args)
-	for n_workers, sample_size_cap in [[5, 10000], [10, 20000], [20, 40000]]:
-		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		args['n_freeriders'] = 1
-		args['alpha'] = 5
-		args['lr'] = 0.1
-		args['batch_size'] = 128
-		args['gamma'] = 0.977
-		args['theta'] = 0.1
-		
-		experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args)	
-	'''

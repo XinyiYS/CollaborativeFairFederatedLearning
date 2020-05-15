@@ -6,7 +6,8 @@ import pandas as pd
 all_party_fmt_styles = ['', '--','-.', 'o-', 'v-',
 			 '^-', '<-','>-', '1-','2-',
 			 '3-','4-','s-','p-','*-',
-			 'h-', 'H-', '+-', 'X-','D-']
+			 'h-', 'H-', '+-', 'X-','D-',
+			 'x-','d-','P-','|-','_-']
 
 best_worker_fmt_styles = ['ro-', 'c.-', 'm<-', 'b<-']
 
@@ -19,7 +20,6 @@ def plot(df, save_dir=None, name='adult', plot_type=1, show=False, **kwargs):
 	
 	# Data
 	index = np.arange(1, len(df)+1)
-
 
 	fmt_styles = best_worker_fmt_styles if plot_type == 2 else all_party_fmt_styles
 
@@ -69,6 +69,7 @@ def plot(df, save_dir=None, name='adult', plot_type=1, show=False, **kwargs):
 		plt.show()
 	plt.clf()
 	return
+
 
 
 
