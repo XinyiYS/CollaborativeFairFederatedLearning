@@ -74,8 +74,8 @@ mnist_args = {
 	'pretraining_lr' : 0.1, # only used during pretraining for CFFL models, no decay
 	'dssgd_lr': 0.001, # used for dssgd model, no decay
 	'lr': 0.001,
-	'grad_clip':0.001,
-	'gamma':0.955,   #0.955**100 ~= 0.01
+	'grad_clip':0.01,
+	'gamma':0.977,   #0.955**100 ~= 0.01
 
 	# training parameters
 	'pretrain_epochs': 1,

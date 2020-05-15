@@ -155,21 +155,17 @@ if __name__ == '__main__':
 	# init steps	
 	# init_mp()
 
-	# see if we can detect and isolate freeriders
-
-	# args = copy.deepcopy(adult_args) # mnist_args
 	experiment_args = []	
-	args = copy.deepcopy(cifar_cnn_args) # mnist_args
-	# for n_workers, sample_size_cap in [[5, 500], [10, 1000], [20, 2000]]:
-	for n_workers, sample_size_cap in [[5, 10000], [10, 20000], [20, 40000]]:
+	args = copy.deepcopy(mnist_args) # mnist_args
+	for n_workers, sample_size_cap in [[5, 3000], [10, 6000], [20, 12000]]:
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap
 		args['n_freeriders'] = 0
 		args['alpha'] = 5
-		args['lr'] = 0.1
-		args['batch_size'] = 128
+		args['lr'] = 0.001
+		args['batch_size'] = 64
 		args['gamma'] = 0.977
-		args['theta']= 0.1		
+		args['theta']= 0.1
 
 		experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args)
