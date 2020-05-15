@@ -162,8 +162,7 @@ def run_experiments_full(experiment_args):
 	'''
 
 
-from arguments import adult_args, mnist_args, names_args, update_gpu, cifar_cnn_args, mr_args,
-sst_args
+from arguments import adult_args, mnist_args, names_args, update_gpu, cifar_cnn_args, mr_args, sst_args
 
 if __name__ == '__main__':
 	# init steps	
@@ -184,7 +183,6 @@ if __name__ == '__main__':
 		experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args)
 	
-
 	experiment_args = []	
 	args = copy.deepcopy(mr_args)
 	for n_workers in [5, 10, 20]:
