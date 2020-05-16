@@ -171,7 +171,7 @@ class Data_Prepper:
 				   transforms.Normalize((0.1307,), (0.3081,))
 							   ]))
 
-			test = datasets.MNIST('datasets/', train=False, download=True, transform=transforms.Compose([
+			test = datasets.MNIST('datasets/', train=True, download=True, transform=transforms.Compose([
 					transforms.Pad((2,2,2,2)),
 					transforms.ToTensor(),
 					transforms.Normalize((0.1307,), (0.3081,))
