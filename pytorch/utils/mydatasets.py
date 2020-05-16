@@ -77,10 +77,10 @@ class MR(TarDataset):
             examples = []
             with open(os.path.join(path, 'rt-polarity.neg'), encoding = "ISO-8859-1") as f:
                 examples += [
-                    data.Example.fromlist([line, 'negative'], fields) for line in f]
+                    data.Example.fromlist([line, 0], fields) for line in f]
             with open(os.path.join(path, 'rt-polarity.pos'), encoding = "ISO-8859-1") as f:
                 examples += [
-                    data.Example.fromlist([line, 'positive'], fields) for line in f]
+                    data.Example.fromlist([line, 1], fields) for line in f]
         super(MR, self).__init__(examples, fields, **kwargs)
 
     @classmethod
