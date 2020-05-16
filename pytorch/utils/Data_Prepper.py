@@ -165,13 +165,13 @@ class Data_Prepper:
 		elif name == 'mnist':
 			from torchvision import datasets, transforms
 
-			train = datasets.MNIST('datasets/', train=True, transform=transforms.Compose([
+			train = datasets.MNIST('datasets/', train=True, download=True, transform=transforms.Compose([
 				   transforms.Pad((2,2,2,2)),
 				   transforms.ToTensor(),
 				   transforms.Normalize((0.1307,), (0.3081,))
 							   ]))
 
-			test = datasets.MNIST('datasets/', train=False, transform=transforms.Compose([
+			test = datasets.MNIST('datasets/', train=False, download=True, transform=transforms.Compose([
 					transforms.Pad((2,2,2,2)),
 					transforms.ToTensor(),
 					transforms.Normalize((0.1307,), (0.3081,))
