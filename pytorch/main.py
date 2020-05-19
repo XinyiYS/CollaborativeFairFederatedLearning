@@ -14,7 +14,7 @@ from utils.Worker import Worker
 from utils.Data_Prepper import Data_Prepper
 from utils.Federated_Learner import Federated_Learner
 # from utils.models import LogisticRegression, MLP_LogReg, MLP_Net, CNN_Net
-
+from examine_results import examine
 
 from torch.multiprocessing import Pool, Process, set_start_method
 
@@ -110,6 +110,7 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 
 	with open(os.path.join(logdir, 'complete.txt'), 'w') as file:
 		file.write('complete')
+
 	return
 
 def get_parallel_groups(experiment_args, parallel_size=4):
@@ -118,9 +119,7 @@ def get_parallel_groups(experiment_args, parallel_size=4):
 	return np.array_split(experiment_args, ceil(len(experiment_args)/parallel_size))
 
 def run_experiments_full(experiment_args):
-	# experiment_args should include the args for p=5,10,20, theta=0.1, 1
-	# so a total of length 6 or more(depending of settings)
-	# as a complete set of experiments
+
 
 	ts = time.time()
 	st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H:%M')
@@ -131,63 +130,99 @@ def run_experiments_full(experiment_args):
 		pass
 
 	for args in experiment_args:
-		run_experiments(args, 1, experiment_dir)
-	# groups = get_parallel_groups(experiment_args, parallel_size=4)
-	# for group in groups:
-	# 	result_list = []
-	# 	pool = Pool(processes=len(group))
-	# 	for args in group:
-	# 		r = pool.apply_async(run_experiments, ((copy.deepcopy(args)), (5), (experiment_dir)))
-	# 		result_list.append(r)
+		run_experiments(args, 5, experiment_dir)
 
-	# 	pool.close()
-	# 	pool.join()
-
-	# 	for r in result_list:
-	# 		r.get()
-
+	try:
+		examine(experiment_dir)
+	except Exception as e:
+		print(str(e))
 	return
 
 
-from arguments import adult_args, mnist_args, names_args, update_gpu, cifar_cnn_args
+
+	'''
+	# experiment_args should include the args for p=5,10,20, theta=0.1, 1
+	# so a total of length 6 or more(depending of settings)
+	# as a complete set of experiments
+
+	groups = get_parallel_groups(experiment_args, parallel_size=4)
+	for group in groups:
+		result_list = []
+		pool = Pool(processes=len(group))
+		for args in group:
+			r = pool.apply_async(run_experiments, ((copy.deepcopy(args)), (5), (experiment_dir)))
+			result_list.append(r)
+
+		pool.close()
+		pool.join()
+
+		for r in result_list:
+			r.get()
+
+	'''
+
+
+from arguments import adult_args, mnist_args, names_args, update_gpu, cifar_cnn_args, mr_args, sst_args
 
 if __name__ == '__main__':
 	# init steps	
-	init_mp()
+	# init_mp()
 
-	# see if we can detect and isolate freeriders
-
-	# experiment_args = []
-	# args = copy.deepcopy(adult_args) # mnist_args
-	# for n_workers, sample_size_cap in [[5, 2000], [10, 4000], [20, 8000]]:
-	# 	args['n_workers'] = n_workers
-	# 	args['sample_size_cap'] = sample_size_cap
-	# 	args['aggregate_mode'] = 'sum'
-	# 	args['n_freeriders'] = 0
-	# 	args['alpha'] = 1
-	# 	args['lr'] = 0.1
-	# 	args['gamma'] = 1
-	# 	for theta in [0.1, 1]:
-	# 		args['theta'] = theta
-
-	# 		experiment_args.append(copy.deepcopy(args))
-	# run_experiments_full(experiment_args)
-
-
-	experiment_args = []
-	# args = copy.deepcopy(adult_args) # mnist_args
-	args = copy.deepcopy(cifar_cnn_args) # mnist_args
-	# for n_workers, sample_size_cap in [[5, 500], [10, 1000], [20, 2000]]:
-	for n_workers, sample_size_cap in [[5, 10000], [10, 20000], [20, 40000]]:
+	experiment_args = []	
+	args = copy.deepcopy(mnist_args) # mnist_args
+	for n_workers, sample_size_cap in [[5, 3000], [10, 6000], [20, 12000]]:
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap
 		args['n_freeriders'] = 0
 		args['alpha'] = 5
+		args['lr'] = 0.001
+		args['batch_size'] = 64
+		args['gamma'] = 0.977
+		args['theta']= 0.1
+
+		experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args)
+	
+	experiment_args = []	
+	args = copy.deepcopy(mr_args)
+	for n_workers in [5, 10, 20]:
+		args['n_workers'] = n_workers
+		args['n_freeriders'] = 0
+		args['alpha'] = 5
+		args['lr'] = 1e-5
+		args['batch_size'] = 128
+		args['gamma'] = 0.977
+
+		experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args)
+
+
+
+	experiment_args = []	
+	args = copy.deepcopy(sst_args)
+	for n_workers in [5, 10, 20]:
+		args['n_workers'] = n_workers
+		args['n_freeriders'] = 0
+		args['alpha'] = 5
+		args['lr'] = 1e-5
+		args['batch_size'] = 128
+		args['gamma'] = 0.977
+
+		experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args)
+
+	'''
+	args = copy.deepcopy(cifar_cnn_args)
+	for n_workers, sample_size_cap in [[5, 10000], [10, 20000], [20, 40000]]:
+		args['n_workers'] = n_workers
+		args['sample_size_cap'] = sample_size_cap
+		args['n_freeriders'] = 1
+		args['alpha'] = 5
 		args['lr'] = 0.1
 		args['batch_size'] = 128
 		args['gamma'] = 0.977
-		for theta in [0.1, 1]:
-			args['theta'] = theta
-
-			experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args)
+		args['theta'] = 0.1
+		
+		experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args)	
+	'''

@@ -18,6 +18,7 @@ class Federated_Learner:
 	def __init__(self, args, data_prepper):
 		self.args = args
 		self.device = args['device']
+		self.device_ids = args['device_ids']
 		self.save_gpu =  args['save_gpu'] if 'save_gpu' in args else False
 		self.data_prepper = data_prepper
 		self.n_workers = self.args['n_workers']
@@ -32,6 +33,7 @@ class Federated_Learner:
 		self.init_workers()
 		self.performance_dict = defaultdict(list)
 		self.performance_dict_pretrain = defaultdict(list)
+
 
 	def init_workers(self):
 		assert self.n_workers == len(
@@ -50,6 +52,11 @@ class Federated_Learner:
 			self.federated_model = model_fn(args=self.data_prepper.args, device=device)
 		else:
 			self.federated_model = model_fn(device=device)
+		if len(self.args['device_ids']) > 1:
+			print("From Federaed Learner - Let's use {} gpus.".format(len(self.args['device_ids'])))
+			self.federated_model = 	nn.DataParallel(self.federated_model, device_ids=self.args['device_ids'])
+
+
 		self.federated_model_pretrain = copy.deepcopy(self.federated_model)
 
 
@@ -203,7 +210,7 @@ class Federated_Learner:
 			filtered_grad_update = mask_grad_update_by_order(clip_gradient_update(dssgd_grad_update, self.args['grad_clip']), mask_order=None, mask_percentile=worker.theta)
 
 			# this is executed in a fixed sequence, so the self.dssgd_model gets gradually updated and 'downloaded' by each worker
-			worker.dssgd_model.load_state_dict(add_update_to_model(self.dssgd_model, filtered_grad_update).state_dict())
+			worker.dssgd_model.load_state_dict(add_update_to_model(self.dssgd_model, filtered_grad_update).state_dict(), strict=False)
 			dssgd_val_acc = evaluate(worker.dssgd_model, self.valid_loader, self.device, verbose=False)[1]
 			dssgd_val_accs.append(dssgd_val_acc)
 
@@ -220,10 +227,10 @@ class Federated_Learner:
 
 	def train(self):
 		self.credits = torch.zeros((self.n_workers))
-		self.credit_threshold = 0
+		self.credit_threshold = torch.tensor(0).float()
 		
 		self.credits_pretrain = torch.zeros((self.n_workers))
-		self.credit_threshold_pretrain = 0
+		self.credit_threshold_pretrain = torch.tensor(0).float()
 
 		self.R = list(range(self.n_workers))
 		self.R_pretrain = list(range(self.n_workers))
@@ -404,9 +411,11 @@ class Federated_Learner:
 	def get_fairness_analysis(self):
 		print("Performance and Fairness analysis: ")
 		worker_thetas = [worker.theta for worker in self.workers]
-		sharing_contributions = (torch.tensor(self.shard_sizes) * torch.tensor(worker_thetas)).tolist()
+		'''
+		sharing_contributions = (torch.tensor(self.shard_sizes).float() * torch.tensor(worker_thetas)).tolist()
 		print('Workers sharing_contributions : ', sharing_contributions)
-		
+		'''		
+
 		print('Worker credits :', self.credits.tolist())
 		print('Number of reputable parties: ', len(self.R))
 
@@ -491,7 +500,6 @@ def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fa
 	R = [i for i, credit in enumerate(credits) if credit >= credit_threshold] # reputable parties
 	R_size = len(R)
 	total_val_accs = sum([val_accs[i] for i in R])
-
 	for i in R:
 		credit_epoch = math.sinh(alpha * val_accs[i] / total_val_accs)
 
@@ -504,11 +512,11 @@ def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fa
 	credits[R] /= credits[R].sum().float()
 
 	# update the threshold and reputable parties
-	credit_threshold = torch.clamp(2./3 * torch.div(1., len(R) - 1 ), min=0, max=1 )
+	credit_threshold = torch.clamp(2./3 * torch.div(1., len(R) - 1 ), min=0, max=1).float()
 	R = [i for i in R if credits[i] >= credit_threshold]
 	if R_size != len(R):
 		credits[R] /= credits[R].sum().float()
-		credit_threshold = torch.clamp(2./3 * torch.div(1., len(R) - 1), min=0, max=1)
+		credit_threshold = torch.clamp(2./3 * torch.div(1., len(R) - 1), min=0, max=1).float()
 
 	# isolate the non-reputable parties by setting their credits to 0	
 	for i in range(len(credits)):

@@ -1,7 +1,7 @@
 import torch
 from torch import nn, optim
 
-from utils.models import LogisticRegression, MLP, MLP_Net, CNN_Net, RNN, CNN_Text, ResNet18, CNNCifar
+from utils.models import LogisticRegression, MLP, MLP_Net, CNN_Net, RNN, RNN_IMDB, CNN_Text, ResNet18, CNNCifar
 
 use_cuda = True
 cuda_available = torch.cuda.is_available()
@@ -10,6 +10,12 @@ cuda_available = torch.cuda.is_available()
 def update_gpu(args):
 	if 'cuda' in str(args['device']):
 		args['device'] = torch.device('cuda:{}'.format(args['gpu']))
+	if torch.cuda.device_count() > 0:
+		args['device_ids'] = [device_id for device_id in range(torch.cuda.device_count())]
+	else:
+		args['device_ids'] = []
+
+
 
 adult_args = {
 	# system parameters
@@ -38,7 +44,7 @@ adult_args = {
 	'gamma':0.977,   #0.97**100 ~= 0.1
 
 	# training parameters
-	'pretrain_epochs': 5,
+	'pretrain_epochs': 1,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 	'aggregate_mode':'sum',  # 'mean', 'sum', 'credit-sum'
@@ -54,7 +60,7 @@ mnist_args = {
 	'n_workers': 5,
 	'split': 'classimbalance', #or 'classimbalance'
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size' : 10, 
+	'batch_size' : 32, 
 	'train_val_split_ratio': 0.9,
 	'alpha': 5,
 	'epoch_sample_size':float("Inf"),
@@ -68,11 +74,11 @@ mnist_args = {
 	'pretraining_lr' : 0.1, # only used during pretraining for CFFL models, no decay
 	'dssgd_lr': 0.001, # used for dssgd model, no decay
 	'lr': 0.001,
-	'grad_clip':0.001,
-	'gamma':0.955,   #0.955**100 ~= 0.01
+	'grad_clip':0.01,
+	'gamma':0.977,   #0.955**100 ~= 0.01
 
 	# training parameters
-	'pretrain_epochs': 10,
+	'pretrain_epochs': 1,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 	'aggregate_mode':'sum',  # 'mean', 'sum'
@@ -112,6 +118,43 @@ names_args = {
 	'aggregate_mode':'sum',  # 'mean', 'sum', credit-sum
 }
 
+imdb_args = {
+	# system parameters
+	'gpu': 0,
+	'device': torch.device("cuda" if torch.cuda.is_available() and use_cuda else "cpu"),
+	'save_gpu': True,
+
+	# setting parameters
+	'dataset': 'imdb',
+	'sample_size_cap': 5000,
+	'n_workers': 5,
+	'split': 'powerlaw', #or 'powerlaw' classimbalance
+	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
+	'batch_size' : 8, 
+	'train_val_split_ratio': 0.9,
+	'alpha': 5,
+	'epoch_sample_size':10,
+	'n_freeriders': 0,
+
+
+	# model parameters
+	'model_fn': RNN_IMDB,
+	'optimizer_fn': optim.Adam,
+	'loss_fn': nn.CrossEntropyLoss(), 
+	'pretraining_lr' : 0.1, # only used during pretraining for CFFL models, no decay
+	'dssgd_lr': 0.001, # used for dssgd model, no decay
+	'lr': 0.005,
+	'grad_clip':0.1,
+	'gamma':0.955,   #0.955**100 ~= 0.01
+
+	# training parameters
+	'pretrain_epochs': 1,
+	'fl_epochs': 100,
+	'fl_individual_epochs': 5,
+	'aggregate_mode':'sum',  # 'mean', 'sum', credit-sum
+}
+
+
 
 sst_args = {
 	# system parameters
@@ -124,12 +167,11 @@ sst_args = {
 	'n_workers': 5,
 	'split': 'powerlaw', #or 'powerlaw' classimbalance
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size' : 1, 
+	'batch_size' : 64, 
 	'train_val_split_ratio': 0.9,
 	'alpha': 5,
-	'epoch_sample_size':10,
+	'epoch_sample_size':float("Inf"),
 	'n_freeriders': 0,
-
 
 	# model parameters
 	'model_fn': CNN_Text,
@@ -141,14 +183,14 @@ sst_args = {
 
 	'optimizer_fn': optim.Adam,
 	'loss_fn': nn.CrossEntropyLoss(), 
-	'pretraining_lr' : 0.1, # only used during pretraining for CFFL models, no decay
-	'dssgd_lr': 0.001, # used for dssgd model, no decay
-	'lr': 0.001,
-	'grad_clip':0.1,
-	'gamma':0.955,   #0.955**100 ~= 0.01
+	'pretraining_lr' : 1e-5, # only used during pretraining for CFFL models, no decay
+	'dssgd_lr': 1e-5, # used for dssgd model, no decay
+	'lr': 1e-5,
+	'grad_clip':1,
+	'gamma':0.977,   #0.955**100 ~= 0.01
 
 	# training parameters
-	'pretrain_epochs': 0,
+	'pretrain_epochs': 1,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 	'aggregate_mode':'sum',  # 'mean', 'sum', credit-sum
@@ -167,10 +209,10 @@ mr_args = {
 	'n_workers': 5,
 	'split': 'powerlaw', #or 'powerlaw' classimbalance
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size' : 64, 
+	'batch_size' : 32, 
 	'train_val_split_ratio': 0.9,
 	'alpha': 5,
-	'epoch_sample_size':10,
+	'epoch_sample_size':float("Inf"),
 	'n_freeriders': 0,
 
 
@@ -179,19 +221,19 @@ mr_args = {
 	'embed_num': 20000,
 	'embed_dim': 300,
 	'class_num': 2,
-	'kernel_num': 100,
+	'kernel_num': 128,
 	'kernel_sizes': [3,4,5],
 
 	'optimizer_fn': optim.Adam,
-	'loss_fn': nn.NLLLoss(), 
-	'pretraining_lr' : 0.1, # only used during pretraining for CFFL models, no decay
-	'dssgd_lr': 0.001, # used for dssgd model, no decay
-	'lr': 0.001,
-	'grad_clip':0.1,
-	'gamma':0.955,   #0.955**100 ~= 0.01
+	'loss_fn': nn.CrossEntropyLoss(), 
+	'pretraining_lr' : 1e-6, # only used during pretraining for CFFL models, no decay
+	'dssgd_lr': 1e-6, # used for dssgd model, no decay
+	'lr': 1e-6,
+	'grad_clip':1,
+	'gamma':0.977,   #0.955**100 ~= 0.01
 
 	# training parameters
-	'pretrain_epochs': 5,
+	'pretrain_epochs': 1,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 	'aggregate_mode':'sum',  # 'mean', 'sum', credit-sum
@@ -216,18 +258,18 @@ cifar_cnn_args = {
 
 
 	# model parameters
-	# 'model_fn': CNNCifar,
-	'model_fn': ResNet18,
+	'model_fn': CNNCifar,
+	#'model_fn': ResNet18,
 	'optimizer_fn': optim.SGD,
-	'loss_fn': nn.CrossEntropyLoss(), 
+	'loss_fn': nn.NLLLoss(),#  nn.CrossEntropyLoss(), 
 	'pretraining_lr' : 0.1, # only used during pretraining for CFFL models, no decay
 	'dssgd_lr': 0.001, # used for dssgd model, no decay
 	'lr': 0.001,
-	'grad_clip':0.001,
+	'grad_clip':0.01,
 	'gamma':0.955,   #0.955**100 ~= 0.01
 
 	# training parameters
-	'pretrain_epochs': 10,
+	'pretrain_epochs': 1,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 	'aggregate_mode':'sum',  # 'mean', 'sum'

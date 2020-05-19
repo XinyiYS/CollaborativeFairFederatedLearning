@@ -105,22 +105,22 @@ class RNN(nn.Module):
 
 # https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
 class CNNCifar(nn.Module):
-    def __init__(self, device=None):
-        super(CNNCifar, self).__init__()
-        self.conv1 = nn.Conv2d(3, 6, 5)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(16 * 5 * 5, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 10)
-    def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 16 * 5 * 5)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return F.log_softmax(x, dim=1)
+	def __init__(self, device=None):
+		super(CNNCifar, self).__init__()
+		self.conv1 = nn.Conv2d(3, 6, 5)
+		self.pool = nn.MaxPool2d(2, 2)
+		self.conv2 = nn.Conv2d(6, 16, 5)
+		self.fc1 = nn.Linear(16 * 5 * 5, 120)
+		self.fc2 = nn.Linear(120, 84)
+		self.fc3 = nn.Linear(84, 10)
+	def forward(self, x):
+		x = self.pool(F.relu(self.conv1(x)))
+		x = self.pool(F.relu(self.conv2(x)))
+		x = x.view(-1, 16 * 5 * 5)
+		x = F.relu(self.fc1(x))
+		x = F.relu(self.fc2(x))
+		x = self.fc3(x)
+		return F.log_softmax(x, dim=1)
  
 class BasicBlock(nn.Module):
 	expansion = 1
@@ -211,12 +211,14 @@ class CNN_Text(nn.Module):
 	def forward(self, x):
 
 		x = self.embed(x) # (W,N,D)
-		x = x.permute(1,0,2) # -> (N,W,D)
+		# x = x.permute(1,0,2) # -> (N,W,D)
 
 		if not self.args or self.args.static:
 			x = Variable(x).to(self.device)
 
-		x = x.unsqueeze(1) # (N,Ci,W,D)
+		x = x.unsqueeze(1) # (W,Ci,N,D)
+		x = x.permute(2,1,0,3) #(N,Ci,W,D)
+
 		x = [F.relu(conv(x)).squeeze(3) for conv in self.convs1] #[(N,Co,W), ...]*len(Ks)
 		x = [F.max_pool1d(i, i.size(2)).squeeze(2) for i in x] #[(N,Co), ...]*len(Ks)
 		x = torch.cat(x, 1)
@@ -229,3 +231,38 @@ class CNN_Text(nn.Module):
 		x = self.dropout(x) # (N,len(Ks)*Co)
 		logit = self.fc1(x) # (N,C)
 		return logit
+
+# Sentiment analysis : binary classification
+class RNN_IMDB(nn.Module):
+	# def __init__(self, embed_num, embed_dim, output_dim, pad_idx):
+	def __init__(self, args=None, device=None):
+		super(RNN_IMDB, self).__init__()
+
+		self.args = args
+		self.device = device
+		embed_num = args.embed_num
+		embed_dim = args.embed_dim
+		output_dim = args.class_num
+		pad_idx = args.pad_idx
+		
+		self.embedding = nn.Embedding(embed_num, embed_dim, padding_idx=pad_idx)
+		
+		self.fc = nn.Linear(embed_dim, output_dim)
+		
+	def forward(self, text):
+		
+		#text = [sent len, batch size]
+		
+		embedded = self.embedding(text)
+				
+		#embedded = [sent len, batch size, emb dim]
+		
+		embedded = embedded.permute(1, 0, 2)
+		
+		#embedded = [batch size, sent len, emb dim]
+		
+		pooled = F.avg_pool2d(embedded, (embedded.shape[1], 1)).squeeze(1) 
+		
+		#pooled = [batch size, embed_dim]
+				
+		return self.fc(pooled)

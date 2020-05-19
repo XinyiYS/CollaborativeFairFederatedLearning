@@ -116,11 +116,10 @@ def evaluate(model, eval_loader, device, loss_fn=None, verbose=True):
 			loss = loss_fn(outputs, batch_target)
 		else:
 			loss = None
-
 		correct += (torch.max(outputs, 1)[1].view(batch_target.size()).data == batch_target.data).sum()
 		total += len(batch_target)
-
-	accuracy = 1. * correct / total
+	accuracy =  correct.float() / total
+	
 	if verbose:
 		print("Loss: {:.6f}. Accuracy: {:.4%}.".format(loss, accuracy))
 	return loss, accuracy
