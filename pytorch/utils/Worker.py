@@ -96,6 +96,7 @@ class Worker():
 			for i, batch in enumerate(self.train_loader):
 				if isinstance(batch, Batch):
 					batch_data, batch_target = batch.text, batch.label
+					batch_data = batch_data.permute(1, 0)
 					# batch_data.data.t_(), batch_target.data.sub_(1)  # batch first, index align
 				else:
 					batch_data, batch_target = batch[0], batch[1]

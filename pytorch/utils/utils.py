@@ -119,6 +119,7 @@ def evaluate(model, eval_loader, device, loss_fn=None, verbose=True):
 			if isinstance(batch, Batch):
 				batch_data, batch_target = batch.text, batch.label
 				# batch_data.data.t_(), batch_target.data.sub_(1)  # batch first, index align
+				batch_data = batch_data.permute(1, 0)
 			else:
 				batch_data, batch_target = batch[0], batch[1]
 

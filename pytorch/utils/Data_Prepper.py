@@ -242,30 +242,6 @@ class Data_Prepper:
 
 			return train_datasets, validation_data, test_data
 
-			'''
-			dirname = '.data/mr'
-
-			fields = [('text', text_field), ('label', label_field)]
-
-			create_data_csvs_for_mr(self.n_workers, dirname=dirname)
-			train_datasets = []
-			for i in range(self.n_workers):
-				df = pd.read_csv(os.path.join(dirname, "P{}_powerlaw".format(self.n_workers), 'P{}.csv'.format(i)))
-
-				examples = [data.Example.fromlist([row['text'], row['label']], fields) for index, row in df.iterrows()]
-				dataset = mydatasets.TarDataset(examples, fields)						
-				train_datasets.append(dataset)
-
-
-			val_df = pd.read_csv(os.path.join(dirname, 'val.csv'))
-			examples = [data.Example.fromlist([row['text'], row['label']], fields) for index, row in val_df.iterrows()]
-			val_dataset = mydatasets.TarDataset(examples, fields)	
-
-			test_df = pd.read_csv(os.path.join(dirname, 'val.csv'))
-			examples = [data.Example.fromlist([row['text'], row['label']], fields) for index, row in test_df.iterrows()]
-			test_dataset = mydatasets.TarDataset(examples, fields)	
-			'''
-
 		elif name == 'imdb':
 
 			from torch import long as torch_long
