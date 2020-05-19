@@ -95,30 +95,44 @@ def compare_models(model1, model2):
 	return True
 
 
+def flatten(grad_update):
+	return torch.cat([update.data.view(-1) for update in grad_update])
+
+def unflatten(flattened, normal_shape):
+	grad_update = []
+	for param in normal_shape:
+		n_params = len(param.view(-1))
+		grad_update.append(  torch.as_tensor(flattened[:n_params]).reshape(param.size())  )
+		flattened = flattened[n_params:]
+
+	return grad_update
+
 def evaluate(model, eval_loader, device, loss_fn=None, verbose=True):
 	model.eval()
 	model = model.to(device)
 	correct = 0
 	total = 0
-	for i, batch in enumerate(eval_loader):
 
-		if isinstance(batch, Batch):
-			batch_data, batch_target = batch.text, batch.label
-			# batch_data.data.t_(), batch_target.data.sub_(1)  # batch first, index align
-		else:
-			batch_data, batch_target = batch[0], batch[1]
+	with torch.no_grad():
+		for i, batch in enumerate(eval_loader):
 
-		batch_data, batch_target = batch_data.to(device), batch_target.to(device)
+			if isinstance(batch, Batch):
+				batch_data, batch_target = batch.text, batch.label
+				# batch_data.data.t_(), batch_target.data.sub_(1)  # batch first, index align
+			else:
+				batch_data, batch_target = batch[0], batch[1]
 
-		outputs = model(batch_data)
+			batch_data, batch_target = batch_data.to(device), batch_target.to(device)
 
-		if loss_fn:
-			loss = loss_fn(outputs, batch_target)
-		else:
-			loss = None
-		correct += (torch.max(outputs, 1)[1].view(batch_target.size()).data == batch_target.data).sum()
-		total += len(batch_target)
-	accuracy =  correct.float() / total
+			outputs = model(batch_data)
+
+			if loss_fn:
+				loss = loss_fn(outputs, batch_target)
+			else:
+				loss = None
+			correct += (torch.max(outputs, 1)[1].view(batch_target.size()).data == batch_target.data).sum()
+			total += len(batch_target)
+		accuracy =  correct.float() / total
 	
 	if verbose:
 		print("Loss: {:.6f}. Accuracy: {:.4%}.".format(loss, accuracy))
