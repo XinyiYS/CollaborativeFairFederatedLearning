@@ -1,3 +1,6 @@
+import time
+import json
+import pandas as pd
 import numpy as np
 import copy
 from collections import defaultdict
@@ -33,7 +36,7 @@ class Federated_Learner:
 		self.init_workers()
 		self.performance_dict = defaultdict(list)
 		self.performance_dict_pretrain = defaultdict(list)
-
+		self.time_dict = defaultdict(float)
 
 	def init_workers(self):
 		assert self.n_workers == len(
@@ -48,7 +51,7 @@ class Federated_Learner:
 		grad_clip = self.args['grad_clip']
 		gamma = self.args['gamma']
 
-		if self.data_prepper.name in ['sst', 'mr']:
+		if self.data_prepper.name in ['sst', 'mr', 'imdb']:
 			self.federated_model = model_fn(args=self.data_prepper.args, device=device)
 		else:
 			self.federated_model = model_fn(device=device)
@@ -56,9 +59,7 @@ class Federated_Learner:
 			print("From Federaed Learner - Let's use {} gpus.".format(len(self.args['device_ids'])))
 			self.federated_model = 	nn.DataParallel(self.federated_model, device_ids=self.args['device_ids'])
 
-
 		self.federated_model_pretrain = copy.deepcopy(self.federated_model)
-
 
 		self.workers = []
 		# add in free riders		
@@ -133,6 +134,8 @@ class Federated_Learner:
 		dssgd_val_accs = []
 
 		for i, worker in enumerate(self.workers):
+			self.timestamp = time.time()
+
 			model_before = copy.deepcopy(worker.model)
 			dssgd_model_before = copy.deepcopy(worker.dssgd_model)
 			model_pretrain_before = copy.deepcopy(worker.model_pretrain)
@@ -141,12 +144,27 @@ class Federated_Learner:
 			model_after = copy.deepcopy(worker.model)
 			dssgd_model_after = copy.deepcopy(worker.dssgd_model)
 			model_pretrain_after = copy.deepcopy(worker.model_pretrain)
+
+
+			self.clock('workers local training')
+
 			
 			# recover the model before training for clipped grad update later
 			worker.model.load_state_dict(model_before.state_dict())
 
 			raw_grad_update = compute_grad_update(model_before, model_after, device=self.device)
 			del model_before, model_after  # to free up memory immediately
+
+
+			'''
+			# clipped stats
+			columns = ['','grad_mean','clipped_count', 'clipped_ratio']
+			data_rows = []
+
+			all_update_mod = torch.cat([update.data.view(-1).abs()for update in raw_grad_update])
+			n_clipped = (all_update_mod > self.args['grad_clip']).sum().item()
+			data_rows.append([ 'w/o pretrain: ', all_update_mod.mean().item(), n_clipped, torch.true_divide(n_clipped, len(all_update_mod)).item() ])
+			'''
 
 			clipped_grad_update = clip_gradient_update(raw_grad_update, self.args['grad_clip'])
 			filtered_grad_update = mask_grad_update_by_order(clipped_grad_update, mask_order=None, mask_percentile=worker.theta) 
@@ -174,11 +192,20 @@ class Federated_Learner:
 					weight = self.shard_sizes[i] *1. / sum(self.shard_sizes)
 				add_gradient_updates(self.aggregated_gradient_updates, filtered_grad_update, weight)
 
+			self.clock('server aggregation')
+
 			# repeat for with pretraining
 
 			worker.model_pretrain.load_state_dict(model_pretrain_before.state_dict())
 			raw_grad_update = compute_grad_update(model_pretrain_before, model_pretrain_after, device=self.device)				
 			del model_pretrain_before, model_pretrain_after
+
+			'''
+			# clipped stats
+			all_update_mod = torch.cat([update.data.view(-1).abs()for update in raw_grad_update])
+			n_clipped = (all_update_mod > self.args['grad_clip']).sum().item()
+			data_rows.append([ 'w pretrain: ', all_update_mod.mean().item(), n_clipped, torch.true_divide(n_clipped, len(all_update_mod)).item() ])
+			'''
 
 			clipped_grad_update = clip_gradient_update(raw_grad_update, self.args['grad_clip'])
 			filtered_grad_update = mask_grad_update_by_order(clipped_grad_update, mask_order=None, mask_percentile=worker.theta) 
@@ -201,11 +228,19 @@ class Federated_Learner:
 					weight = self.shard_sizes[i] *1. / sum(self.shard_sizes)
 				add_gradient_updates(self.aggregated_gradient_updates_pretrain, filtered_grad_update, weight)
 
+			self.clock('server aggregation with pretraining')
 
 			# for DSSGD model
 
 			dssgd_grad_update = compute_grad_update(dssgd_model_before, dssgd_model_after, device=self.device)
 			del dssgd_model_before, dssgd_model_after  # to free up memory immediately
+
+			'''
+			# clipped stats
+			all_update_mod = torch.cat([update.data.view(-1).abs()for update in dssgd_grad_update])
+			n_clipped = (all_update_mod > self.args['grad_clip']).sum().item()
+			data_rows.append([ 'dssgd:', all_update_mod.mean().item(), n_clipped, torch.true_divide(n_clipped, len(all_update_mod)).item() ])
+			'''
 
 			filtered_grad_update = mask_grad_update_by_order(clip_gradient_update(dssgd_grad_update, self.args['grad_clip']), mask_order=None, mask_percentile=worker.theta)
 
@@ -214,13 +249,20 @@ class Federated_Learner:
 			dssgd_val_acc = evaluate(worker.dssgd_model, self.valid_loader, self.device, verbose=False)[1]
 			dssgd_val_accs.append(dssgd_val_acc)
 
+			self.clock('server aggregation dssgd')
 
+			'''
+			# clipped stats
+			print(pd.DataFrame(data=data_rows, columns=columns))
+			'''
 
 		add_update_to_model(self.federated_model, self.aggregated_gradient_updates, device=self.device)
 		self.federated_val_acc = evaluate(self.federated_model, self.valid_loader, device=self.device, verbose=False)[1]
 
 		add_update_to_model(self.federated_model_pretrain, self.aggregated_gradient_updates_pretrain, device=self.device)
 		self.federated_val_acc_pretrain = evaluate(self.federated_model_pretrain, self.valid_loader, device=self.device, verbose=False)[1]
+
+		self.clock('fed model eval on valid loader')
 
 		return worker_val_accs, worker_val_accs_pretrain, dssgd_val_accs
 
@@ -243,7 +285,13 @@ class Federated_Learner:
 		self.performance_dict_pretrain['shard_sizes'] = self.shard_sizes
 
 		# print("Start local pretraining ")
+		self.timestamp = time.time()
+
 		self.train_locally(self.args['pretrain_epochs'], is_pretrain=True, save_gpu=self.save_gpu)
+
+		self.clock('pretraining')
+
+
 		self.worker_model_test_accs_before = self.evaluate_workers_performance(self.test_loader)
 		self.performance_dict['worker_model_test_accs_before'] = self.worker_model_test_accs_before
 
@@ -262,19 +310,29 @@ class Federated_Learner:
 		print("CFFL server model test accuracy : {:.4%}".format(federated_test_acc))
 
 
+		self.clock('evaluation after pretraining')
+
 		# print("\nStart federated learning \n")
 		for epoch in range(fl_epochs):
+
+
 			# 1. training locally and update the federated_model
 			worker_val_accs, worker_val_accs_pretrain, dssgd_val_accs = self.train_locally(fl_individual_epochs,save_gpu=self.save_gpu)
+
+
 
 			# 2. update the credits and credit_threshold
 			# and update the reputable parties set
 			self.credits, self.credit_threshold, self.R = compute_credits_sinh(self.credits, worker_val_accs, credit_threshold=self.credit_threshold, alpha=self.args['alpha'],)
 			self.credits_pretrain, self.credit_threshold_pretrain, self.R_pretrain = compute_credits_sinh(self.credits_pretrain, worker_val_accs_pretrain, credit_threshold=self.credit_threshold_pretrain, alpha=self.args['alpha'],)
 
+			self.clock('credit updates')
+
 
 			# 3. gradient downloads and uploads according to credits and thetas
 			self.assign_updates_with_filter()
+			self.clock('assign updates')
+
 
 			# update the performance dict as log
 			if epoch % 20 == 0:
@@ -303,6 +361,16 @@ class Federated_Learner:
 			self.performance_dict_pretrain['federated_val_acc'].append(self.federated_val_acc_pretrain)
 			self.performance_dict_pretrain['credit_threshold'].append(self.credit_threshold_pretrain)
 			# print()
+			self.clock('performance update')
+
+		total_seconds = 0
+		for key, value in self.time_dict.items():
+			print(key, value)
+			total_seconds+= value
+		print("total seconds", total_seconds)
+		print('Time_dict-----')
+		print(json.dumps(self.time_dict))
+		print('-----')
 
 		self.convert_tensors_in_dicts()
 		return
@@ -364,6 +432,13 @@ class Federated_Learner:
 		return
 
 	def performance_summary(self, to_print=False):
+
+		"""
+		Try an alternative way of evaluating the test accuracy
+		for each testLoader
+			for each worker's model:
+				carry out the testbatch together
+		"""
 
 		self.dssgd_models_test_accs = self.evaluate_workers_performance(self.test_loader, mode='dssgd')
 		self.worker_standalone_test_accs = self.evaluate_workers_performance(self.test_loader, mode='standalone')
@@ -493,6 +568,11 @@ class Federated_Learner:
 			return [evaluate(worker.model_pretrain, eval_loader, device, verbose=False)[1] for worker in self.workers]
 		else:
 			return [evaluate(worker.model, eval_loader, device, verbose=False)[1] for worker in self.workers]
+
+	def clock(self, key):
+		self.timestamp_  = time.time()
+		self.time_dict[key] += self.timestamp_ - self.timestamp
+		self.timestamp = self.timestamp_
 
 
 def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fade=1):
