@@ -102,7 +102,7 @@ class Worker():
 					batch_data, batch_target = batch[0], batch[1]
 
 				batch_data, batch_target = batch_data.to(self.device), batch_target.to(self.device)
-				
+
 				# pretrain model
 
 				# introduce a slower pretraining process

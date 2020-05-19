@@ -192,7 +192,6 @@ class CNN_Text(nn.Module):
 
 		self.embed = nn.Embedding(V, D)
 		self.convs1 = nn.ModuleList([nn.Conv2d(Ci, Co, (K, D)) for K in Ks])
-
 		'''
 		self.conv13 = nn.Conv2d(Ci, Co, (3, D))
 		self.conv14 = nn.Conv2d(Ci, Co, (4, D))
@@ -212,12 +211,13 @@ class CNN_Text(nn.Module):
 
 		x = self.embed(x) # (W,N,D)
 		# x = x.permute(1,0,2) # -> (N,W,D)
+		# permute during loading the batches instead of in the forward function
+		# in order to allow nn.DataParallel
 
 		if not self.args or self.args.static:
 			x = Variable(x).to(self.device)
 
 		x = x.unsqueeze(1) # (W,Ci,N,D)
-		x = x.permute(2,1,0,3) #(N,Ci,W,D)
 
 		x = [F.relu(conv(x)).squeeze(3) for conv in self.convs1] #[(N,Co,W), ...]*len(Ks)
 		x = [F.max_pool1d(i, i.size(2)).squeeze(2) for i in x] #[(N,Co), ...]*len(Ks)
@@ -230,7 +230,8 @@ class CNN_Text(nn.Module):
 		'''
 		x = self.dropout(x) # (N,len(Ks)*Co)
 		logit = self.fc1(x) # (N,C)
-		return logit
+		return F.log_softmax(logit, dim=1)
+		# return logit
 
 # Sentiment analysis : binary classification
 class RNN_IMDB(nn.Module):
@@ -264,5 +265,6 @@ class RNN_IMDB(nn.Module):
 		pooled = F.avg_pool2d(embedded, (embedded.shape[1], 1)).squeeze(1) 
 		
 		#pooled = [batch size, embed_dim]
-				
-		return self.fc(pooled)
+		return F.log_softmax(self.fc(pooled))
+
+		

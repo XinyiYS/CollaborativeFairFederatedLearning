@@ -140,7 +140,7 @@ imdb_args = {
 	# model parameters
 	'model_fn': RNN_IMDB,
 	'optimizer_fn': optim.Adam,
-	'loss_fn': nn.CrossEntropyLoss(), 
+	'loss_fn': nn.NLLLoss(), 
 	'pretraining_lr' : 0.1, # only used during pretraining for CFFL models, no decay
 	'dssgd_lr': 0.001, # used for dssgd model, no decay
 	'lr': 0.005,
@@ -182,10 +182,10 @@ sst_args = {
 	'kernel_sizes': [3,4,5],
 
 	'optimizer_fn': optim.Adam,
-	'loss_fn': nn.CrossEntropyLoss(), 
+	'loss_fn': nn.NLLLoss(), 
 	'pretraining_lr' : 1e-5, # only used during pretraining for CFFL models, no decay
-	'dssgd_lr': 1e-5, # used for dssgd model, no decay
-	'lr': 1e-5,
+	'dssgd_lr': 1e-4, # used for dssgd model, no decay
+	'lr': 1e-4,
 	'grad_clip':1,
 	'gamma':0.977,   #0.955**100 ~= 0.01
 
@@ -225,7 +225,7 @@ mr_args = {
 	'kernel_sizes': [3,4,5],
 
 	'optimizer_fn': optim.Adam,
-	'loss_fn': nn.CrossEntropyLoss(), 
+	'loss_fn': nn.NLLLoss(), 
 	'pretraining_lr' : 1e-6, # only used during pretraining for CFFL models, no decay
 	'dssgd_lr': 1e-6, # used for dssgd model, no decay
 	'lr': 1e-6,

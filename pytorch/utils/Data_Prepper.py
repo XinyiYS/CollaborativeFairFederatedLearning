@@ -29,8 +29,10 @@ class Data_Prepper:
 			self.valid_loader = BucketIterator(self.validation_dataset, batch_size = 500, sort_key=lambda x: len(x.text), device=self.device  )
 			self.test_loader = BucketIterator(self.test_dataset, batch_size = 500, sort_key=lambda x: len(x.text), device=self.device)
 
+			
 			self.args.embed_num = len(self.args.text_field.vocab)
-			self.args.class_num = len(self.args.label_field.vocab) - 1
+			self.args.class_num = len(self.args.label_field.vocab)
+			
 			self.args.embed_dim = 128
 			self.args.kernel_num = 128
 			self.args.kernel_sizes = [3,4,5]
@@ -188,33 +190,24 @@ class Data_Prepper:
 		elif name == "sst":
 			import torchtext.data as data
 			text_field = data.Field(lower=True)
-			label_field = data.Field(sequential=False)
-			import torchtext.datasets as datasets
+			from torch import long as torch_long
+			label_field = LabelField(dtype = torch_long, sequential=False)
 
+			import torchtext.datasets as datasets
 			train_data, validation_data, test_data = datasets.SST.splits(text_field, label_field, fine_grained=True)
 
 			indices_list = powerlaw(list(range(len(train_data))), self.n_workers)
-			ratios = [len(indices) / len(train_data) for indices in  indices_list]
+			ratios = [len(indices) / len(train_data) for indices in indices_list]
 
 			train_datasets = split_torchtext_dataset_ratios(train_data, ratios)
-
 
 			text_field.build_vocab(*(train_datasets + [validation_data, test_data]))
 			label_field.build_vocab(*(train_datasets + [validation_data, test_data]))
 
 			self.args.text_field = text_field
 			self.args.label_field = label_field
-			self.args.class_num = len(label_field.vocab) - 1
 
 			return train_datasets, validation_data, test_data
-			'''
-			train_folder = "P{}_powerlaw".format(self.n_workers)
-
-			create_data_txts_for_sst(self.n_workers)
-			train_datasets = [datasets.SST('.data/sst/{}/P{}.txt'.format(train_folder, i), text_field=text_field, label_field=label_field)  for i in range(self.n_workers)  ]
-			validation_data = datasets.SST('./data/sst/trees/dev.txt')
-			test_data = datasets.SST('./data/sst/trees/test.txt')
-			'''
 
 		elif name == 'mr':
 
@@ -222,7 +215,9 @@ class Data_Prepper:
 			from utils import mydatasets
 
 			text_field = data.Field(lower=True)
-			label_field = data.Field(sequential=False)
+			from torch import long as torch_long
+			label_field = LabelField(dtype = torch_long, sequential=False)
+			# label_field = data.Field(sequential=False)
 
 			train_data, dev_data = mydatasets.MR.splits(text_field, label_field, root='.data/mr')
 
@@ -238,7 +233,6 @@ class Data_Prepper:
 
 			self.args.text_field = text_field
 			self.args.label_field = label_field
-			self.args.class_num = len(label_field.vocab) - 1
 
 			return train_datasets, validation_data, test_data
 
@@ -276,14 +270,11 @@ class Data_Prepper:
 
 			PAD_IDX = text_field.vocab.stoi[text_field.pad_token]
 
-
 			self.args.text_field = text_field
 			self.args.label_field = label_field
-			self.args.class_num = len(label_field.vocab) - 1
 			self.args.pad_idx = PAD_IDX
 
 			return train_datasets, valid_data, test_data
-
 
 		elif name == 'names':
 
