@@ -163,6 +163,10 @@ class Data_Prepper:
 			train_set = Custom_Dataset(X_train, y_train)
 			test_set = Custom_Dataset(X_test, y_test)
 
+			train_set.X = train_set.X.to(self.device)
+			train_set.y = train_set.y.to(self.device)
+			test_set.X = test_set.X.to(self.device)
+			test_set.y = test_set.y.to(self.device)
 			return train_set, test_set
 		elif name == 'mnist':
 			from torchvision import datasets, transforms
