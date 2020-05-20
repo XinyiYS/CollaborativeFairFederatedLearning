@@ -10,7 +10,7 @@ from torch.utils.data.sampler import SubsetRandomSampler
 from torchtext.data import Field, LabelField, BucketIterator
 
 class Data_Prepper:
-	def __init__(self, name, train_batch_size, n_workers, sample_size_cap=-1, test_batch_size=1000, valid_batch_size=None, train_val_split_ratio=0.8, device=None):
+	def __init__(self, name, train_batch_size, n_workers, sample_size_cap=-1, test_batch_size=100, valid_batch_size=None, train_val_split_ratio=0.8, device=None):
 		self.args = None
 		self.name = name
 		self.device = device
@@ -56,10 +56,10 @@ class Data_Prepper:
 		self.train_idx, self.valid_idx = self.get_train_valid_indices(self.train_dataset, self.train_val_split_ratio, sample_size_cap=self.sample_size_cap, shuffle=shuffle)
 
 	def init_valid_loader(self):
-		self.valid_loader = DataLoader(self.train_dataset, batch_size=self.valid_batch_size, sampler=SubsetRandomSampler(self.valid_idx), pin_memory=True)
+		self.valid_loader = DataLoader(self.train_dataset, batch_size=self.valid_batch_size, sampler=SubsetRandomSampler(self.valid_idx))
 
 	def init_test_loader(self):
-		self.test_loader = DataLoader(self.test_dataset, batch_size=self.test_batch_size, pin_memory=True)
+		self.test_loader = DataLoader(self.test_dataset, batch_size=self.test_batch_size)
 
 	def get_valid_loader(self):
 		return self.valid_loader
@@ -133,7 +133,7 @@ class Data_Prepper:
 			indices_list = random_split(sample_indices=self.train_idx, m_bins=n_workers, equal=False)
 
 		self.shard_sizes = [len(indices) for indices in indices_list]
-		worker_train_loaders = [DataLoader(self.train_dataset, batch_size=batch_size, sampler=SubsetRandomSampler(indices), pin_memory=True) for indices in indices_list]
+		worker_train_loaders = [DataLoader(self.train_dataset, batch_size=batch_size, sampler=SubsetRandomSampler(indices)) for indices in indices_list]
 
 		return worker_train_loaders
 
@@ -166,7 +166,7 @@ class Data_Prepper:
 			return train_set, test_set
 		elif name == 'mnist':
 			from torchvision import datasets, transforms
-
+			'''
 			train = datasets.MNIST('datasets/', train=True, download=True, transform=transforms.Compose([
 				   transforms.Pad((2,2,2,2)),
 				   transforms.ToTensor(),
@@ -178,14 +178,31 @@ class Data_Prepper:
 					transforms.ToTensor(),
 					transforms.Normalize((0.1307,), (0.3081,))
 				]))
+			'''
+
+			train = FastMNIST('datasets/MNIST', train=True, download=True, device=self.device)
+			test = FastMNIST('datasets/MNIST', train=False, download=True, device=self.device)
+
 			return train, test
 		elif name == 'cifar10':
 			from torchvision import datasets, transforms
 			apply_transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-			# train = datasets.CIFAR10('/Users/lvlingjuan/Dropbox/pytorch/datasets/cifar', train=True, download=True,transform=apply_transform)
-			# test = datasets.CIFAR10('/Users/lvlingjuan/Dropbox/pytorch/datasets/cifar', train=False, download=True,transform=apply_transform)
-			train = datasets.CIFAR10('datasets/cifar', train=True, download=True,transform=apply_transform)
-			test = datasets.CIFAR10('datasets/cifar', train=False, download=True,transform=apply_transform)
+			'''
+			train = datasets.CIFAR10('/Users/lvlingjuan/Dropbox/pytorch/datasets/cifar', train=True, download=True,transform=apply_transform)
+			test = datasets.CIFAR10('/Users/lvlingjuan/Dropbox/pytorch/datasets/cifar', train=False, download=True,transform=apply_transform)
+			'''
+			# train = datasets.CIFAR10('datasets/cifar', train=True, download=True,transform=apply_transform)
+			# test = datasets.CIFAR10('datasets/cifar', train=False, download=True,transform=apply_transform)
+			
+			train = FastCIFAR10('datasets/cifar', train=True, download=True,device=self.device)
+			test = FastCIFAR10('datasets/cifar', train=False, download=True,device=self.device)
+
+			# from torch import from_numpy
+			# train.data = from_numpy(train.data).to(self.device)
+			# test.data = from_numpy(test.data).to(self.device)
+			# print(len(train.data),type(train.data), train.data.shape)
+			# print(train.data[0])
+			# print(len(test.data), type(test.data), test.data.shape)
 			return train, test   
 		elif name == "sst":
 			import torchtext.data as data
@@ -295,6 +312,74 @@ class Data_Prepper:
 			test_set = Custom_Dataset(X_test, y_test)
 
 			return train_set, test_set
+
+
+from torchvision.datasets import MNIST
+class FastMNIST(MNIST):
+	def __init__(self, *args, **kwargs):
+		if 'device' in kwargs:
+			device = kwargs['device']
+			kwargs.pop('device')
+		super().__init__(*args, **kwargs)		
+		
+		# self.data = self.data.float().div(255)
+		self.data = self.data.unsqueeze(1).float().div(255)
+		from torch.nn import ZeroPad2d
+		pad = ZeroPad2d(2)
+		self.data = torch.stack([pad(sample.data) for sample in self.data])
+
+		self.targets = self.targets.long()
+
+		self.data = self.data.sub_(0.1307).div_(0.3081)
+		# Put both data and targets on GPU in advance
+		self.data, self.targets = self.data.to(device), self.targets.to(device)
+		print('MNIST data shape {}, targets shape {}'.format(self.data.shape, self.targets.shape))
+
+	def __getitem__(self, index):
+		"""
+		Args:
+			index (int): Index
+
+		Returns:
+			tuple: (image, target) where target is index of the target class.
+		"""
+		img, target = self.data[index], self.targets[index]
+
+		return img, target
+
+from torchvision.datasets import CIFAR10
+class FastCIFAR10(CIFAR10):
+	def __init__(self, *args, **kwargs):
+		if 'device' in kwargs:
+			device = kwargs['device']
+			kwargs.pop('device')
+		super().__init__(*args, **kwargs)
+		
+		# Scale data to [0,1]
+		from torch import from_numpy
+		self.data = from_numpy(self.data)
+		self.data = self.data.float().div(255)
+		self.data = self.data.permute(0, 3, 1, 2)
+
+		self.targets = torch.Tensor(self.targets).long()
+
+		# Normalize it with the usual CIFAR10 mean and std
+		self.data = self.data.sub_(0.5).div_(0.5)
+		# Put both data and targets on GPU in advance
+		self.data, self.targets = self.data.to(device), self.targets.to(device)
+		print('CIFAR10 data shape {}, targets shape {}'.format(self.data.shape, self.targets.shape))
+
+	def __getitem__(self, index):
+		"""
+		Args:
+			index (int): Index
+
+		Returns:
+			tuple: (image, target) where target is index of the target class.
+		"""
+		img, target = self.data[index], self.targets[index]
+
+		return img, target
 
 def powerlaw(sample_indices, n_workers, alpha=1.65911332899):
 	# the smaller the alpha, the more extreme the division
