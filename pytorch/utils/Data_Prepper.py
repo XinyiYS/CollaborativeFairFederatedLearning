@@ -175,13 +175,13 @@ class Data_Prepper:
 				   transforms.Pad((2,2,2,2)),
 				   transforms.ToTensor(),
 				   transforms.Normalize((0.1307,), (0.3081,))
-							   ]))
+					]))
 
 			test = datasets.MNIST('datasets/', train=False, download=True, transform=transforms.Compose([
 					transforms.Pad((2,2,2,2)),
 					transforms.ToTensor(),
 					transforms.Normalize((0.1307,), (0.3081,))
-				]))
+					]))
 			'''
 
 			train = FastMNIST('datasets/MNIST', train=True, download=True, device=self.device)
@@ -189,24 +189,15 @@ class Data_Prepper:
 
 			return train, test
 		elif name == 'cifar10':
+			'''
 			from torchvision import datasets, transforms
 			apply_transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+			train = datasets.CIFAR10('datasets/cifar', train=True, download=True,transform=apply_transform)
+			test = datasets.CIFAR10('datasets/cifar', train=False, download=True,transform=apply_transform)
 			'''
-			train = datasets.CIFAR10('/Users/lvlingjuan/Dropbox/pytorch/datasets/cifar', train=True, download=True,transform=apply_transform)
-			test = datasets.CIFAR10('/Users/lvlingjuan/Dropbox/pytorch/datasets/cifar', train=False, download=True,transform=apply_transform)
-			'''
-			# train = datasets.CIFAR10('datasets/cifar', train=True, download=True,transform=apply_transform)
-			# test = datasets.CIFAR10('datasets/cifar', train=False, download=True,transform=apply_transform)
-			
 			train = FastCIFAR10('datasets/cifar', train=True, download=True,device=self.device)
 			test = FastCIFAR10('datasets/cifar', train=False, download=True,device=self.device)
 
-			# from torch import from_numpy
-			# train.data = from_numpy(train.data).to(self.device)
-			# test.data = from_numpy(test.data).to(self.device)
-			# print(len(train.data),type(train.data), train.data.shape)
-			# print(train.data[0])
-			# print(len(test.data), type(test.data), test.data.shape)
 			return train, test   
 		elif name == "sst":
 			import torchtext.data as data

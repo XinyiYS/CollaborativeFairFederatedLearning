@@ -414,11 +414,7 @@ class Federated_Learner:
 				
 				add_update_to_model(worker.model, allocated_grad)
 				add_update_to_model(worker.model, self.filtered_updates[i], weight=-1.0)
-				'''
-				# for allocated_param, uploaded_param in zip(allocated_grad, self.filtered_updates[i]):
-				# 	filtered_indices = (allocated_param.data.abs() > 0)  & (uploaded_param.data.abs()>0)
-				# 	allocated_param.data[filtered_indices] -= uploaded_param.data[filtered_indices]
-				'''
+
 
 			# with pretrain
 			if i in self.R_pretrain:
@@ -432,13 +428,6 @@ class Federated_Learner:
 		return
 
 	def performance_summary(self, to_print=False):
-
-		"""
-		Try an alternative way of evaluating the test accuracy
-		for each testLoader
-			for each worker's model:
-				carry out the testbatch together
-		"""
 
 		self.dssgd_models_test_accs = self.evaluate_workers_performance(self.test_loader, mode='dssgd')
 		self.worker_standalone_test_accs = self.evaluate_workers_performance(self.test_loader, mode='standalone')
@@ -486,11 +475,7 @@ class Federated_Learner:
 	def get_fairness_analysis(self):
 		print("Performance and Fairness analysis: ")
 		worker_thetas = [worker.theta for worker in self.workers]
-		'''
-		sharing_contributions = (torch.tensor(self.shard_sizes).float() * torch.tensor(worker_thetas)).tolist()
-		print('Workers sharing_contributions : ', sharing_contributions)
-		'''		
-
+	
 		print('Worker credits :', self.credits.tolist())
 		print('Number of reputable parties: ', len(self.R))
 
@@ -499,11 +484,6 @@ class Federated_Learner:
 
 
 		# no pretrain
-
-		# remaining_standalone_test_accs =  [worker_standalone_test_accs[i] for i in self.R]
-		# remaining_dssgd_test_accs =  [ DSSGD_model_test_accs[i] for i in self.R]
-		# remaining_cffl_test_accs =  [ cffl_test_accs[i] for i in self.R]
-
 		worker_standalone_test_accs = self.performance_dict['worker_standalone_test_accs'][-1]
 		DSSGD_model_test_accs = self.performance_dict['DSSGD_model_test_accs'][-1]
 		cffl_test_accs = self.performance_dict['cffl_test_accs'][-1]
@@ -522,15 +502,9 @@ class Federated_Learner:
 
 
 		# with pretrain
-
-		# remaining_standalone_test_accs =  [worker_standalone_test_accs[i] for i in self.R_pretrain]
-		# remaining_dssgd_test_accs =  [ DSSGD_model_test_accs[i] for i in self.R_pretrain]
-		# remaining_cffl_test_accs_w_pretrain =  [ cffl_test_accs[i] for i in self.R_pretrain]
-
 		worker_standalone_test_accs = self.performance_dict_pretrain['worker_standalone_test_accs'][-1]
 		DSSGD_model_test_accs = self.performance_dict_pretrain['DSSGD_model_test_accs'][-1]
 		cffl_test_accs = self.performance_dict_pretrain['cffl_test_accs'][-1]
-
 
 		corrs = pearsonr(worker_standalone_test_accs, DSSGD_model_test_accs)
 		self.performance_dict_pretrain['standlone_vs_rrdssgd'].append(corrs[0])

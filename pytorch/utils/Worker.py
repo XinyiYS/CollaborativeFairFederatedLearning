@@ -51,35 +51,15 @@ class Worker():
 		self.param_count = sum([p.numel() for p in self.model.parameters()])
 		self.is_free_rider = is_free_rider
 
-		'''
-		if torch.cuda.device_count()>1:
-			self.device_ids = [device_id for device_id in range(torch.cuda.device_count())]
-			print("Let's use {} gpus".format(len(self.device_ids)))
-			torch.cuda.set_device(self.device_ids[0])
-		'''
-
 	def train(self, epochs, is_pretrain=False, save_gpu=False):
 		if self.is_free_rider:
 			for model in [self.model, self.model_pretrain, self.dssgd_model, self.standalone_model]:
-				'''
-				if len(self.device_ids) > 1 and not isinstance(model.torch.nn.DataParallel):
-					model = nn.DataParallel(model)
-				'''
 				model = model.to(self.device)
 	
 				for param in model.parameters():
 					param.data += (torch.rand(param.data.shape) * 2 - 1).to(self.device) # * self.grad_clip
 			return
-		'''
-		if len(self.device_ids) > 1:
-			
-			if not isinstance(self.model_pretrain, torch.nn.DataParallel):	
-				self.model_pretrain = nn.DataParallel(self.model_pretrain, device_ids=self.device_ids)	
-			if not isinstance(self.dssgd_model, torch.nn.DataParallel):
-				self.dssgd_model = nn.DataParallel(self.dssgd_model, device_ids=self.device_ids)	
-			if not isinstance(self.standalone_model, torch.nn.DataParallel):
-				self.standalone_model = nn.DataParallel(self.standalone_model, device_ids=self.device_ids)	
-		'''
+
 		self.model_pretrain.train()
 		self.model_pretrain = self.model_pretrain.to(self.device)
 
