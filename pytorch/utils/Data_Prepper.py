@@ -260,9 +260,8 @@ class Data_Prepper:
 
 			MAX_VOCAB_SIZE = 25_000
 
-			text_field.build_vocab(*train_datasets, max_size = MAX_VOCAB_SIZE, vectors = "glove.6B.100d",  unk_init = normal_)
-			label_field.build_vocab(*train_datasets)
-
+			text_field.build_vocab(*(train_datasets + [valid_data, test_data] ), max_size = MAX_VOCAB_SIZE, vectors = "glove.6B.100d",  unk_init = normal_)
+			label_field.build_vocab( *(train_datasets + [valid_data, test_data] ))
 
 			# INPUT_DIM = len(text_field.vocab)
 			# OUTPUT_DIM = 1
