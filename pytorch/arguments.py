@@ -197,7 +197,6 @@ sst_args = {
 }
 
 
-
 mr_args = {
 	# system parameters
 	'gpu': 0,
@@ -226,9 +225,9 @@ mr_args = {
 
 	'optimizer_fn': optim.Adam,
 	'loss_fn': nn.NLLLoss(), 
-	'pretraining_lr' : 1e-6, # only used during pretraining for CFFL models, no decay
-	'dssgd_lr': 1e-6, # used for dssgd model, no decay
-	'lr': 1e-6,
+	'pretraining_lr' : 1e-5, # only used during pretraining for CFFL models, no decay
+	'dssgd_lr': 1e-4, # used for dssgd model, no decay
+	'lr': 1e-4,
 	'grad_clip':1,
 	'gamma':0.977,   #0.955**100 ~= 0.01
 
