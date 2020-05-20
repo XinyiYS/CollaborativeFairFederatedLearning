@@ -259,12 +259,12 @@ cifar_cnn_args = {
 	# model parameters
 	'model_fn': CNNCifar,
 	#'model_fn': ResNet18,
-	'optimizer_fn': optim.SGD,
+	'optimizer_fn': optim.Adam,
 	'loss_fn': nn.NLLLoss(),#  nn.CrossEntropyLoss(), 
-	'pretraining_lr' : 0.1, # only used during pretraining for CFFL models, no decay
-	'dssgd_lr': 0.001, # used for dssgd model, no decay
-	'lr': 0.001,
-	'grad_clip':0.01,
+	'pretraining_lr' : 1e-4, # only used during pretraining for CFFL models, no decay
+	'dssgd_lr': 1e-4, # used for dssgd model, no decay
+	'lr': 1e-4,
+	'grad_clip':0.1,
 	'gamma':0.955,   #0.955**100 ~= 0.01
 
 	# training parameters

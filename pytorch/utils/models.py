@@ -253,18 +253,10 @@ class RNN_IMDB(nn.Module):
 	def forward(self, text):
 		
 		#text = [sent len, batch size]
-		
-		embedded = self.embedding(text)
-				
-		#embedded = [sent len, batch size, emb dim]
-		
-		embedded = embedded.permute(1, 0, 2)
-		
-		#embedded = [batch size, sent len, emb dim]
-		
+		embedded = self.embedding(text)		
 		pooled = F.avg_pool2d(embedded, (embedded.shape[1], 1)).squeeze(1) 
 		
 		#pooled = [batch size, embed_dim]
-		return F.log_softmax(self.fc(pooled))
+		return F.log_softmax(self.fc(pooled), dim=1)
 
 		
