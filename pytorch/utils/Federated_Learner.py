@@ -167,10 +167,11 @@ class Federated_Learner:
 			'''
 
 			clipped_grad_update = clip_gradient_update(raw_grad_update, self.args['grad_clip'])
-			filtered_grad_update = mask_grad_update_by_order(clipped_grad_update, mask_order=None, mask_percentile=worker.theta) 
-			
 			# add the clipped grad to local model
 			add_update_to_model(worker.model, clipped_grad_update, device=self.device)
+			
+			filtered_grad_update = mask_grad_update_by_order(clipped_grad_update, mask_order=None, mask_percentile=worker.theta) 
+
 
 			fed_val_acc = self.one_on_one_evaluate(self.federated_model, worker.model, filtered_grad_update, worker.theta)
 			worker_val_accs.append(fed_val_acc)
@@ -208,9 +209,10 @@ class Federated_Learner:
 			'''
 
 			clipped_grad_update = clip_gradient_update(raw_grad_update, self.args['grad_clip'])
+			add_update_to_model(worker.model_pretrain, clipped_grad_update, device=self.device)
+
 			filtered_grad_update = mask_grad_update_by_order(clipped_grad_update, mask_order=None, mask_percentile=worker.theta) 
 			
-			add_update_to_model(worker.model_pretrain, clipped_grad_update, device=self.device)
 
 			fed_val_acc = self.one_on_one_evaluate(self.federated_model_pretrain, worker.model_pretrain, filtered_grad_update, worker.theta)
 			worker_val_accs_pretrain.append(fed_val_acc)
@@ -580,24 +582,48 @@ def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fa
 	return credits, credit_threshold, R
 
 def clip_gradient_update(grad_update, grad_clip):
+	"""
+	Return a copy of clipped grad update 
+
+	"""
 	return [torch.clamp(param.data, min=-grad_clip, max=grad_clip) for param in grad_update]
 
-def mask_grad_update_by_order(grad_update, mask_order, mask_percentile=None):
-	# mask all but the largest <mask_order> updates (by magnitude) to zero
-	all_update_mod = torch.cat([update.data.view(-1).abs()
-								for update in grad_update])
-	if not mask_order and mask_percentile:
-		mask_order = int(len(all_update_mod) * mask_percentile)
-	
-	if mask_order == 0:
-		return mask_grad_update_by_magnitude(grad_update, float('inf'))
-	else:
-		topk, indices = torch.topk(all_update_mod, mask_order)
-		return mask_grad_update_by_magnitude(grad_update, topk[-1])
+
+def mask_grad_update_by_order(grad_update, mask_order, mask_percentile=None, mode='all'):
+
+	if mode == 'all':
+		# mask all but the largest <mask_order> updates (by magnitude) to zero
+		all_update_mod = torch.cat([update.data.view(-1).abs()
+									for update in grad_update])
+		if not mask_order and mask_percentile:
+			mask_order = int(len(all_update_mod) * mask_percentile)
+		
+		if mask_order == 0:
+			return mask_grad_update_by_magnitude(grad_update, float('inf'))
+		else:
+			topk, indices = torch.topk(all_update_mod, mask_order)
+			return mask_grad_update_by_magnitude(grad_update, topk[-1])
+
+	elif mode == 'layer': # layer wise largest-values criterion
+		grad_update = copy.deepcopy(grad_update)
+
+		for i, layer in enumerate(grad_update):
+			layer_mod = layer.data.view(-1).abs()
+			if mask_percentile:
+				mask_order = math.ceil(len(layer_mod) * mask_percentile)
+
+			if mask_order == 0:
+				grad_update[i].data = torch.zeros(layer.data.shape, device=layer.device)
+			else:
+				topk, indices = torch.topk(layer_mod, min(mask_order, len(layer_mod)-1))
+				grad_update[i].data[layer.data.abs() < topk[-1]] = 0
+		return grad_update
 
 def mask_grad_update_by_magnitude(grad_update, mask_constant):
+
 	# mask all but the updates with larger magnitude than <mask_constant> to zero
 	# print('Masking all gradient updates with magnitude smaller than ', mask_constant)
+	grad_update = copy.deepcopy(grad_update)
 	for i, update in enumerate(grad_update):
 		grad_update[i].data[update.data.abs() < mask_constant] = 0
 	return grad_update
