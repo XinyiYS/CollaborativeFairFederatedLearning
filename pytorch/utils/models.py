@@ -174,6 +174,26 @@ class ResNet18(nn.Module):
 		# return out
 		return F.log_softmax(out, dim=1)
 
+
+from torchvision import models
+class ResNet18_torch(nn.Module):
+	def __init__(self, device=None):
+		super().__init__()
+
+		self.resnet = models.resnet18(pretrained=False, num_classes=10)
+
+		self.resnet.conv1 = torch.nn.Conv2d(
+			3, 64, kernel_size=3, stride=1, padding=1, bias=False
+		)
+		self.resnet.maxpool = torch.nn.Identity()
+
+	def forward(self, x):
+		x = self.resnet(x)
+		x = F.log_softmax(x, dim=1)
+
+		return x
+
+
 class CNN_Text(nn.Module):
 	
 	def __init__(self, args=None, device=None):

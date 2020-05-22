@@ -1,7 +1,7 @@
 import torch
 from torch import nn, optim
 
-from utils.models import LogisticRegression, MLP, MLP_Net, CNN_Net, RNN, RNN_IMDB, CNN_Text, ResNet18, CNNCifar
+from utils.models import LogisticRegression, MLP, MLP_Net, CNN_Net, RNN, RNN_IMDB, CNN_Text, ResNet18, CNNCifar, ResNet18_torch
 
 use_cuda = True
 cuda_available = torch.cuda.is_available()
@@ -257,15 +257,15 @@ cifar_cnn_args = {
 
 
 	# model parameters
-	'model_fn': CNNCifar,
+	'model_fn': ResNet18_torch, #ResNet18_torch
 	#'model_fn': ResNet18,
 	'optimizer_fn': optim.Adam,
 	'loss_fn': nn.NLLLoss(),#  nn.CrossEntropyLoss(), 
 	'pretraining_lr' : 1e-4, # only used during pretraining for CFFL models, no decay
 	'dssgd_lr': 1e-4, # used for dssgd model, no decay
-	'lr': 1e-4,
+	'lr': 1e-3,
 	'grad_clip':0.1,
-	'gamma':0.955,   #0.955**100 ~= 0.01
+	'gamma':1,   #0.955**100 ~= 0.01
 
 	# training parameters
 	'pretrain_epochs': 1,

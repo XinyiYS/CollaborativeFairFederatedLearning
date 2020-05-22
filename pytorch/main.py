@@ -169,17 +169,57 @@ if __name__ == '__main__':
 	# init_mp()
 
 	experiment_args = []	
-	args = copy.deepcopy(mr_args)
-	for n_workers in [5, 10, 20]:
+	args = copy.deepcopy(cifar_cnn_args)
+	for n_workers, sample_size_cap in [[5, 5000], [10, 10000], [20, 20000]]:
 		args['n_workers'] = n_workers
-		args['n_freeriders'] = 0
+		args['sample_size_cap'] = sample_size_cap
 		args['alpha'] = 5
-		args['lr'] = 1e-3
+		args['batch_size'] = 256
+		args['gamma'] = 1
+
+		experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args)
+
+	experiment_args = []	
+	args = copy.deepcopy(cifar_cnn_args)
+	for n_workers, sample_size_cap in [[5, 5000], [10, 10000], [20, 20000]]:
+		args['n_workers'] = n_workers
+		args['sample_size_cap'] = sample_size_cap
+		args['alpha'] = 3
+		args['batch_size'] = 256
+		args['gamma'] = 1
+
+		experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args)
+
+
+	experiment_args = []	
+	args = copy.deepcopy(cifar_cnn_args)
+	for n_workers, sample_size_cap in [[5, 5000], [10, 10000], [20, 20000]]:
+		args['n_workers'] = n_workers
+		args['sample_size_cap'] = sample_size_cap
+		args['alpha'] = 1
+		args['batch_size'] = 256
+		args['gamma'] = 1
+
+		experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args)
+
+	'''
+	experiment_args = []	
+	args = copy.deepcopy(mnist_args)
+	for n_workers, sample_size_cap in [[5, 3000], [10, 6000], [20, 12000]]:
+		args['n_workers'] = n_workers
+		args['sample_size_cap'] = sample_size_cap
+		args['n_freeriders'] = 0
+		args['alpha'] = 3
+		args['lr'] = 1e-1
 		args['batch_size'] = 256
 		args['gamma'] = 0.977
 
 		experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args)
+
 
 
 	experiment_args = []	
@@ -209,7 +249,6 @@ if __name__ == '__main__':
 		experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args)
 
-	'''
 	args = copy.deepcopy(cifar_cnn_args)
 	for n_workers, sample_size_cap in [[5, 10000], [10, 20000], [20, 40000]]:
 		args['n_workers'] = n_workers
