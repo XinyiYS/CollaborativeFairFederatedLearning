@@ -108,12 +108,7 @@ class Worker():
 				loss.backward()
 				self.optimizer.step()
 
-				# dssgd model
-				self.dssgd_optimizer.zero_grad()
-				outputs = self.dssgd_model(batch_data)
-				loss = self.loss_fn(outputs, batch_target)
-				loss.backward()
-				self.dssgd_optimizer.step()
+
 
 				# standalone model
 				if not is_pretrain and epoch == 0:
@@ -125,6 +120,14 @@ class Worker():
 					loss.backward()
 					self.standalone_optimizer.step()
 
+					# dssgd model
+					self.dssgd_optimizer.zero_grad()
+					outputs = self.dssgd_model(batch_data)
+					loss = self.loss_fn(outputs, batch_target)
+					loss.backward()
+					self.dssgd_optimizer.step()
+
+	
 				if iter >= self.epoch_sample_size:
 					# specifically for NLP task to terminate for training efficiency
 					break
