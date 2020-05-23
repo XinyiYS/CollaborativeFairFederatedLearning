@@ -377,6 +377,34 @@ def get_train_valid_indices(n_samples, train_val_split_ratio):
 
 	return  indices[:split_point], indices[split_point:]
 
+
+def split_torchtext_dataset_ratios(data, ratios):
+	train_datasets = []
+	while len(ratios) > 1:
+		ratio = ratios.pop(0)
+		split_ratio = ratio / sum(ratios)
+		train_dataset, data = data.split(split_ratio=split_ratio, random_state=random.seed(1234))
+		train_datasets.append(train_dataset)
+	train_datasets.append(data)
+
+	return train_datasets
+
+
+def generate_bigrams(x):
+	n_grams = set(zip(*[x[i:] for i in range(2)]))
+	for n_gram in n_grams:
+		x.append(' '.join(n_gram))
+	return x
+'''
+
+def get_df(pos, neg):
+	data_rows = []
+	for text in pos:
+		data_rows.append(['positive', text.rstrip()])
+	for text in neg:
+		data_rows.append(['negative', text.rstrip()])
+	return pd.DataFrame(data=data_rows, columns=['label', 'text'])
+
 def create_data_txts_for_sst(n_workers, dirname='.data/sst'):
 	train_txt = 'trees/train.txt'
 	with open(os.path.join(dirname, train_txt), 'r') as file:
@@ -403,15 +431,6 @@ def create_data_txts_for_sst(n_workers, dirname='.data/sst'):
 
 	return
 
-def get_df(pos, neg):
-	data_rows = []
-	for text in pos:
-		data_rows.append(['positive', text.rstrip()])
-	for text in neg:
-		data_rows.append(['negative', text.rstrip()])
-	return pd.DataFrame(data=data_rows, columns=['label', 'text'])
-
-
 def create_powerlaw_csvs(n_workers, dirname, train_df):
 
 	# shuffle the train samples
@@ -434,6 +453,17 @@ def create_powerlaw_csvs(n_workers, dirname, train_df):
 			sub_df.to_csv(os.path.join(foldername,'P{}.csv'.format(i)), index=False)
 
 	return
+
+
+
+def read_samples(samples_dir):
+
+	samples = []
+	for file in os.listdir(samples_dir):
+		with open(os.path.join(samples_dir, file), 'r') as line:
+			samples.append(file.readlines())
+	
+	return [sample.rstrip() for sample in samplesl]
 
 def create_data_csvs_for_mr(n_workers, dirname='.data/mr'):
 	pos = 'rt-polaritydata/rt-polarity.pos'
@@ -467,22 +497,6 @@ def create_data_csvs_for_mr(n_workers, dirname='.data/mr'):
 
 	return
 
-
-def generate_bigrams(x):
-	n_grams = set(zip(*[x[i:] for i in range(2)]))
-	for n_gram in n_grams:
-		x.append(' '.join(n_gram))
-	return x
-
-def read_samples(samples_dir):
-
-	samples = []
-	for file in os.listdir(samples_dir):
-		with open(os.path.join(samples_dir, file), 'r') as line:
-			samples.append(file.readlines())
-	
-	return [sample.rstrip() for sample in samplesl]
-
 def create_data_csvs_for_IMDB(n_workers, dirname):
 
 
@@ -515,15 +529,4 @@ def create_data_csvs_for_IMDB(n_workers, dirname):
 
 	create_powerlaw_csvs(n_workers, dirname, train_df)
 	return
-
-
-def split_torchtext_dataset_ratios(data, ratios):
-	train_datasets = []
-	while len(ratios) > 1:
-		ratio = ratios.pop(0)
-		split_ratio = ratio / sum(ratios)
-		train_dataset, data = data.split(split_ratio=split_ratio, random_state=random.seed(1234))
-		train_datasets.append(train_dataset)
-	train_datasets.append(data)
-
-	return train_datasets
+'''
