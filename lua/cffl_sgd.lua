@@ -7,6 +7,16 @@ require 'dataset-svhn'
 os.execute('mkdir ' .. 'save')
 
 function isnan(x) return x ~= x end
+function bell_curve(x) return math.sin(math.pi*x) end
+-- sigmoid curve: accuracy_combined / (accuracy_combined+accuracy_leaveone)=alpha/(2*alpha+gap), gap>0, - contribution; gap<0, + contribution
+-- function credit_curve(x) return 1/(1+math.exp(-15*(x-0.5))) end
+function credit_curve(x) return math.sinh(5*x) end
+
+function lapnoise(l, n) 
+   local noise = - torch.rand(n):log():mul(l)
+   local sign = torch.rand(n):apply(function(x) if x < 0.5 then return 1 else return -1 end end)
+   return noise:cmul(sign)
+end
 
 function cut(value, range)
    local cvalue = value
@@ -50,12 +60,22 @@ cmd:option('-nepochs',           60,     '')
 cmd:option('-local_nepochs',     1,     '')
 cmd:option('-taskID',            '0',     'the ID associated to the task')
 cmd:option('-folder',            'save',  '')
+-- record the indices of trainshard, ensure same dataset comparison for different framework
+-- mnist_p4
+-- mnist_p15
+-- mnist_p30
+-- mnist_p50
+-- mnist_p4_imbalanced
+-- mnist_p15_imbalanced
+-- mnist_p30_imbalanced
+-- mnist_p50_imbalanced
 cmd:option('-shardID',            '0',     'the ID associated to the shardfile')
 cmd:option('-run',            '0',  '')
 cmd:option('-credit_thres',      1,  '0 | 1')
 cmd:option('-credit_fade',   1,  '0 | 1')
 cmd:option('-update_criteria',   'large',  'large | random')
 cmd:option('-pretrain',   0,  '0 | 1')
+cmd:option('-pretrain_epochs',   10,  '10 | 5')
 cmd:option('-alpha',   5,  '1| 5 | 8| 10')
 
 opt = cmd:parse(arg or {})
@@ -66,7 +86,7 @@ val_shardfile=paths.concat(opt.folder, 'valshard.' .. opt.shardID .. '.' .. opt.
 print(val_shardfile)
 epochfile = paths.concat(opt.folder, 'epoch.' .. opt.taskID .. '.'  .. opt.run)
 resultsfile = paths.concat(opt.folder, 'results.' .. opt.taskID .. '.'  .. opt.run)
-pfile = paths.concat(opt.folder, 'p.' .. opt.taskID .. '.'  .. opt.run)
+-- pfile = paths.concat(opt.folder, 'p.' .. opt.taskID .. '.'  .. opt.run)
 psfile = paths.concat(opt.folder, 'ps.' .. opt.taskID .. '.'  .. opt.run)
 paramfile = paths.concat(opt.folder, 'parameters.' .. opt.taskID .. '.'  .. opt.run)
 gradstatfile = paths.concat(opt.folder, 'gradstat.' .. opt.taskID .. '.'  .. opt.run)
@@ -74,6 +94,7 @@ gradstatpfile = paths.concat(opt.folder, 'gradstatp.' .. opt.taskID .. '.'  .. o
 nupdatesfile = paths.concat(opt.folder, 'nupdates.' .. opt.taskID .. '.'  .. opt.run)
 pointfile = paths.concat(opt.folder, 'point.' .. opt.taskID .. '.'  .. opt.run)
 creditfile = paths.concat(opt.folder, 'credit.' .. opt.taskID .. '.'  .. opt.run)
+-- plevelfile = paths.concat(opt.folder, 'privacy_level.' .. opt.taskID .. '.'  .. opt.run)
 plevelfile = paths.concat(opt.folder, 'privacy_level.' .. opt.shardID .. '.'  .. opt.run)
 print(plevelfile)
 uploadfile = paths.concat(opt.folder, 'upload.' .. opt.taskID .. '.'  .. opt.run)
@@ -133,6 +154,7 @@ else
   print('create shard indices')
   -- non-overlap between val and each party's train data
   local val_shffl = torch.randperm(trainData:size())
+  -- val_shard = {}
   val_shard = val_shffl[{ {1,val_size} }]
   torch.save(val_shardfile, val_shard)
   train_shard=val_shffl[{ {val_size+1,trainData:size()} }]
@@ -211,6 +233,7 @@ else
     -- print(type(class_indices))
     -- print(type(class_indices[1]))
     for nid = 1, opt.netSize do
+      -- trainData.shard[nid]={}
       local l=0
       shardSize[nid] = math.ceil(opt.shardSizeFrac * trainSize)
       trainData.shard[nid]=torch.FloatTensor(shardSize[nid]):zero()
@@ -219,9 +242,12 @@ else
       biased_class_len = math.floor(shardSize[nid]*0.5)
       left_classes_len = math.floor(shardSize[nid]*0.5)
       shuff = torch.randperm(#class_indices[biased_class])
+      -- trainData.shard[nid] = class_indices[biased_class][{ shuff[{ {1,biased_class_len} }] }]
       for s=1,biased_class_len do
         l=l+1
+        -- print(shuff[s])
         trainData.shard[nid][l] = class_indices[biased_class][shuff[s]]
+        -- trainData.shard[nid][l] = class_indices[biased_class][{ shuff[{ {s} }] }]
       end
       left_classes_Frac={}
       for i=1,class_len do 
@@ -252,22 +278,28 @@ else
           if i==last_class then
             left_class_len[i]=left_classes_len-classes_len
           else
+            -- print(math.floor(left_classes_Frac[i]/frac_sum*left_classes_len))
             left_class_len[i]=math.floor(left_classes_Frac[i]/frac_sum*left_classes_len)
             classes_len=classes_len+left_class_len[i]
           end
           per_class_num[i]=left_class_len[i]
+          -- c=torch.FloatTensor(left_class_len[i]):zero()
+          -- trainData.shard[nid]=torch.cat(trainData.shard[nid],c)
           shuff = torch.randperm(#class_indices[i])
           for s=1,left_class_len[i] do
             l=l+1
             -- print(shuff[s])
             trainData.shard[nid][l] = class_indices[i][shuff[s]]
           end
+          -- l=l+1
+          -- trainData.shard[nid][l] = class_indices[i][{ shuff[{ {1,left_class_len[i]} }] }]
         end
       end
       -- per_class_num: sort as per ascending order, improve generalisation after collaboration: per-class test acc vs class distribution
       train_class_num, train_class_order = torch.FloatTensor(per_class_num):abs():sort(1)
     end
     -- userdata
+    -- print(type(trainData.shard[1]))
     print(trainData.shard[1])
     print(trainData.shard[1][1])
     torch.save(train_class_order_file, train_class_order)
@@ -409,6 +441,15 @@ epoch = 0
 print('epoch: ' .. epoch)
 
 function train(e,node,cffl)
+   -- epoch tracker
+  -- if paths.filep(epochfile) then
+  --    epoch = torch.load(epochfile)
+  -- else
+  --    epoch = 1
+  -- end
+  -- print('epoch: ' .. epoch)
+  --  epoch = epoch or 1
+
    -- local vars
    local time = sys.clock()
 
