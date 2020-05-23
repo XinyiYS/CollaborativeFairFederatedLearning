@@ -72,7 +72,7 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 	return
 
 
-from arguments import adult_args, mnist_args, names_args, update_gpu, mr_args, sst_args, imdb_args
+from arguments import adult_args, mnist_args, names_args, update_gpu, mr_args, sst_args, imdb_args, cifar_cnn_args
 
 # from torch.multiprocessing import Pool, Process, set_start_method
 # try:
