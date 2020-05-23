@@ -29,7 +29,6 @@ class Data_Prepper:
 			self.valid_loader = BucketIterator(self.validation_dataset, batch_size = 500, sort_key=lambda x: len(x.text), device=self.device  )
 			self.test_loader = BucketIterator(self.test_dataset, batch_size = 500, sort_key=lambda x: len(x.text), device=self.device)
 
-			
 			self.args.embed_num = len(self.args.text_field.vocab)
 			self.args.class_num = len(self.args.label_field.vocab)
 			
@@ -41,45 +40,22 @@ class Data_Prepper:
 
 
 		else:
-			self.train_dataset, self.test_dataset = self.prepare_dataset(name)
+			self.train_dataset, self.validation_dataset, self.test_dataset = self.prepare_dataset(name)
 
-			self.init_train_valid_idx()
-			self.init_valid_loader()
-			self.init_test_loader()
+			self.valid_loader = DataLoader(self.validation_dataset, batch_size=self.test_batch_size)
+			self.test_loader = DataLoader(self.test_dataset, batch_size=self.test_batch_size)
+			print("Size of validation set: {}. Size of test set: {}".format(len(self.validation_dataset), len(self.test_dataset)))
 
 	def init_batch_size(self, train_batch_size, test_batch_size, valid_batch_size):
 		self.train_batch_size = train_batch_size
 		self.test_batch_size = test_batch_size
 		self.valid_batch_size = valid_batch_size if valid_batch_size else test_batch_size
 
-	def init_train_valid_idx(self, shuffle=True):
-		self.train_idx, self.valid_idx = self.get_train_valid_indices(self.train_dataset, self.train_val_split_ratio, sample_size_cap=self.sample_size_cap, shuffle=shuffle)
-
-	def init_valid_loader(self):
-		self.valid_loader = DataLoader(self.train_dataset, batch_size=self.valid_batch_size, sampler=SubsetRandomSampler(self.valid_idx))
-
-	def init_test_loader(self):
-		self.test_loader = DataLoader(self.test_dataset, batch_size=self.test_batch_size)
-
 	def get_valid_loader(self):
 		return self.valid_loader
 
 	def get_test_loader(self):
 		return self.test_loader
-
-	def get_train_valid_indices(self, train_dataset, train_val_split_ratio, sample_size_cap=-1, shuffle=True):
-
-		indices = list(range(  len(train_dataset) ))
-		if shuffle:
-			np.random.seed(1111)
-			np.random.shuffle(indices)
-
-		if sample_size_cap != -1:
-			indices = indices[:min(sample_size_cap, len(train_dataset))]
-
-		train_val_split_index = int(len(indices) * train_val_split_ratio)
-
-		return indices[:train_val_split_index], indices[train_val_split_index:]
 
 	def get_train_loaders(self, n_workers, split='powerlaw', batch_size=None):
 		if not batch_size:
@@ -121,22 +97,20 @@ class Data_Prepper:
 				return self.train_loaders
 
 			else:
-				indices_list = powerlaw(self.train_idx, n_workers)
-
+				indices_list = powerlaw(list(range(len(self.train_dataset))), n_workers)
 
 		elif split in ['balanced','equal']:
 			from utils.utils import random_split
-			indices_list = random_split(sample_indices=self.train_idx, m_bins=n_workers, equal=True)
+			indices_list = random_split(sample_indices=list(range(len(self.train_dataset))), m_bins=n_workers, equal=True)
 		
 		elif split == 'random':
 			from utils.utils import random_split
-			indices_list = random_split(sample_indices=self.train_idx, m_bins=n_workers, equal=False)
+			indices_list = random_split(sample_indices=list(range(len(self.train_dataset))), m_bins=n_workers, equal=False)
 
 		self.shard_sizes = [len(indices) for indices in indices_list]
 		worker_train_loaders = [DataLoader(self.train_dataset, batch_size=batch_size, sampler=SubsetRandomSampler(indices)) for indices in indices_list]
 
 		return worker_train_loaders
-
 
 	def prepare_dataset(self, name='adult'):
 		if name == 'adult':
@@ -146,10 +120,10 @@ class Data_Prepper:
 
 			train_data, train_target, test_data, test_target = get_train_test()
 
-			X_train = torch.tensor(train_data.values, requires_grad=False).float()
-			y_train = torch.tensor(train_target.values, requires_grad=False).long()
-			X_test = torch.tensor(test_data.values, requires_grad=False).float()
-			y_test = torch.tensor(test_target.values, requires_grad=False).long()
+			X_train = torch.tensor(train_data.values, requires_grad=False).float().to(self.device)
+			y_train = torch.tensor(train_target.values, requires_grad=False).long().to(self.device)
+			X_test = torch.tensor(test_data.values, requires_grad=False).float().to(self.device)
+			y_test = torch.tensor(test_target.values, requires_grad=False).long().to(self.device)
 
 			print("X train shape: ", X_train.shape)
 			print("y train shape: ", y_train.shape)
@@ -160,45 +134,46 @@ class Data_Prepper:
 			pos, neg =(y_test==1).sum().item() , (y_test==0).sum().item()
 			print("Test set Positive counts: {}".format(pos),"Negative counts: {}.".format(neg), 'Split: {:.2%} - {:.2%}'.format(1. * pos/len(X_test), 1.*neg/len(X_test)))
 
-			train_set = Custom_Dataset(X_train, y_train)
+			train_indices, valid_indices = get_train_valid_indices(len(X_train), self.train_val_split_ratio)
+
+			train_set = Custom_Dataset(X_train[train_indices], y_train[train_indices])
+			validation_set = Custom_Dataset(X_train[valid_indices], y_train[valid_indices])
 			test_set = Custom_Dataset(X_test, y_test)
 
-			train_set.X = train_set.X.to(self.device)
-			train_set.y = train_set.y.to(self.device)
-			test_set.X = test_set.X.to(self.device)
-			test_set.y = test_set.y.to(self.device)
-			return train_set, test_set
+			return train_set, validation_set, test_set
 		elif name == 'mnist':
 			from torchvision import datasets, transforms
-			'''
-			train = datasets.MNIST('datasets/', train=True, download=True, transform=transforms.Compose([
-				   transforms.Pad((2,2,2,2)),
-				   transforms.ToTensor(),
-				   transforms.Normalize((0.1307,), (0.3081,))
-					]))
-
-			test = datasets.MNIST('datasets/', train=False, download=True, transform=transforms.Compose([
-					transforms.Pad((2,2,2,2)),
-					transforms.ToTensor(),
-					transforms.Normalize((0.1307,), (0.3081,))
-					]))
-			'''
 
 			train = FastMNIST('datasets/MNIST', train=True, download=True, device=self.device)
 			test = FastMNIST('datasets/MNIST', train=False, download=True, device=self.device)
 
-			return train, test
-		elif name == 'cifar10':
-			'''
-			from torchvision import datasets, transforms
-			apply_transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-			train = datasets.CIFAR10('datasets/cifar', train=True, download=True,transform=apply_transform)
-			test = datasets.CIFAR10('datasets/cifar', train=False, download=True,transform=apply_transform)
-			'''
-			train = FastCIFAR10('datasets/cifar', train=True, download=True,device=self.device)
-			test = FastCIFAR10('datasets/cifar', train=False, download=True,device=self.device)
+			train_indices, valid_indices = get_train_valid_indices(len(train), self.train_val_split_ratio)
+			
+			from utils.Custom_Dataset import Custom_Dataset
 
-			return train, test   
+			train_set = Custom_Dataset(train.data[train_indices], train.targets[train_indices] )
+			validation_set = Custom_Dataset(train.data[valid_indices],train.targets[valid_indices] )
+			test_set = Custom_Dataset(test.data, test.targets)
+
+			del train, test
+
+			return train_set, validation_set, test_set
+
+		elif name == 'cifar10':
+
+			train = FastCIFAR10('datasets/cifar', train=True, download=True, device=self.device)
+			test = FastCIFAR10('datasets/cifar', train=False, download=True, device=self.device)
+
+			train_indices, valid_indices = get_train_valid_indices(len(train), self.train_val_split_ratio)
+			
+			from utils.Custom_Dataset import Custom_Dataset
+
+			train_set = Custom_Dataset(train.data[train_indices], train.targets[train_indices] )
+			validation_set = Custom_Dataset(train.data[valid_indices],train.targets[valid_indices] )
+			test_set = Custom_Dataset(test.data, test.targets)
+			del train, test
+
+			return train_set, validation_set, test_set
 		elif name == "sst":
 			import torchtext.data as data
 			text_field = data.Field(lower=True)
@@ -312,6 +287,7 @@ class Data_Prepper:
 from torchvision.datasets import MNIST
 class FastMNIST(MNIST):
 	def __init__(self, *args, **kwargs):
+		device = torch.device('cpu')
 		if 'device' in kwargs:
 			device = kwargs['device']
 			kwargs.pop('device')
@@ -345,6 +321,7 @@ class FastMNIST(MNIST):
 from torchvision.datasets import CIFAR10
 class FastCIFAR10(CIFAR10):
 	def __init__(self, *args, **kwargs):
+		device = torch.device('cpu')
 		if 'device' in kwargs:
 			device = kwargs['device']
 			kwargs.pop('device')
@@ -391,6 +368,14 @@ def powerlaw(sample_indices, n_workers, alpha=1.65911332899):
 		accessed += shard_sizes[worker_id]
 	return indices_list
 
+
+def get_train_valid_indices(n_samples, train_val_split_ratio):
+	indices = list(range(n_samples))
+	random.seed(1111)
+	random.shuffle(indices)
+	split_point = int(n_samples * train_val_split_ratio)
+
+	return  indices[:split_point], indices[split_point:]
 
 def create_data_txts_for_sst(n_workers, dirname='.data/sst'):
 	train_txt = 'trees/train.txt'
