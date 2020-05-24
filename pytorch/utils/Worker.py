@@ -110,7 +110,7 @@ class Worker():
 
 
 
-				# standalone model
+				# E = 1 for standalone and dssgd
 				if not is_pretrain and epoch == 0:
 					# standalone model does not include pre-train
 					# standalone model only trains 1 epoch per communication round

@@ -270,11 +270,13 @@ class Federated_Learner:
 
 
 	def train(self):
+
 		self.credits = torch.zeros((self.n_workers))
-		self.credit_threshold = torch.tensor(0).float()
-		
 		self.credits_pretrain = torch.zeros((self.n_workers))
-		self.credit_threshold_pretrain = torch.tensor(0).float()
+
+		# init the credit_th to be a 2/3 * 1/(len(R)) instead of 0
+		self.credit_threshold = compute_credit_threshold(self.n_workers)
+		self.credit_threshold_pretrain = compute_credit_threshold(self.n_workers)
 
 		self.R = list(range(self.n_workers))
 		self.R_pretrain = list(range(self.n_workers))
@@ -321,12 +323,11 @@ class Federated_Learner:
 			# 1. training locally and update the federated_model
 			worker_val_accs, worker_val_accs_pretrain, dssgd_val_accs = self.train_locally(fl_individual_epochs,save_gpu=self.save_gpu)
 
-
-
 			# 2. update the credits and credit_threshold
 			# and update the reputable parties set
-			self.credits, self.credit_threshold, self.R = compute_credits_sinh(self.credits, worker_val_accs, credit_threshold=self.credit_threshold, alpha=self.args['alpha'],)
-			self.credits_pretrain, self.credit_threshold_pretrain, self.R_pretrain = compute_credits_sinh(self.credits_pretrain, worker_val_accs_pretrain, credit_threshold=self.credit_threshold_pretrain, alpha=self.args['alpha'],)
+
+			self.credits, self.credit_threshold, self.R  = compute_credits_sinh(self.credits, self.credit_threshold, self.R, worker_val_accs, alpha=self.args['alpha'])
+			self.credits_pretrain, self.credit_threshold_pretrain, self.R_pretrain = compute_credits_sinh(self.credits_pretrain, self.credit_threshold_pretrain, self.R_pretrain, worker_val_accs_pretrain, alpha=self.args['alpha'])
 
 			self.clock('credit updates')
 
@@ -551,9 +552,8 @@ class Federated_Learner:
 		self.timestamp = self.timestamp_
 
 
-def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fade=1):
+def compute_credits_sinh(credits, credit_threshold, R, val_accs, alpha=5, credit_fade=1):
 	# print('alpha used is :', alpha, ' current credits are : ', credits, ' current threshold: ', credit_threshold)
-	R = [i for i, credit in enumerate(credits) if credit >= credit_threshold] # reputable parties
 	R_size = len(R)
 	total_val_accs = sum([val_accs[i] for i in R])
 	for i in R:
@@ -568,11 +568,15 @@ def compute_credits_sinh(credits, val_accs, credit_threshold, alpha=5, credit_fa
 	credits[R] /= credits[R].sum().float()
 
 	# update the threshold and reputable parties
-	credit_threshold = torch.clamp(2./3 * torch.div(1., len(R) - 1 ), min=0, max=1).float()
 	R = [i for i in R if credits[i] >= credit_threshold]
 	if R_size != len(R):
+		if len(R) == 0:
+			# this should never happen
+			print("Got 0 in R", credit_threshold.item(), credits)
+		print("old R size : {}, new R size: {}".format(R_size, len(R)))
+		print("credit_threshold {}, credits {}".format(credit_threshold.item(), credits.tolist()))
 		credits[R] /= credits[R].sum().float()
-		credit_threshold = torch.clamp(2./3 * torch.div(1., len(R) - 1), min=0, max=1).float()
+		credit_threshold = compute_credit_threshold(len(R))
 
 	# isolate the non-reputable parties by setting their credits to 0	
 	for i in range(len(credits)):
@@ -627,3 +631,6 @@ def mask_grad_update_by_magnitude(grad_update, mask_constant):
 	for i, update in enumerate(grad_update):
 		grad_update[i].data[update.data.abs() < mask_constant] = 0
 	return grad_update
+
+def compute_credit_threshold(R_size):
+	return torch.clamp(2./3 * torch.div(1., R_size ), min=0, max=1).float()
