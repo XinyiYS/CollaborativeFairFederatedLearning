@@ -118,7 +118,7 @@ def get_parallel_groups(experiment_args, parallel_size=4):
 	from math import ceil
 	return np.array_split(experiment_args, ceil(len(experiment_args)/parallel_size))
 
-def run_experiments_full(experiment_args):
+def run_experiments_full(experiment_args, repeat=5):
 
 
 	ts = time.time()
@@ -131,7 +131,7 @@ def run_experiments_full(experiment_args):
 		pass
 
 	for args in experiment_args:
-		run_experiments(args, 5, experiment_dir)
+		run_experiments(args, repeat, experiment_dir)
 
 	try:
 		examine(experiment_dir)
@@ -145,16 +145,58 @@ if __name__ == '__main__':
 	# init steps	
 
 	experiment_args = []	
+	args = copy.deepcopy(mr_args)
+	for n_workers in [5, 10, 20]:
+		args['n_workers'] = n_workers
+		args['alpha'] = 5
+		args['lr'] = 1e-3
+		args['batch_size'] = 64
+		args['gamma'] = 1
+
+		experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args, repeat=1)
+
+	experiment_args = []	
+	args = copy.deepcopy(mr_args)
+	for n_workers in [5, 10, 20]:
+		args['n_workers'] = n_workers
+		args['alpha'] = 5
+		args['lr'] = 1e-3
+		args['batch_size'] = 32
+		args['gamma'] = 1
+
+		experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args, repeat=1)
+
+
+	'''
+
+	experiment_args = []	
 	args = copy.deepcopy(adult_args)
-	for n_workers, sample_size_cap in [[5, 2000], [10, 4000], [20, 8000]]:
+	for n_workers, sample_size_cap in [[5, 4000], [10, 8000], [20, 16000]]:
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap
 		args['alpha'] = 5
 		args['gamma'] = 1
-		args['n_freeriders'] = 0
+		args['theta'] = 0.1
+		# args['n_freeriders'] = 1
 
 		experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args)
+	run_experiments_full(experiment_args, repeat=1)
+
+
+	
+	args = copy.deepcopy(cifar_cnn_args)
+	for n_workers, sample_size_cap in [[5, 10000], [10, 20000], [20, 40000]]:
+		args['n_workers'] = n_workers
+		args['sample_size_cap'] = sample_size_cap
+		args['n_freeriders'] = 1
+		args['alpha'] = 5
+		args['batch_size'] = 64
+		args['theta'] = 0.1
+		
+		experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args)	
 
 	# experiment_args = []	
 	# args = copy.deepcopy(adult_args)
@@ -170,7 +212,6 @@ if __name__ == '__main__':
 
 
 
-	'''
 	experiment_args = []	
 	args = copy.deepcopy(mnist_args)
 	for n_workers, sample_size_cap in [[5, 3000], [10, 6000], [20, 12000]]:
@@ -205,7 +246,7 @@ if __name__ == '__main__':
 		args['n_workers'] = n_workers
 		args['alpha'] = 5
 		args['lr'] = 1e-3
-		args['batch_size'] = 256
+		args['batch_size'] = 64
 		args['gamma'] = 1
 
 		experiment_args.append(copy.deepcopy(args))
@@ -225,17 +266,5 @@ if __name__ == '__main__':
 		experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args)
 
-	args = copy.deepcopy(cifar_cnn_args)
-	for n_workers, sample_size_cap in [[5, 10000], [10, 20000], [20, 40000]]:
-		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		args['n_freeriders'] = 1
-		args['alpha'] = 5
-		args['lr'] = 0.1
-		args['batch_size'] = 128
-		args['gamma'] = 0.977
-		args['theta'] = 0.1
-		
-		experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args)	
+
 	'''

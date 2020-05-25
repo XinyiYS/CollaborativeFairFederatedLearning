@@ -291,13 +291,8 @@ class Data_Prepper:
 from torchvision.datasets import MNIST
 class FastMNIST(MNIST):
 	def __init__(self, *args, **kwargs):
-		device = torch.device('cpu')
-		if 'device' in kwargs:
-			device = kwargs['device']
-			kwargs.pop('device')
 		super().__init__(*args, **kwargs)		
 		
-		# self.data = self.data.float().div(255)
 		self.data = self.data.unsqueeze(1).float().div(255)
 		from torch.nn import ZeroPad2d
 		pad = ZeroPad2d(2)
@@ -307,7 +302,7 @@ class FastMNIST(MNIST):
 
 		self.data = self.data.sub_(0.1307).div_(0.3081)
 		# Put both data and targets on GPU in advance
-		self.data, self.targets = self.data.to(device), self.targets.to(device)
+		self.data, self.targets = self.data, self.targets
 		print('MNIST data shape {}, targets shape {}'.format(self.data.shape, self.targets.shape))
 
 	def __getitem__(self, index):
@@ -325,10 +320,6 @@ class FastMNIST(MNIST):
 from torchvision.datasets import CIFAR10
 class FastCIFAR10(CIFAR10):
 	def __init__(self, *args, **kwargs):
-		device = torch.device('cpu')
-		if 'device' in kwargs:
-			device = kwargs['device']
-			kwargs.pop('device')
 		super().__init__(*args, **kwargs)
 		
 		# Scale data to [0,1]
@@ -339,10 +330,14 @@ class FastCIFAR10(CIFAR10):
 
 		self.targets = torch.Tensor(self.targets).long()
 
-		# Normalize it with the usual CIFAR10 mean and std
-		self.data = self.data.sub_(0.5).div_(0.5)
+		# https://github.com/kuangliu/pytorch-cifar/blob/master/main.py
+		'''
+		for i, (mean, std) in enumerate(zip((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))):
+			self.data[:,i].sub_(mean).div_(std)
+		'''
+
 		# Put both data and targets on GPU in advance
-		self.data, self.targets = self.data.to(device), self.targets.to(device)
+		self.data, self.targets = self.data, self.targets
 		print('CIFAR10 data shape {}, targets shape {}'.format(self.data.shape, self.targets.shape))
 
 	def __getitem__(self, index):

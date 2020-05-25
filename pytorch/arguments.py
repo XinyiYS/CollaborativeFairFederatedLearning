@@ -44,7 +44,7 @@ adult_args = {
 	'gamma':1,  #0.97**100 ~= 0.1
 
 	# training parameters
-	'pretrain_epochs': 1,
+	'pretrain_epochs': 5,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 	'aggregate_mode':'sum',  # 'mean', 'sum', 'credit-sum'
@@ -186,7 +186,7 @@ sst_args = {
 	'pretraining_lr' : 1e-5, # only used during pretraining for CFFL models, no decay
 	'dssgd_lr': 1e-4, # used for dssgd model, no decay
 	'lr': 1e-4,
-	'grad_clip':1,
+	'grad_clip':0.1,
 	'gamma':0.977,   #0.955**100 ~= 0.01
 
 	# training parameters
@@ -223,12 +223,12 @@ mr_args = {
 	'kernel_num': 128,
 	'kernel_sizes': [3,4,5],
 
-	'optimizer_fn': optim.Adam,
+	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(), 
-	'pretraining_lr' : 1e-5, # only used during pretraining for CFFL models, no decay
-	'dssgd_lr': 1e-4, # used for dssgd model, no decay
-	'lr': 1e-4,
-	'grad_clip':1,
+	'pretraining_lr' : 1e-3, # only used during pretraining for CFFL models, no decay
+	'dssgd_lr': 1e-3, # used for dssgd model, no decay
+	'lr': 1e-3,
+	'grad_clip':0.001,
 	'gamma':0.977,   #0.955**100 ~= 0.01
 
 	# training parameters
@@ -261,10 +261,10 @@ cifar_cnn_args = {
 	#'model_fn': ResNet18,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(),#  nn.CrossEntropyLoss(), 
-	'pretraining_lr' : 1e-3, # only used during pretraining for CFFL models, no decay
-	'dssgd_lr': 1e-3, # used for dssgd model, no decay
-	'lr': 1e-3,
-	'grad_clip':0.0001,
+	'pretraining_lr' : 1e-1, # only used during pretraining for CFFL models, no decay
+	'dssgd_lr': 1e-1, # used for dssgd model, no decay
+	'lr': 1e-1,
+	'grad_clip':0.001,
 	'gamma':1,   #0.955**100 ~= 0.01
 
 	# training parameters

@@ -24,7 +24,7 @@ keys = ['worker_model_test_accs_before  -  ',
 key_map = {'DSSGD_model_test_accs': 'DSSGD',
 		   'worker_standalone_test_accs': 'Standalone',
 		   'cffl_test_accs': 'CFFL',
-		   'credits': 'credits'
+		   'credits': 'credits',
 		   }
 
 
@@ -156,27 +156,33 @@ def plot_convergence(dirname):
 		avg_dfs = {}
 		for key in key_map:
 			avg_accs = np.asarray(performance_dict[key]).mean(axis=0)
-			avg_accs = avg_accs[:-1]  # exclude the last repeated line
+			if key != 'credits':
+				avg_accs = avg_accs[:-1]  # exclude the last repeated line
+
 			n_freeriders = avg_accs.shape[1] - n_workers
 			if n_freeriders > 0:
 				free_riders  =  ['free' + str(i + 1) for i in range(n_freeriders)]
 
-			# avg_accs = avg_accs[:, 1:]  # exclude the freerider
-			# print(avg_accs.shape)
 
 			avg_dfs[key_map[key]] = pd.DataFrame(data=avg_accs, columns=free_riders + columns)
 
-
+		credit_threshold = np.asarray(performance_dict['credit_threshold']).mean(axis=0)
+		credit_threshold_pretrain = np.asarray(performance_dict_pretrain['credit_threshold']).mean(axis=0)
 
 		credits_df = avg_dfs['credits']
+		credits_df['threshold'] = credit_threshold
+
 		cffl_df = avg_dfs['CFFL']
 		standalone_df = avg_dfs['Standalone']
 		dssgd_df = avg_dfs['DSSGD']
 
 		best_worker_ind = cffl_df.iloc[-1].argmax()
 
-		credits_avg_pretrain = np.asarray(performance_dict_pretrain['credits']).mean(axis=0)[:-1]
+		credits_avg_pretrain = np.nanmean(np.asarray(performance_dict_pretrain['credits']), axis=0)
+
 		credits_df_pretrain = pd.DataFrame(data=credits_avg_pretrain, columns = free_riders + columns)
+		credits_df_pretrain['threshold'] = credit_threshold_pretrain
+
 
 		cffl_avg_acc_pretrain = np.asarray(performance_dict_pretrain['cffl_test_accs']).mean(axis=0)[:-1]
 		cffl_df_pretrain = pd.DataFrame(data=cffl_avg_acc_pretrain, columns=free_riders + columns)
@@ -205,12 +211,12 @@ def plot_convergence(dirname):
 
 		if os.path.exists(credits_figure_dir):
 			os.remove(credits_figure_dir)
-		figure = credits_df.plot(title=setup['dataset'].capitalize() + ' credits').get_figure()
-		figure.savefig(credits_figure_dir)
-		figure = credits_df_pretrain.plot(title=setup['dataset'].capitalize() + ' credits pretrain').get_figure()
-		figure.savefig(credits_pretrain_figure_dir)
-		figure.clear()
 
+		credit_top = 1. / n_workers * 1.1
+		credit_bottom = -0.01
+
+		plot(credits_df, credits_figure_dir, name=setup['dataset'].capitalize() + ' credits', plot_type=0, ylabel='Credits', top=credit_top, bottom=credit_bottom)
+		plot(credits_df_pretrain, credits_pretrain_figure_dir, name=setup['dataset'].capitalize() + ' credits pretrain', plot_type=0, ylabel='Credits',top=credit_top, bottom=credit_bottom )
 
 		# plot(credits_df, credits_figure_dir, name=setup['dataset'], plot_type=0)
 
@@ -226,7 +232,7 @@ def plot_convergence(dirname):
 
 
 if __name__ == '__main__':
-	dirname = 'Experiments_2020-04-30-21:01'
+	dirname = 'Experiments_2020-05-07-17:26'
 	experiment_results = plot_convergence(dirname)
 
 
