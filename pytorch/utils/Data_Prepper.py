@@ -45,11 +45,26 @@ class Data_Prepper:
 			self.valid_loader = DataLoader(self.validation_dataset, batch_size=self.test_batch_size)
 			self.test_loader = DataLoader(self.test_dataset, batch_size=self.test_batch_size)
 			print("Size of validation set: {}. Size of test set: {}".format(len(self.validation_dataset), len(self.test_dataset)))
+			self.init_train_idx()
 
 	def init_batch_size(self, train_batch_size, test_batch_size, valid_batch_size):
 		self.train_batch_size = train_batch_size
 		self.test_batch_size = test_batch_size
 		self.valid_batch_size = valid_batch_size if valid_batch_size else test_batch_size
+	def init_train_idx(self, shuffle=True):
+		self.train_idx = self.get_train_indices(self.train_dataset, sample_size_cap=self.sample_size_cap, shuffle=shuffle)
+	
+	def get_train_indices(self, train_dataset, sample_size_cap=-1, shuffle=True):
+
+		indices = list(range(len(train_dataset)))
+		if shuffle:
+			np.random.seed(1111)
+			np.random.shuffle(indices)
+
+		if sample_size_cap != -1:
+			indices = indices[:min(sample_size_cap, len(train_dataset))]
+
+		return indices
 
 	def get_valid_loader(self):
 		return self.valid_loader
@@ -97,7 +112,8 @@ class Data_Prepper:
 				return self.train_loaders
 
 			else:
-				indices_list = powerlaw(list(range(len(self.train_dataset))), n_workers)
+				# indices_list = powerlaw(list(range(len(self.train_dataset))), n_workers)
+				indices_list = powerlaw(self.train_idx, n_workers)
 
 		elif split in ['balanced','equal']:
 			from utils.utils import random_split
