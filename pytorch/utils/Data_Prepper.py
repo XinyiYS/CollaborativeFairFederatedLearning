@@ -42,29 +42,18 @@ class Data_Prepper:
 		else:
 			self.train_dataset, self.validation_dataset, self.test_dataset = self.prepare_dataset(name)
 
+			print('------')
+			print("Train to split size: {}. Validation size: {}. Test size: {}".format(len(self.train_dataset), len(self.validation_dataset), len(self.test_dataset)))
+			print('------')
+
 			self.valid_loader = DataLoader(self.validation_dataset, batch_size=self.test_batch_size)
 			self.test_loader = DataLoader(self.test_dataset, batch_size=self.test_batch_size)
-			print("Size of validation set: {}. Size of test set: {}".format(len(self.validation_dataset), len(self.test_dataset)))
-			self.init_train_idx()
+
 
 	def init_batch_size(self, train_batch_size, test_batch_size, valid_batch_size):
 		self.train_batch_size = train_batch_size
 		self.test_batch_size = test_batch_size
 		self.valid_batch_size = valid_batch_size if valid_batch_size else test_batch_size
-	def init_train_idx(self, shuffle=True):
-		self.train_idx = self.get_train_indices(self.train_dataset, sample_size_cap=self.sample_size_cap, shuffle=shuffle)
-	
-	def get_train_indices(self, train_dataset, sample_size_cap=-1, shuffle=True):
-
-		indices = list(range(len(train_dataset)))
-		if shuffle:
-			np.random.seed(1111)
-			np.random.shuffle(indices)
-
-		if sample_size_cap != -1:
-			indices = indices[:min(sample_size_cap, len(train_dataset))]
-
-		return indices
 
 	def get_valid_loader(self):
 		return self.valid_loader
@@ -112,8 +101,7 @@ class Data_Prepper:
 				return self.train_loaders
 
 			else:
-				# indices_list = powerlaw(list(range(len(self.train_dataset))), n_workers)
-				indices_list = powerlaw(self.train_idx, n_workers)
+				indices_list = powerlaw(list(range(len(self.train_dataset))), n_workers)
 
 		elif split in ['balanced','equal']:
 			from utils.utils import random_split
@@ -136,10 +124,10 @@ class Data_Prepper:
 
 			train_data, train_target, test_data, test_target = get_train_test()
 
-			X_train = torch.tensor(train_data.values, requires_grad=False).float().to(self.device)
-			y_train = torch.tensor(train_target.values, requires_grad=False).long().to(self.device)
-			X_test = torch.tensor(test_data.values, requires_grad=False).float().to(self.device)
-			y_test = torch.tensor(test_target.values, requires_grad=False).long().to(self.device)
+			X_train = torch.tensor(train_data.values, requires_grad=False).float()
+			y_train = torch.tensor(train_target.values, requires_grad=False).long()
+			X_test = torch.tensor(test_data.values, requires_grad=False).float()
+			y_test = torch.tensor(test_target.values, requires_grad=False).long()
 
 			print("X train shape: ", X_train.shape)
 			print("y train shape: ", y_train.shape)
@@ -150,26 +138,26 @@ class Data_Prepper:
 			pos, neg =(y_test==1).sum().item() , (y_test==0).sum().item()
 			print("Test set Positive counts: {}".format(pos),"Negative counts: {}.".format(neg), 'Split: {:.2%} - {:.2%}'.format(1. * pos/len(X_test), 1.*neg/len(X_test)))
 
-			train_indices, valid_indices = get_train_valid_indices(len(X_train), self.train_val_split_ratio)
+			train_indices, valid_indices = get_train_valid_indices(len(X_train), self.train_val_split_ratio, self.sample_size_cap)
 
-			train_set = Custom_Dataset(X_train[train_indices], y_train[train_indices])
-			validation_set = Custom_Dataset(X_train[valid_indices], y_train[valid_indices])
-			test_set = Custom_Dataset(X_test, y_test)
+			train_set = Custom_Dataset(X_train[train_indices], y_train[train_indices], device=self.device)
+			validation_set = Custom_Dataset(X_train[valid_indices], y_train[valid_indices], device=self.device)
+			test_set = Custom_Dataset(X_test, y_test, device=self.device)
 
 			return train_set, validation_set, test_set
 		elif name == 'mnist':
 			from torchvision import datasets, transforms
 
-			train = FastMNIST('datasets/MNIST', train=True, download=True, device=self.device)
-			test = FastMNIST('datasets/MNIST', train=False, download=True, device=self.device)
+			train = FastMNIST('datasets/MNIST', train=True, download=True)
+			test = FastMNIST('datasets/MNIST', train=False, download=True)
 
-			train_indices, valid_indices = get_train_valid_indices(len(train), self.train_val_split_ratio)
+			train_indices, valid_indices = get_train_valid_indices(len(train), self.train_val_split_ratio, self.sample_size_cap)
 			
 			from utils.Custom_Dataset import Custom_Dataset
 
-			train_set = Custom_Dataset(train.data[train_indices], train.targets[train_indices] )
-			validation_set = Custom_Dataset(train.data[valid_indices],train.targets[valid_indices] )
-			test_set = Custom_Dataset(test.data, test.targets)
+			train_set = Custom_Dataset(train.data[train_indices], train.targets[train_indices] , device=self.device)
+			validation_set = Custom_Dataset(train.data[valid_indices],train.targets[valid_indices] , device=self.device)
+			test_set = Custom_Dataset(test.data, test.targets, device=self.device)
 
 			del train, test
 
@@ -177,16 +165,16 @@ class Data_Prepper:
 
 		elif name == 'cifar10':
 
-			train = FastCIFAR10('datasets/cifar', train=True, download=True, device=self.device)
-			test = FastCIFAR10('datasets/cifar', train=False, download=True, device=self.device)
+			train = FastCIFAR10('datasets/cifar', train=True, download=True)
+			test = FastCIFAR10('datasets/cifar', train=False, download=True)
 
-			train_indices, valid_indices = get_train_valid_indices(len(train), self.train_val_split_ratio)
+			train_indices, valid_indices = get_train_valid_indices(len(train), self.train_val_split_ratio, self.sample_size_cap)
 			
 			from utils.Custom_Dataset import Custom_Dataset
 
-			train_set = Custom_Dataset(train.data[train_indices], train.targets[train_indices] )
-			validation_set = Custom_Dataset(train.data[valid_indices],train.targets[valid_indices] )
-			test_set = Custom_Dataset(test.data, test.targets)
+			train_set = Custom_Dataset(train.data[train_indices], train.targets[train_indices], device=self.device )
+			validation_set = Custom_Dataset(train.data[valid_indices],train.targets[valid_indices] , device=self.device)
+			test_set = Custom_Dataset(test.data, test.targets, device=self.device)
 			del train, test
 
 			return train_set, validation_set, test_set
@@ -385,13 +373,16 @@ def powerlaw(sample_indices, n_workers, alpha=1.65911332899):
 	return indices_list
 
 
-def get_train_valid_indices(n_samples, train_val_split_ratio):
+def get_train_valid_indices(n_samples, train_val_split_ratio, sample_size_cap=None):
 	indices = list(range(n_samples))
 	random.seed(1111)
 	random.shuffle(indices)
 	split_point = int(n_samples * train_val_split_ratio)
+	train_indices, valid_indices = indices[:split_point], indices[split_point:]
+	if sample_size_cap is not None:
+		train_indices = indices[:min(split_point, sample_size_cap)]
 
-	return  indices[:split_point], indices[split_point:]
+	return  train_indices, valid_indices 
 
 
 def split_torchtext_dataset_ratios(data, ratios):
