@@ -66,13 +66,13 @@ class Data_Prepper:
 			batch_size = self.train_batch_size
 
 		if split == 'classimbalance':
-			if self.name !='mnist':
-				raise NotImplementedError("Calling on dataset {}. Only dataset mnist is implemnted for this split".format(self.name))
+			if self.name not in ['mnist','cifar10']:
+				raise NotImplementedError("Calling on dataset {}. Only mnist and cifar10 are implemnted for this split".format(self.name))
 
-			n_classes = len(self.train_dataset.classes)
+			n_classes = 10			
 			data_indices = [(self.train_dataset.targets == class_id).nonzero().view(-1).tolist() for class_id in range(n_classes)]
 			class_sizes = np.linspace(1, n_classes, n_workers, dtype='int')
-			party_mean = 600 # for mnist party_mean = 600
+			party_mean = self.sample_size_cap // self.n_workers
 
 			from collections import defaultdict
 			party_indices = defaultdict(list)
@@ -146,7 +146,6 @@ class Data_Prepper:
 
 			return train_set, validation_set, test_set
 		elif name == 'mnist':
-			from torchvision import datasets, transforms
 
 			train = FastMNIST('datasets/MNIST', train=True, download=True)
 			test = FastMNIST('datasets/MNIST', train=False, download=True)
@@ -155,7 +154,7 @@ class Data_Prepper:
 			
 			from utils.Custom_Dataset import Custom_Dataset
 
-			train_set = Custom_Dataset(train.data[train_indices], train.targets[train_indices] , device=self.device)
+			train_set = Custom_Dataset(train.data[train_indices], train.targets[train_indices], device=self.device)
 			validation_set = Custom_Dataset(train.data[valid_indices],train.targets[valid_indices] , device=self.device)
 			test_set = Custom_Dataset(test.data, test.targets, device=self.device)
 
@@ -165,14 +164,29 @@ class Data_Prepper:
 
 		elif name == 'cifar10':
 
-			train = FastCIFAR10('datasets/cifar', train=True, download=True)
-			test = FastCIFAR10('datasets/cifar', train=False, download=True)
+			'''
+			from torchvision import transforms			
+			transform_train = transforms.Compose([
+			    transforms.RandomCrop(32, padding=4),
+			    transforms.RandomHorizontalFlip(),
+			    transforms.ToTensor(),
+			    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+			])
+
+			transform_test = transforms.Compose([
+			    transforms.ToTensor(),
+			    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+			])
+			'''
+
+			train = FastCIFAR10('datasets/cifar', train=True, download=True)#, transform=transform_train)
+			test = FastCIFAR10('datasets/cifar', train=False, download=True)#, transform=transform_test)
 
 			train_indices, valid_indices = get_train_valid_indices(len(train), self.train_val_split_ratio, self.sample_size_cap)
 			
 			from utils.Custom_Dataset import Custom_Dataset
 
-			train_set = Custom_Dataset(train.data[train_indices], train.targets[train_indices], device=self.device )
+			train_set = Custom_Dataset(train.data[train_indices], train.targets[train_indices], device=self.device)
 			validation_set = Custom_Dataset(train.data[valid_indices],train.targets[valid_indices] , device=self.device)
 			test_set = Custom_Dataset(test.data, test.targets, device=self.device)
 			del train, test
@@ -331,10 +345,9 @@ class FastCIFAR10(CIFAR10):
 		self.targets = torch.Tensor(self.targets).long()
 
 		# https://github.com/kuangliu/pytorch-cifar/blob/master/main.py
-		'''
 		for i, (mean, std) in enumerate(zip((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))):
 			self.data[:,i].sub_(mean).div_(std)
-		'''
+		
 
 		# Put both data and targets on GPU in advance
 		self.data, self.targets = self.data, self.targets
