@@ -124,8 +124,9 @@ def run_experiments_full(experiment_args):
 	ts = time.time()
 	st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d-%H:%M')
 	experiment_dir = 'Experiments_{}'.format(st)
+	experiment_dir = os.path.join("{}".format(experiment_args[0]['dataset']), experiment_dir)
 	try:
-		os.mkdir(experiment_dir)
+		os.makedirs(experiment_dir, exist_ok=True)
 	except:
 		pass
 
@@ -138,72 +139,36 @@ def run_experiments_full(experiment_args):
 		print(str(e))
 	return
 
-
-
-	'''
-	# experiment_args should include the args for p=5,10,20, theta=0.1, 1
-	# so a total of length 6 or more(depending of settings)
-	# as a complete set of experiments
-
-	groups = get_parallel_groups(experiment_args, parallel_size=4)
-	for group in groups:
-		result_list = []
-		pool = Pool(processes=len(group))
-		for args in group:
-			r = pool.apply_async(run_experiments, ((copy.deepcopy(args)), (5), (experiment_dir)))
-			result_list.append(r)
-
-		pool.close()
-		pool.join()
-
-		for r in result_list:
-			r.get()
-
-	'''
-
-
 from arguments import adult_args, mnist_args, names_args, update_gpu, cifar_cnn_args, mr_args, sst_args, imdb_args
 
 if __name__ == '__main__':
 	# init steps	
-	# init_mp()
 
 	experiment_args = []	
-	args = copy.deepcopy(cifar_cnn_args)
-	for n_workers, sample_size_cap in [[5, 5000], [10, 10000], [20, 20000]]:
+	args = copy.deepcopy(adult_args)
+	for n_workers, sample_size_cap in [[5, 2000], [10, 4000], [20, 8000]]:
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap
 		args['alpha'] = 5
-		args['batch_size'] = 256
 		args['gamma'] = 1
+		args['n_freeriders'] = 0
 
 		experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args)
 
-	experiment_args = []	
-	args = copy.deepcopy(cifar_cnn_args)
-	for n_workers, sample_size_cap in [[5, 5000], [10, 10000], [20, 20000]]:
-		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		args['alpha'] = 3
-		args['batch_size'] = 256
-		args['gamma'] = 1
+	# experiment_args = []	
+	# args = copy.deepcopy(adult_args)
+	# for n_workers, sample_size_cap in [[5, 2000], [10, 4000], [20, 8000]]:
+	# 	args['n_workers'] = n_workers
+	# 	args['sample_size_cap'] = sample_size_cap
+	# 	args['alpha'] = 5
+	# 	args['gamma'] = 1
+	# 	args['n_freeriders'] = 1
 
-		experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args)
+	# 	experiment_args.append(copy.deepcopy(args))
+	# run_experiments_full(experiment_args)
 
 
-	experiment_args = []	
-	args = copy.deepcopy(cifar_cnn_args)
-	for n_workers, sample_size_cap in [[5, 5000], [10, 10000], [20, 20000]]:
-		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		args['alpha'] = 1
-		args['batch_size'] = 256
-		args['gamma'] = 1
-
-		experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args)
 
 	'''
 	experiment_args = []	
@@ -226,11 +191,22 @@ if __name__ == '__main__':
 	args = copy.deepcopy(sst_args)
 	for n_workers in [5, 10, 20]:
 		args['n_workers'] = n_workers
-		args['n_freeriders'] = 0
 		args['alpha'] = 5
 		args['lr'] = 1e-3
 		args['batch_size'] = 256
-		args['gamma'] = 0.977
+		args['gamma'] = 1
+		experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args)
+
+
+	experiment_args = []	
+	args = copy.deepcopy(mr_args)
+	for n_workers in [5, 10, 20]:
+		args['n_workers'] = n_workers
+		args['alpha'] = 5
+		args['lr'] = 1e-3
+		args['batch_size'] = 256
+		args['gamma'] = 1
 
 		experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args)
