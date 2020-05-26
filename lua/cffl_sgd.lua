@@ -36,8 +36,8 @@ cmd = torch.CmdLine()
 cmd:option('-dataset',           'mnist', 'svhn | mnist')
 cmd:option('-dataSizeFrac',      1,       'the fraction of dataset to be used for training')
 cmd:option('-model',             'cvn',   'convnet | cvn | linear | mlp | deep')
-cmd:option('-method',            'syn',   'seq | fla | asy |syn')
-cmd:option('-plevel',            1,      '1 | 5')
+cmd:option('-method',            'seq',   'seq | fla | asy |syn')
+-- cmd:option('-plevel',            1,      '1 | 5')
 cmd:option('-IID',            1,      '1 | 0')
 -- simulate party 1: 100 records, other 600 
 cmd:option('-imbalanced',        0,      '0 | 1')
@@ -74,8 +74,8 @@ cmd:option('-run',            '0',  '')
 cmd:option('-credit_thres',      1,  '0 | 1')
 cmd:option('-credit_fade',   1,  '0 | 1')
 cmd:option('-update_criteria',   'large',  'large | random')
-cmd:option('-pretrain',   0,  '0 | 1')
-cmd:option('-pretrain_epochs',   10,  '10 | 5')
+cmd:option('-pretrain',   0,  '0|2|5|10')
+-- cmd:option('-pretrain_epochs',   10,  '10 | 5')
 cmd:option('-alpha',   5,  '1| 5 | 8| 10')
 
 opt = cmd:parse(arg or {})
@@ -95,14 +95,18 @@ nupdatesfile = paths.concat(opt.folder, 'nupdates.' .. opt.taskID .. '.'  .. opt
 pointfile = paths.concat(opt.folder, 'point.' .. opt.taskID .. '.'  .. opt.run)
 creditfile = paths.concat(opt.folder, 'credit.' .. opt.taskID .. '.'  .. opt.run)
 -- plevelfile = paths.concat(opt.folder, 'privacy_level.' .. opt.taskID .. '.'  .. opt.run)
-plevelfile = paths.concat(opt.folder, 'privacy_level.' .. opt.shardID .. '.'  .. opt.run)
-print(plevelfile)
+-- plevelfile = paths.concat(opt.folder, 'privacy_level.' .. opt.shardID .. '.'  .. opt.run)
+-- print(plevelfile)
 uploadfile = paths.concat(opt.folder, 'upload.' .. opt.taskID .. '.'  .. opt.run)
 downloadfile = paths.concat(opt.folder, 'download.' .. opt.taskID .. '.'  .. opt.run)
 iaccfile = paths.concat(opt.folder, 'iacc.' .. opt.taskID .. '.'  .. opt.run)
 saccfile = paths.concat(opt.folder, 'sacc.' .. opt.taskID .. '.'  .. opt.run)
 print(opt)
-ps10file = paths.concat(opt.folder, 'ps10.' .. opt.taskID .. '.'  .. opt.run)
+psfile_pretrain = paths.concat(opt.folder, 'ps'..opt.pretrain .. '.' .. opt.taskID .. '.'  .. opt.run)
+psfile_pretrain2 = paths.concat(opt.folder, 'ps2.' .. opt.taskID .. '.'  .. opt.run)
+psfile_pretrain5 = paths.concat(opt.folder, 'ps5.' .. opt.taskID .. '.'  .. opt.run)
+psfile_pretrain10 = paths.concat(opt.folder, 'ps10.' .. opt.taskID .. '.'  .. opt.run)
+standalone_acc_file = paths.concat(opt.folder, 'standalone_acc' .. opt.taskID .. '.'  .. opt.run)
 
 -- config torch
 torch.setnumthreads(opt.threads)
@@ -431,10 +435,13 @@ parameters,gradParameters = model:getParameters()
 
 print(parameters:nElement())
 
--- if paths.filep(paramfile) then
-   -- parameters:copy(torch.load(paramfile))
-   -- print('load parameters from file')
--- end
+-- same initialization for all hyper-paras setting
+if paths.filep(paramfile) then
+  parameters:copy(torch.load(paramfile))
+  print('load same init parameters from file')
+else
+  torch.save(paramfile, parameters, 'binary')
+end
 
 
 epoch = 0
@@ -459,8 +466,10 @@ function train(e,node,cffl)
    -- train standalone and distributed using E=1, B=1, lr=1e-3
   if cffl==0 then
     local_nepochs=1
-    batchSize=1
-    learningRate=1e-3
+    -- batchSize=1
+    -- learningRate=1e-3
+    batchSize=opt.batchSize
+    learningRate=0.005
   else 
     local_nepochs=opt.local_nepochs
     batchSize=opt.batchSize
