@@ -60,7 +60,7 @@ mnist_args = {
 	'n_workers': 5,
 	'split': 'powerlaw', #or 'classimbalance'
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size' : 256, 
+	'batch_size' : 16, 
 	'train_val_split_ratio': 0.9,
 	'alpha': 5,
 	'epoch_sample_size':float("Inf"),
@@ -71,10 +71,10 @@ mnist_args = {
 	'model_fn': MLP_Net,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(), 
-	'pretraining_lr' : 0.1, # only used during pretraining for CFFL models, no decay
-	'dssgd_lr': 0.1, # used for dssgd model, no decay
-	'lr': 0.1,
-	'grad_clip':0.01,
+	'pretraining_lr' : 1e-3, # only used during pretraining for CFFL models, no decay
+	'dssgd_lr': 1e-3, # used for dssgd model, no decay
+	'lr': 1e-3,
+	'grad_clip':1e-4,
 	'gamma':1,   #0.955**100 ~= 0.01
 
 	# training parameters
@@ -167,7 +167,7 @@ sst_args = {
 	'n_workers': 5,
 	'split': 'powerlaw', #or 'powerlaw' classimbalance
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size' : 64, 
+	'batch_size' : 32, 
 	'train_val_split_ratio': 0.9,
 	'alpha': 5,
 	'epoch_sample_size':float("Inf"),
@@ -179,15 +179,15 @@ sst_args = {
 	'embed_dim': 300,
 	'class_num': 5,
 	'kernel_num': 128,
-	'kernel_sizes': [3,4,5],
+	'kernel_sizes': [3,3,3],
 
 	'optimizer_fn': optim.Adam,
 	'loss_fn': nn.NLLLoss(), 
-	'pretraining_lr' : 1e-5, # only used during pretraining for CFFL models, no decay
+	'pretraining_lr' : 1e-4, # only used during pretraining for CFFL models, no decay
 	'dssgd_lr': 1e-4, # used for dssgd model, no decay
 	'lr': 1e-4,
-	'grad_clip':0.1,
-	'gamma':0.977,   #0.955**100 ~= 0.01
+	'grad_clip':0.001,
+	'gamma':1,   #0.955**100 ~= 0.01
 
 	# training parameters
 	'pretrain_epochs': 1,
@@ -221,15 +221,15 @@ mr_args = {
 	'embed_dim': 300,
 	'class_num': 2,
 	'kernel_num': 128,
-	'kernel_sizes': [3,4,5],
+	'kernel_sizes': [3,3,3],
 
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(), 
-	'pretraining_lr' : 1e-3, # only used during pretraining for CFFL models, no decay
-	'dssgd_lr': 1e-3, # used for dssgd model, no decay
-	'lr': 1e-3,
+	'pretraining_lr' : 1e-4, # only used during pretraining for CFFL models, no decay
+	'dssgd_lr': 1e-4, # used for dssgd model, no decay
+	'lr': 1e-4,
 	'grad_clip':0.001,
-	'gamma':0.977,   #0.955**100 ~= 0.01
+	'gamma':1,   #0.955**100 ~= 0.01
 
 	# training parameters
 	'pretrain_epochs': 1,
@@ -268,7 +268,7 @@ cifar_cnn_args = {
 	'gamma':1,   #0.955**100 ~= 0.01
 
 	# training parameters
-	'pretrain_epochs': 5,
+	'pretrain_epochs': 1,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 	'aggregate_mode':'sum',  # 'mean', 'sum'
