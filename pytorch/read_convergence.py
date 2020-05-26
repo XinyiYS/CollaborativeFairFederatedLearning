@@ -212,7 +212,7 @@ def plot_convergence(dirname):
 		if os.path.exists(credits_figure_dir):
 			os.remove(credits_figure_dir)
 
-		credit_top = 1. / n_workers * 1.1
+		credit_top = 1. / n_workers * 1.5
 		credit_bottom = -0.01
 
 		plot(credits_df, credits_figure_dir, name=setup['dataset'].capitalize() + ' credits', plot_type=0, ylabel='Credits', top=credit_top, bottom=credit_bottom)
