@@ -565,25 +565,23 @@ def compute_credits_sinh(credits, credit_threshold, R, val_accs, alpha=5, credit
 		else:
 			credits[i] = (credits[i] + credit_epoch) * 0.5
 
-		# isolate the non-reputable parties by setting their credits to 0	
-		if credits[i] < credit_threshold:
-			credits[i] = 0
-
-	# update the threshold and reputable parties
-	R = [i for i in R if credits[i] >= credit_threshold]
-
-	if R_size != len(R):
-		if len(R) == 0:
-			# this should never happen
-			print("Got 0 in R", credit_threshold.item(), credits)
-		print("old R size : {}, new R size: {}".format(R_size, len(R)))
-		print("credit_threshold {}, credits {}".format(credit_threshold.item(), credits.tolist()))
-		credit_threshold = compute_credit_threshold(len(R))
-
 	credits = torch.sinh(alpha * credits)
 
 	# normalize among the reputable parties
 	credits /= credits.sum().float()
+
+	# update reputable parties
+	R = [i for i in R if credits[i] >= credit_threshold]
+
+	# isolate the non-reputable parties by setting their credits to 0	
+	for i in range(len(credits)):
+		if credits[i] < credit_threshold:
+			credits[i] = 0
+
+	if R_size != len(R):
+		print("old R size : {}, new R size: {}".format(R_size, len(R)))
+		print("credit_threshold {}, credits {}".format(credit_threshold.item(), credits.tolist()))
+		credit_threshold = compute_credit_threshold(len(R))
 
 	return credits, credit_threshold, R
 
@@ -635,4 +633,4 @@ def mask_grad_update_by_magnitude(grad_update, mask_constant):
 	return grad_update
 
 def compute_credit_threshold(R_size):
-	return torch.clamp(2./3 * torch.div(1., R_size ), min=0, max=1).float()
+	return torch.clamp(2./3 * torch.div(1., R_size), min=0, max=1).float()
