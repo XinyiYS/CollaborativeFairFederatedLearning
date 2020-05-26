@@ -557,31 +557,33 @@ def compute_credits_sinh(credits, credit_threshold, R, val_accs, alpha=5, credit
 	R_size = len(R)
 	total_val_accs = sum([val_accs[i] for i in R])
 	for i in R:
-		credit_epoch = math.sinh(alpha * val_accs[i] / total_val_accs)
+		credit_epoch = val_accs[i] / total_val_accs
+		# credit_epoch = math.sinh(alpha * val_accs[i] / total_val_accs)
 
 		if credit_fade == 1:
 			credits[i] = credits[i] * 0.2 + credit_epoch * 0.8
 		else:
 			credits[i] = (credits[i] + credit_epoch) * 0.5
 
-	# normalize among the reputable parties
-	credits[R] /= credits[R].sum().float()
+		# isolate the non-reputable parties by setting their credits to 0	
+		if credits[i] < credit_threshold:
+			credits[i] = 0
 
 	# update the threshold and reputable parties
 	R = [i for i in R if credits[i] >= credit_threshold]
+
 	if R_size != len(R):
 		if len(R) == 0:
 			# this should never happen
 			print("Got 0 in R", credit_threshold.item(), credits)
 		print("old R size : {}, new R size: {}".format(R_size, len(R)))
 		print("credit_threshold {}, credits {}".format(credit_threshold.item(), credits.tolist()))
-		credits[R] /= credits[R].sum().float()
 		credit_threshold = compute_credit_threshold(len(R))
 
-	# isolate the non-reputable parties by setting their credits to 0	
-	for i in range(len(credits)):
-		if i not in R:
-			credits[i] = 0
+	credits = torch.sinh(alpha * credits)
+
+	# normalize among the reputable parties
+	credits /= credits.sum().float()
 
 	return credits, credit_threshold, R
 
