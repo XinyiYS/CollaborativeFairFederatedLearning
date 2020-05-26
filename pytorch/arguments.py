@@ -1,7 +1,7 @@
 import torch
 from torch import nn, optim
 
-from utils.models import LogisticRegression, MLP, MLP_Net, CNN_Net, RNN, RNN_IMDB, CNN_Text, ResNet18, CNNCifar, ResNet18_torch
+from utils.models import LogisticRegression, MLP, MLP_Net, CNN_Net, RNN, RNN_IMDB, CNN_Text, ResNet18, CNNCifar, CNNCifar_TF
 
 use_cuda = True
 cuda_available = torch.cuda.is_available()
@@ -44,7 +44,7 @@ adult_args = {
 	'gamma':1,  #0.97**100 ~= 0.1
 
 	# training parameters
-	'pretrain_epochs': 5,
+	'pretrain_epochs': 1,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 	'aggregate_mode':'sum',  # 'mean', 'sum', 'credit-sum'
@@ -60,7 +60,7 @@ mnist_args = {
 	'n_workers': 5,
 	'split': 'powerlaw', #or 'classimbalance'
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size' : 64, 
+	'batch_size' : 256, 
 	'train_val_split_ratio': 0.9,
 	'alpha': 5,
 	'epoch_sample_size':float("Inf"),
@@ -71,14 +71,14 @@ mnist_args = {
 	'model_fn': MLP_Net,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(), 
-	'pretraining_lr' : 0.01, # only used during pretraining for CFFL models, no decay
-	'dssgd_lr': 0.01, # used for dssgd model, no decay
-	'lr': 0.01,
-	'grad_clip':0.001,
+	'pretraining_lr' : 0.1, # only used during pretraining for CFFL models, no decay
+	'dssgd_lr': 0.1, # used for dssgd model, no decay
+	'lr': 0.1,
+	'grad_clip':0.01,
 	'gamma':1,   #0.955**100 ~= 0.01
 
 	# training parameters
-	'pretrain_epochs': 5,
+	'pretrain_epochs': 1,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 	'aggregate_mode':'sum',  # 'mean', 'sum'
@@ -249,7 +249,7 @@ cifar_cnn_args = {
 	'n_workers': 5,
 	'split': 'powerlaw', #or 'classimbalance'
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size' : 64, 
+	'batch_size' : 8, 
 	'train_val_split_ratio': 0.9,
 	'alpha': 5,
 	'epoch_sample_size':float("Inf"),
@@ -257,14 +257,14 @@ cifar_cnn_args = {
 
 
 	# model parameters
-	'model_fn': CNNCifar, #ResNet18_torch
+	'model_fn': CNNCifar_TF, #ResNet18_torch
 	#'model_fn': ResNet18,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(),#  nn.CrossEntropyLoss(), 
-	'pretraining_lr' : 1e-1, # only used during pretraining for CFFL models, no decay
-	'dssgd_lr': 1e-1, # used for dssgd model, no decay
-	'lr': 1e-1,
-	'grad_clip':0.001,
+	'pretraining_lr' : 1e-3, # only used during pretraining for CFFL models, no decay
+	'dssgd_lr': 1e-3, # used for dssgd model, no decay
+	'lr': 1e-3,
+	'grad_clip':1e-4,
 	'gamma':1,   #0.955**100 ~= 0.01
 
 	# training parameters
