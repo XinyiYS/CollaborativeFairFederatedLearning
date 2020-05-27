@@ -5,20 +5,6 @@ from torchtext.data import Batch
 import utils
 import torch.nn as nn
 
-class Custom_Dataset(Dataset):
-
-	def __init__(self, X, y):
-		self.X = X
-		self.y = y
-		self.count = len(X)
-
-	def __len__(self):
-		return self.count
-
-	def __getitem__(self, idx):
-		return self.X[idx], self.y[idx]
-
-
 class Worker():
 
 	def __init__(self, train_loader, model=None, optimizer=None,scheduler=None,
@@ -108,26 +94,30 @@ class Worker():
 				loss.backward()
 				self.optimizer.step()
 
-
-
+				
 				# E = 1 for standalone and dssgd
+				# and B = 1
 				if not is_pretrain and epoch == 0:
 					# standalone model does not include pre-train
 					# standalone model only trains 1 epoch per communication round
-					self.standalone_optimizer.zero_grad()
-					outputs = self.standalone_model(batch_data)
-					loss = self.loss_fn(outputs, batch_target)
-					loss.backward()
-					self.standalone_optimizer.step()
+					
+					for data, target in zip(batch_data, batch_target):
+						data = data.unsqueeze(0)
+						target = target.unsqueeze(0)
+						self.standalone_optimizer.zero_grad()
+						outputs = self.standalone_model(data)
+						loss = self.loss_fn(outputs, target)
+						loss.backward()
+						self.standalone_optimizer.step()
 
-					# dssgd model
-					self.dssgd_optimizer.zero_grad()
-					outputs = self.dssgd_model(batch_data)
-					loss = self.loss_fn(outputs, batch_target)
-					loss.backward()
-					self.dssgd_optimizer.step()
+						# dssgd model
+						self.dssgd_optimizer.zero_grad()
+						outputs = self.dssgd_model(data)
+						loss = self.loss_fn(outputs, target)
+						loss.backward()
+						self.dssgd_optimizer.step()
 
-	
+
 				if iter >= self.epoch_sample_size:
 					# specifically for NLP task to terminate for training efficiency
 					break
@@ -137,13 +127,6 @@ class Worker():
 				continue
 			self.scheduler_pretrain.step()
 			self.scheduler.step()
-
-			# using dssgd makes all local models converge to the same final model
-			# self.dssgd_scheduler.step() 
-
-			if not is_pretrain and epoch==0:
-				self.standalone_scheduler.step()
-
 
 		if 'cuda' in str(self.device) and save_gpu:
 			cpu = torch.device('cpu')

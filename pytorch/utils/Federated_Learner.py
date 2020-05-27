@@ -44,6 +44,9 @@ class Federated_Learner:
 		model_fn = self.args['model_fn']
 		optimizer_fn = self.args['optimizer_fn']
 		lr = self.args['lr']
+		dssgd_lr = self.args['dssgd_lr']
+		std_lr = self.args['std_lr'] if 'std_lr' in self.args else dssgd_lr
+
 		device = self.args['device']
 		loss_fn = self.args['loss_fn']
 		theta = self.args['theta']
@@ -91,11 +94,11 @@ class Federated_Learner:
 
 
 			standalone_model = copy.deepcopy(self.federated_model)
-			standalone_optimizer = optimizer_fn(standalone_model.parameters(), lr=lr)
-			standalone_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer_pretrain, gamma = gamma)
+			standalone_optimizer = optimizer_fn(standalone_model.parameters(), lr=std_lr)
+			standalone_scheduler = torch.optim.lr_scheduler.ExponentialLR(standalone_optimizer, gamma = gamma)
 
 			dssgd_model = copy.deepcopy(self.federated_model)
-			dssgd_optimizer = optimizer_fn(dssgd_model.parameters(), lr=self.args['dssgd_lr'])
+			dssgd_optimizer = optimizer_fn(dssgd_model.parameters(), lr=dssgd_lr)
 			# dssgd_optimizer = optimizer_fn(dssgd_model.parameters(), lr=lr)
 			# 0.977 ** 100 ~= 0.1    a smaller decay rate
 			# dssgd_scheduler = torch.optim.lr_scheduler.ExponentialLR(dssgd_optimizer, gamma = gamma)

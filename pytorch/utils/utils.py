@@ -1,7 +1,6 @@
 import copy
 import torch
 from torch import nn
-from .Worker import Custom_Dataset
 from torch.utils.data import DataLoader
 from torchtext.data import Batch
 
