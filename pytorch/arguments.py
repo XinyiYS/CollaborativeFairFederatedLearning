@@ -262,7 +262,7 @@ cifar_cnn_args = {
 	'n_workers': 5,
 	'split': 'powerlaw', #or 'classimbalance'
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size' : 16, 
+	'batch_size' : 32, 
 	'train_val_split_ratio': 0.8,
 	'alpha': 5,
 	'epoch_sample_size':float("Inf"),
@@ -274,18 +274,20 @@ cifar_cnn_args = {
 	#'model_fn': ResNet18,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(),#  nn.CrossEntropyLoss(), 
-	'pretraining_lr' : 1e-1, # only used during pretraining for CFFL models, no decay
-	'dssgd_lr': 1e-1, # used for dssgd model, no decay
-	'std_lr': 1e-3,
+	'pretraining_lr' : 5e-3, # only used during pretraining for CFFL models, no decay
+	'dssgd_lr': 5e-3, # used for dssgd model, no decay
+	'std_lr': 5e-3,
 	'lr': 1e-1,
 	'grad_clip':1e-3,
 	'gamma':1,   #0.955**100 ~= 0.01
 
+
 	# training parameters
-	'pretrain_epochs': 1,
+	'pretrain_epochs': 5,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 	'aggregate_mode':'sum',  # 'mean', 'sum'
 	'largest_criterion': 'all', #'layer'
+
 
 }
