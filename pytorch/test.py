@@ -39,8 +39,6 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 	
 	keys = ['standalone_vs_final', 'standlone_vs_rrdssgd',
 			'rr_dssgd_best', 'CFFL_best_worker', 'standalone_best_worker',
-			# 'sharingcontribution_vs_improvements'
-			# 'sharingcontribution_vs_final'
 			 ]
 
 
@@ -84,22 +82,20 @@ from arguments import adult_args, mnist_args, names_args, update_gpu, mr_args, s
 if __name__ == '__main__':
 	# init steps
 	# args = mnist_args
-	args = mr_args
+	args = mnist_args
 	args['n_workers'] = 5
+	args['sample_size_cap'] = 40000
 	args['theta'] = 0.1 
-	args['alpha'] = 1
-	args['gamma'] = 0.977
-	args['gpu'] = 0
-	args['lr'] = 1e-6
+	args['largest_criterion'] = 'layer'
+	args['batch_size'] = 16
+	args['gamma'] = 1
+	args['split']='powerlaw'
+	args['grad_clip']=0.001
+	args['pretrain_epochs']=5
+	args['pretraining_lr']=0.005
+	args['dssgd_lr']=0.005
+	args['aggregate_mode']='credit-sum'
+
 	run_experiments(args, 1)
 	
 	exit()
-	'''
-	for n_workers, sample_size_cap,fl_epochs in[[5, 2000, 100]]: #, [10, 6000, 5]]:
-		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		args['fl_epochs'] = fl_epochs
-		# for lr in [0.1]:
-		args['lr'] = 1e-5
-		run_experiments(args, 2)
-	'''

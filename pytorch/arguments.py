@@ -37,17 +37,19 @@ adult_args = {
 	'model_fn': MLP,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(),  #CrossEntropyLoss NLLLoss
-	'pretraining_lr' : 0.01,  # only used during pretraining for CFFL models, no decay
-	'dssgd_lr': 0.01, # used for dssgd model, no decay
-	'lr': 0.01, # initial lr, with decay
+	'pretraining_lr' : 5e-3,  # only used during pretraining for CFFL models, no decay
+	'dssgd_lr': 1e-3, # used for dssgd model, no decay	
+	'std_lr': 1e-3,
+	'lr': 1e-3, # initial lr, with decay
 	'grad_clip': 0.001,
 	'gamma':1,  #0.97**100 ~= 0.1
 
 	# training parameters
-	'pretrain_epochs': 1,
+	'pretrain_epochs': 5,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
-	'aggregate_mode':'sum',  # 'mean', 'sum', 'credit-sum'
+	'aggregate_mode':'credit-sum',  # 'mean', 'sum', 'credit-sum'
+	'largest_criterion': 'all', #'layer'
 }
 
 mnist_args = {
@@ -71,17 +73,19 @@ mnist_args = {
 	'model_fn': MLP_Net,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(), 
-	'pretraining_lr' : 1e-3, # only used during pretraining for CFFL models, no decay
-	'dssgd_lr': 1e-3, # used for dssgd model, no decay
-	'lr': 1e-3,
-	'grad_clip':1e-4,
+	'pretraining_lr' : 5e-3, # only used during pretraining for CFFL models, no decay
+	'dssgd_lr': 5e-3, # used for dssgd model, no decay
+	'std_lr': 5e-3,
+	'lr': 1e-1,
+	'grad_clip':1e-3,
 	'gamma':1,   #0.955**100 ~= 0.01
 
 	# training parameters
-	'pretrain_epochs': 1,
+	'pretrain_epochs': 5,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 	'aggregate_mode':'sum',  # 'mean', 'sum'
+	'largest_criterion': 'all', #'layer'
 }
 
 names_args = {
@@ -116,6 +120,8 @@ names_args = {
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 	'aggregate_mode':'sum',  # 'mean', 'sum', credit-sum
+	'largest_criterion': 'all', #'layer'
+
 }
 
 imdb_args = {
@@ -152,6 +158,8 @@ imdb_args = {
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 	'aggregate_mode':'sum',  # 'mean', 'sum', credit-sum
+	'largest_criterion': 'all', #'layer'
+
 }
 
 
@@ -194,6 +202,8 @@ sst_args = {
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 	'aggregate_mode':'sum',  # 'mean', 'sum', credit-sum
+	'largest_criterion': 'all', #'layer'
+
 }
 
 
@@ -236,7 +246,10 @@ mr_args = {
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 	'aggregate_mode':'sum',  # 'mean', 'sum', credit-sum
+	'largest_criterion': 'all', #'layer'
+
 }
+
 
 
 cifar_cnn_args = {
@@ -249,8 +262,8 @@ cifar_cnn_args = {
 	'n_workers': 5,
 	'split': 'powerlaw', #or 'classimbalance'
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size' : 8, 
-	'train_val_split_ratio': 0.9,
+	'batch_size' : 16, 
+	'train_val_split_ratio': 0.8,
 	'alpha': 5,
 	'epoch_sample_size':float("Inf"),
 	'n_freeriders': 0,
@@ -261,10 +274,11 @@ cifar_cnn_args = {
 	#'model_fn': ResNet18,
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(),#  nn.CrossEntropyLoss(), 
-	'pretraining_lr' : 1e-3, # only used during pretraining for CFFL models, no decay
-	'dssgd_lr': 1e-3, # used for dssgd model, no decay
-	'lr': 1e-3,
-	'grad_clip':1e-4,
+	'pretraining_lr' : 1e-1, # only used during pretraining for CFFL models, no decay
+	'dssgd_lr': 1e-1, # used for dssgd model, no decay
+	'std_lr': 1e-3,
+	'lr': 1e-1,
+	'grad_clip':1e-3,
 	'gamma':1,   #0.955**100 ~= 0.01
 
 	# training parameters
@@ -272,4 +286,6 @@ cifar_cnn_args = {
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
 	'aggregate_mode':'sum',  # 'mean', 'sum'
+	'largest_criterion': 'all', #'layer'
+
 }

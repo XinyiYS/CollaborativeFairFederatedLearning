@@ -314,7 +314,8 @@ class FastMNIST(MNIST):
 
 		self.targets = self.targets.long()
 
-		self.data = self.data.sub_(0.1307).div_(0.3081)
+		self.data = self.data.sub_(self.data.mean()).div_(self.data.std())
+		# self.data = self.data.sub_(0.1307).div_(0.3081)
 		# Put both data and targets on GPU in advance
 		self.data, self.targets = self.data, self.targets
 		print('MNIST data shape {}, targets shape {}'.format(self.data.shape, self.targets.shape))

@@ -33,6 +33,7 @@ class Federated_Learner:
 		self.worker_train_loaders = self.data_prepper.get_train_loaders(
 			self.args['n_workers'], self.args['split'])
 		self.shard_sizes = self.data_prepper.shard_sizes
+		print("Shard sizes are: ", self.shard_sizes)
 		self.init_workers()
 		self.performance_dict = defaultdict(list)
 		self.performance_dict_pretrain = defaultdict(list)
@@ -169,11 +170,15 @@ class Federated_Learner:
 			data_rows.append([ 'w/o pretrain: ', all_update_mod.mean().item(), n_clipped, torch.true_divide(n_clipped, len(all_update_mod)).item() ])
 			'''
 
+			# directly add the raw gradient to the model
+			add_update_to_model(worker.model, raw_grad_update, device=self.device)
+
 			clipped_grad_update = clip_gradient_update(raw_grad_update, self.args['grad_clip'])
 			# add the clipped grad to local model
-			add_update_to_model(worker.model, clipped_grad_update, device=self.device)
-			
-			filtered_grad_update = mask_grad_update_by_order(clipped_grad_update, mask_order=None, mask_percentile=worker.theta) 
+			# add_update_to_model(worker.model, clipped_grad_update, device=self.device)
+
+
+			filtered_grad_update = mask_grad_update_by_order(clipped_grad_update, mask_order=None, mask_percentile=worker.theta, mode=self.args['largest_criterion']) 
 
 
 			fed_val_acc = self.one_on_one_evaluate(self.federated_model, worker.model, filtered_grad_update, worker.theta)
@@ -210,11 +215,12 @@ class Federated_Learner:
 			n_clipped = (all_update_mod > self.args['grad_clip']).sum().item()
 			data_rows.append([ 'w pretrain: ', all_update_mod.mean().item(), n_clipped, torch.true_divide(n_clipped, len(all_update_mod)).item() ])
 			'''
+			add_update_to_model(worker.model_pretrain, raw_grad_update, device=self.device)
 
 			clipped_grad_update = clip_gradient_update(raw_grad_update, self.args['grad_clip'])
-			add_update_to_model(worker.model_pretrain, clipped_grad_update, device=self.device)
+			# add_update_to_model(worker.model_pretrain, clipped_grad_update, device=self.device)
 
-			filtered_grad_update = mask_grad_update_by_order(clipped_grad_update, mask_order=None, mask_percentile=worker.theta) 
+			filtered_grad_update = mask_grad_update_by_order(clipped_grad_update, mask_order=None, mask_percentile=worker.theta, mode=self.args['largest_criterion']) 
 			
 
 			fed_val_acc = self.one_on_one_evaluate(self.federated_model_pretrain, worker.model_pretrain, filtered_grad_update, worker.theta)
@@ -247,7 +253,7 @@ class Federated_Learner:
 			data_rows.append([ 'dssgd:', all_update_mod.mean().item(), n_clipped, torch.true_divide(n_clipped, len(all_update_mod)).item() ])
 			'''
 
-			filtered_grad_update = mask_grad_update_by_order(clip_gradient_update(dssgd_grad_update, self.args['grad_clip']), mask_order=None, mask_percentile=worker.theta)
+			filtered_grad_update = mask_grad_update_by_order(clip_gradient_update(dssgd_grad_update, self.args['grad_clip']), mask_order=None, mask_percentile=worker.theta, mode=self.args['largest_criterion'])
 
 			# this is executed in a fixed sequence, so the self.dssgd_model gets gradually updated and 'downloaded' by each worker
 			worker.dssgd_model.load_state_dict(add_update_to_model(self.dssgd_model, filtered_grad_update).state_dict(), strict=False)
