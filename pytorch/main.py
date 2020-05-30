@@ -118,7 +118,7 @@ def get_parallel_groups(experiment_args, parallel_size=4):
 	from math import ceil
 	return np.array_split(experiment_args, ceil(len(experiment_args)/parallel_size))
 
-def run_experiments_full(experiment_args, repeat=5):
+def run_experiments_full(experiment_args, repeat=1):
 
 
 	ts = time.time()
@@ -152,7 +152,7 @@ if __name__ == '__main__':
 		args['n_workers'] = n_workers
 		args['alpha'] = 5
 		experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args)
+	run_experiments_full(experiment_args, repeat=1)
 
 	experiment_args = []	
 	args = copy.deepcopy(sst_args)
@@ -161,7 +161,7 @@ if __name__ == '__main__':
 		args['alpha'] = 5
 		args['largest_criterion'] = 'layer'
 		experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args)
+	run_experiments_full(experiment_args, repeat=1)
 
 	'''
 

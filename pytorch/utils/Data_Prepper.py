@@ -72,6 +72,7 @@ class Data_Prepper:
 			n_classes = 10			
 			data_indices = [(self.train_dataset.targets == class_id).nonzero().view(-1).tolist() for class_id in range(n_classes)]
 			class_sizes = np.linspace(1, n_classes, n_workers, dtype='int')
+			print("class_sizes for each party", class_sizes)
 			party_mean = self.sample_size_cap // self.n_workers
 
 			from collections import defaultdict
@@ -79,9 +80,16 @@ class Data_Prepper:
 			for party_id, class_sz in enumerate(class_sizes):	
 				classes = range(class_sz) # can customize classes for each party rather than just listing
 				each_class_id_size = party_mean // class_sz
+				# print("party each class size:", party_id, each_class_id_size)
 				for i, class_id in enumerate(classes):
-					selected_indices = data_indices[class_id][:each_class_id_size]
-					data_indices[class_id] = data_indices[class_id][each_class_id_size:]
+					# randomly pick from each class a certain number of samples, with replacement 
+					selected_indices = random.choices(data_indices[class_id], k=each_class_id_size)
+
+					# randomly pick from each class a certain number of samples, without replacement 
+					'''
+					NEED TO MAKE SURE THAT EACH CLASS HAS MORE THAN each_class_id_size for no replacement sampling
+					selected_indices = random.sample(data_indices[class_id],k=each_class_id_size)
+					'''
 					party_indices[party_id].extend(selected_indices)
 
 					# top up to make sure all parties have the same number of samples
@@ -110,6 +118,10 @@ class Data_Prepper:
 		elif split == 'random':
 			from utils.utils import random_split
 			indices_list = random_split(sample_indices=list(range(len(self.train_dataset))), m_bins=n_workers, equal=False)
+
+		# from collections import Counter
+		# for indices in indices_list:
+		# 	print(Counter(self.train_dataset.targets[indices].tolist()))
 
 		self.shard_sizes = [len(indices) for indices in indices_list]
 		worker_train_loaders = [DataLoader(self.train_dataset, batch_size=batch_size, sampler=SubsetRandomSampler(indices)) for indices in indices_list]
