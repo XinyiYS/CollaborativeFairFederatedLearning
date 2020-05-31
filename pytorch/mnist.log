@@ -1,0 +1,1706 @@
+Experimental settings are:  {'gpu': 0, 'device': device(type='cuda', index=0), 'dataset': 'mnist', 'sample_size_cap': 5000, 'n_workers': 5, 'split': 'classimbalance', 'theta': 0.1, 'batch_size': 64, 'train_val_split_ratio': 0.9, 'alpha': 5, 'epoch_sample_size': inf, 'n_freeriders': 0, 'model_fn': <class 'utils.models.MLP_Net'>, 'optimizer_fn': <class 'torch.optim.sgd.SGD'>, 'loss_fn': NLLLoss(), 'pretraining_lr': 0.1, 'dssgd_lr': 0.001, 'lr': 0.001, 'grad_clip': 0.01, 'gamma': 1, 'pretrain_epochs': 1, 'fl_epochs': 100, 'fl_individual_epochs': 5, 'aggregate_mode': 'sum', 'device_ids': [0]}
+Experiment : No.1/1
+CFFL server model validation accuracy : 8.4000%
+CFFL server model test accuracy : 8.8900%
+
+Epoch 1:
+credits, credit threshold: tensor(0.2222)
+tensor([0.3033, 0.2019, 0.2650, 0.2298, 0.0000])
+Reputable parties:  [0, 1, 2, 3]
+
+credits, credit_threshold pretrain: tensor(0.3333)
+tensor([0.0000, 0.0000, 0.1947, 0.3132, 0.4921])
+Reputable parties pretrain:  [2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['9.920%', '9.740%', '10.360%', '9.770%', '9.290%']
+Workers DSSGD     accuracies:  ['17.430%', '16.460%', '16.550%', '17.430%', '17.540%']
+
+Workers before    accuracies:  ['8.890%', '8.890%', '8.890%', '8.890%', '8.890%']
+Workers CFFL      accuracies:  ['17.540%', '17.420%', '17.540%', '17.540%', '10.680%']
+
+Workers before pr accuracies:  ['9.800%', '25.170%', '28.130%', '52.590%', '54.860%']
+Workers CFFL pret accuracies:  ['9.800%', '29.440%', '47.830%', '48.310%', '49.970%']
+
+Epoch 21:
+credits, credit threshold: tensor(0.1667)
+tensor([0.2015, 0.1973, 0.1931, 0.2056, 0.2026])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(1.)
+tensor([0., 0., 0., 0., 1.])
+Reputable parties pretrain:  [4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['9.800%', '29.550%', '41.200%', '32.610%', '23.640%']
+Workers DSSGD     accuracies:  ['50.940%', '50.360%', '49.470%', '51.380%', '53.160%']
+
+Workers before    accuracies:  ['8.890%', '8.890%', '8.890%', '8.890%', '8.890%']
+Workers CFFL      accuracies:  ['32.910%', '42.450%', '50.520%', '55.380%', '57.970%']
+
+Workers before pr accuracies:  ['9.800%', '25.170%', '28.130%', '52.590%', '54.860%']
+Workers CFFL pret accuracies:  ['9.800%', '30.950%', '49.140%', '64.330%', '87.470%']
+
+Epoch 41:
+credits, credit threshold: tensor(0.1667)
+tensor([0.2012, 0.2012, 0.1954, 0.2011, 0.2011])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(1.)
+tensor([0., 0., 0., 0., 1.])
+Reputable parties pretrain:  [4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['9.800%', '29.960%', '45.180%', '47.610%', '42.030%']
+Workers DSSGD     accuracies:  ['68.820%', '69.280%', '66.970%', '68.030%', '73.860%']
+
+Workers before    accuracies:  ['8.890%', '8.890%', '8.890%', '8.890%', '8.890%']
+Workers CFFL      accuracies:  ['40.900%', '50.190%', '56.220%', '62.680%', '74.750%']
+
+Workers before pr accuracies:  ['9.800%', '25.170%', '28.130%', '52.590%', '54.860%']
+Workers CFFL pret accuracies:  ['9.800%', '30.960%', '49.130%', '64.290%', '87.400%']
+
+Epoch 61:
+credits, credit threshold: tensor(0.1667)
+tensor([0.1998, 0.1998, 0.1946, 0.2024, 0.2034])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(1.)
+tensor([0., 0., 0., 0., 1.])
+Reputable parties pretrain:  [4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['9.800%', '30.060%', '47.230%', '50.320%', '50.940%']
+Workers DSSGD     accuracies:  ['77.110%', '78.340%', '76.670%', '75.630%', '77.470%']
+
+Workers before    accuracies:  ['8.890%', '8.890%', '8.890%', '8.890%', '8.890%']
+Workers CFFL      accuracies:  ['47.550%', '57.770%', '61.460%', '67.960%', '81.340%']
+
+Workers before pr accuracies:  ['9.800%', '25.170%', '28.130%', '52.590%', '54.860%']
+Workers CFFL pret accuracies:  ['9.800%', '30.960%', '49.100%', '64.270%', '87.430%']
+
+Epoch 81:
+credits, credit threshold: tensor(0.1667)
+tensor([0.2013, 0.2004, 0.1931, 0.2005, 0.2047])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(1.)
+tensor([0., 0., 0., 0., 1.])
+Reputable parties pretrain:  [4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['9.800%', '30.330%', '47.650%', '53.470%', '55.490%']
+Workers DSSGD     accuracies:  ['81.470%', '78.700%', '75.810%', '76.750%', '80.510%']
+
+Workers before    accuracies:  ['8.890%', '8.890%', '8.890%', '8.890%', '8.890%']
+Workers CFFL      accuracies:  ['51.920%', '62.030%', '64.060%', '70.270%', '83.400%']
+
+Workers before pr accuracies:  ['9.800%', '25.170%', '28.130%', '52.590%', '54.860%']
+Workers CFFL pret accuracies:  ['9.800%', '30.960%', '49.050%', '64.260%', '87.440%']
+pretraining 3.4595940113067627
+evaluation after pretraining 23.234760999679565
+workers local training 503.2311809062958
+server aggregation 67.5507276058197
+server aggregation with pretraining 55.92418074607849
+server aggregation dssgd 53.596556186676025
+fed model eval on valid loader 20.16197681427002
+credit updates 0.17327141761779785
+assign updates 2.42336368560791
+performance update 3739.3034162521362
+total seconds 4469.059028625488
+Time_dict-----
+{"pretraining": 3.4595940113067627, "evaluation after pretraining": 23.234760999679565, "workers local training": 503.2311809062958, "server aggregation": 67.5507276058197, "server aggregation with pretraining": 55.92418074607849, "server aggregation dssgd": 53.596556186676025, "fed model eval on valid loader": 20.16197681427002, "credit updates": 0.17327141761779785, "assign updates": 2.42336368560791, "performance update": 3739.3034162521362}
+-----
+Performance and Fairness analysis: 
+Worker credits : [0.1996975839138031, 0.1996949017047882, 0.19802357256412506, 0.2013068050146103, 0.20127710700035095]
+Number of reputable parties:  5
+Worker credits pretrain: [0.0, 0.0, 0.0, 0.0, 1.0]
+Number of reputable parties with pretrain:  1
+----Results without pretrain
+standalone_best_worker  -  0.5949000120162964
+CFFL_best_worker  -  0.8477999567985535
+rr_dssgd_best  -  0.8194999694824219
+standlone_vs_rrdssgd  -  [-0.7882369956556766]
+standalone_vs_final  -  [0.8803844385451682]
+----
+----Results with pretrain
+standalone_best_worker  -  0.5949000120162964
+CFFL_best_worker  -  0.8744999766349792
+rr_dssgd_best  -  0.8194999694824219
+standlone_vs_rrdssgd  -  [-0.7882369956556766]
+standalone_vs_final  -  [0.9563260468975725]
+----
+for all without pretraining:
+standalone_vs_final_mean [0.8803844385451682]
+standlone_vs_rrdssgd_mean [-0.7882369956556766]
+rr_dssgd_best_mean 0.8194999694824219
+CFFL_best_worker_mean 0.8477999567985535
+standalone_best_worker_mean 0.5949000120162964
+
+for all the pretraining included:
+standalone_vs_final_mean [0.9563260468975725]
+standlone_vs_rrdssgd_mean [-0.7882369956556766]
+rr_dssgd_best_mean 0.8194999694824219
+CFFL_best_worker_mean 0.8744999766349792
+standalone_best_worker_mean 0.5949000120162964
+[Finished in 4471.3s]
+
+USING FastMNIST
+
+
+Experimental settings are:  {'gpu': 0, 'device': device(type='cuda', index=0), 'dataset': 'mnist', 'sample_size_cap': 5000, 'n_workers': 5, 'split': 'classimbalance', 'theta': 0.1, 'batch_size': 256, 'train_val_split_ratio': 0.9, 'alpha': 5, 'epoch_sample_size': inf, 'n_freeriders': 0, 'model_fn': <class 'utils.models.MLP_Net'>, 'optimizer_fn': <class 'torch.optim.sgd.SGD'>, 'loss_fn': NLLLoss(), 'pretraining_lr': 0.1, 'dssgd_lr': 0.001, 'lr': 0.1, 'grad_clip': 0.01, 'gamma': 0.977, 'pretrain_epochs': 1, 'fl_epochs': 100, 'fl_individual_epochs': 5, 'aggregate_mode': 'sum', 'device_ids': [0]}
+MNIST data shape torch.Size([60000, 1, 32, 32]), targets shape torch.Size([60000])
+MNIST data shape torch.Size([10000, 1, 32, 32]), targets shape torch.Size([10000])
+Experiment : No.1/1
+CFFL server model validation accuracy : 11.8000%
+CFFL server model test accuracy : 10.6800%
+
+Epoch 1:
+credits, credit threshold: tensor(0.3333)
+tensor([0.0000, 0.0000, 0.2509, 0.3202, 0.4289])
+Reputable parties:  [2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.3333)
+tensor([0.0000, 0.0000, 0.2714, 0.3152, 0.4134])
+Reputable parties pretrain:  [2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['9.800%', '22.710%', '33.240%', '27.240%', '21.600%']
+Workers DSSGD     accuracies:  ['10.410%', '13.010%', '14.000%', '14.600%', '15.020%']
+
+Workers before    accuracies:  ['10.680%', '10.680%', '10.680%', '10.680%', '10.680%']
+Workers CFFL      accuracies:  ['9.810%', '29.330%', '27.730%', '27.730%', '27.730%']
+
+Workers before pr accuracies:  ['9.800%', '26.640%', '32.180%', '30.060%', '21.070%']
+Workers CFFL pret accuracies:  ['9.800%', '30.120%', '37.270%', '37.950%', '38.320%']
+
+Epoch 21:
+credits, credit threshold: tensor(1.)
+tensor([0., 0., 0., 0., 1.])
+Reputable parties:  [4]
+
+credits, credit_threshold pretrain: tensor(1.)
+tensor([0., 0., 0., 0., 1.])
+Reputable parties pretrain:  [4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['9.800%', '30.840%', '48.620%', '62.980%', '82.400%']
+Workers DSSGD     accuracies:  ['34.430%', '32.730%', '34.070%', '35.820%', '37.100%']
+
+Workers before    accuracies:  ['10.680%', '10.680%', '10.680%', '10.680%', '10.680%']
+Workers CFFL      accuracies:  ['9.800%', '30.850%', '48.980%', '63.530%', '85.200%']
+
+Workers before pr accuracies:  ['9.800%', '26.640%', '32.180%', '30.060%', '21.070%']
+Workers CFFL pret accuracies:  ['9.800%', '30.840%', '49.100%', '63.410%', '85.380%']
+
+Epoch 41:
+credits, credit threshold: tensor(1.)
+tensor([0., 0., 0., 0., 1.])
+Reputable parties:  [4]
+
+credits, credit_threshold pretrain: tensor(1.)
+tensor([0., 0., 0., 0., 1.])
+Reputable parties pretrain:  [4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['9.800%', '30.870%', '48.830%', '63.450%', '84.760%']
+Workers DSSGD     accuracies:  ['49.270%', '47.940%', '47.880%', '49.060%', '50.230%']
+
+Workers before    accuracies:  ['10.680%', '10.680%', '10.680%', '10.680%', '10.680%']
+Workers CFFL      accuracies:  ['9.800%', '30.840%', '49.020%', '63.510%', '85.470%']
+
+Workers before pr accuracies:  ['9.800%', '26.640%', '32.180%', '30.060%', '21.070%']
+Workers CFFL pret accuracies:  ['9.800%', '30.850%', '49.140%', '63.410%', '85.360%']
+
+Epoch 61:
+credits, credit threshold: tensor(1.)
+tensor([0., 0., 0., 0., 1.])
+Reputable parties:  [4]
+
+credits, credit_threshold pretrain: tensor(1.)
+tensor([0., 0., 0., 0., 1.])
+Reputable parties pretrain:  [4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['9.800%', '30.870%', '48.740%', '63.700%', '84.970%']
+Workers DSSGD     accuracies:  ['56.370%', '55.410%', '54.500%', '55.810%', '57.190%']
+
+Workers before    accuracies:  ['10.680%', '10.680%', '10.680%', '10.680%', '10.680%']
+Workers CFFL      accuracies:  ['9.800%', '30.840%', '49.030%', '63.510%', '85.440%']
+
+Workers before pr accuracies:  ['9.800%', '26.640%', '32.180%', '30.060%', '21.070%']
+Workers CFFL pret accuracies:  ['9.800%', '30.850%', '49.150%', '63.430%', '85.380%']
+
+Epoch 81:
+credits, credit threshold: tensor(1.)
+tensor([0., 0., 0., 0., 1.])
+Reputable parties:  [4]
+
+credits, credit_threshold pretrain: tensor(1.)
+tensor([0., 0., 0., 0., 1.])
+Reputable parties pretrain:  [4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['9.800%', '30.900%', '48.760%', '63.630%', '85.120%']
+Workers DSSGD     accuracies:  ['61.470%', '60.920%', '59.480%', '60.260%', '62.260%']
+
+Workers before    accuracies:  ['10.680%', '10.680%', '10.680%', '10.680%', '10.680%']
+Workers CFFL      accuracies:  ['9.800%', '30.840%', '49.030%', '63.510%', '85.440%']
+
+Workers before pr accuracies:  ['9.800%', '26.640%', '32.180%', '30.060%', '21.070%']
+Workers CFFL pret accuracies:  ['9.800%', '30.850%', '49.150%', '63.430%', '85.380%']
+pretraining 0.1913619041442871
+evaluation after pretraining 0.9858107566833496
+workers local training 38.804139614105225
+server aggregation 5.291401624679565
+server aggregation with pretraining 5.058098316192627
+server aggregation dssgd 4.585812091827393
+fed model eval on valid loader 1.2140986919403076
+credit updates 0.0674126148223877
+assign updates 0.8194267749786377
+performance update 176.351895570755
+total seconds 233.36945796012878
+Time_dict-----
+{"pretraining": 0.1913619041442871, "evaluation after pretraining": 0.9858107566833496, "workers local training": 38.804139614105225, "server aggregation": 5.291401624679565, "server aggregation with pretraining": 5.058098316192627, "server aggregation dssgd": 4.585812091827393, "fed model eval on valid loader": 1.2140986919403076, "credit updates": 0.0674126148223877, "assign updates": 0.8194267749786377, "performance update": 176.351895570755}
+-----
+Performance and Fairness analysis: 
+Worker credits : [0.0, 0.0, 0.0, 0.0, 1.0]
+Number of reputable parties:  1
+Worker credits pretrain: [0.0, 0.0, 0.0, 0.0, 1.0]
+Number of reputable parties with pretrain:  1
+----Results without pretrain
+standalone_best_worker  -  0.8524999618530273
+CFFL_best_worker  -  0.8543999791145325
+rr_dssgd_best  -  0.6818999648094177
+standlone_vs_rrdssgd  -  [-0.05335959009495156]
+standalone_vs_final  -  [0.9999912858856217]
+----
+----Results with pretrain
+standalone_best_worker  -  0.8524999618530273
+CFFL_best_worker  -  0.8537999987602234
+rr_dssgd_best  -  0.6818999648094177
+standlone_vs_rrdssgd  -  [-0.05335959009495156]
+standalone_vs_final  -  [0.9999796970888791]
+----
+for all without pretraining:
+standalone_vs_final_mean [0.9999912858856217]
+standlone_vs_rrdssgd_mean [-0.05335959009495156]
+rr_dssgd_best_mean 0.6818999648094177
+CFFL_best_worker_mean 0.8543999791145325
+standalone_best_worker_mean 0.8524999618530273
+
+for all the pretraining included:
+standalone_vs_final_mean [0.9999796970888791]
+standlone_vs_rrdssgd_mean [-0.05335959009495156]
+rr_dssgd_best_mean 0.6818999648094177
+CFFL_best_worker_mean 0.8537999987602234
+standalone_best_worker_mean 0.8524999618530273
+[Finished in 238.1s]
+
+
+Experimental settings are:  {'gpu': 0, 'device': device(type='cuda', index=0), 'dataset': 'mnist', 'sample_size_cap': 3000, 'n_workers': 5, 'split': 'powerlaw', 'theta': 0.1, 'batch_size': 16, 'train_val_split_ratio': 0.9, 'alpha': 1, 'epoch_sample_size': inf, 'n_freeriders': 0, 'model_fn': <class 'utils.models.MLP_Net'>, 'optimizer_fn': <class 'torch.optim.sgd.SGD'>, 'loss_fn': NLLLoss(), 'pretraining_lr': 0.01, 'dssgd_lr': 0.01, 'lr': 0.1, 'grad_clip': 0.001, 'gamma': 1, 'pretrain_epochs': 5, 'fl_epochs': 100, 'fl_individual_epochs': 5, 'aggregate_mode': 'sum', 'device_ids': [0]}
+MNIST data shape torch.Size([60000, 1, 32, 32]), targets shape torch.Size([60000])
+MNIST data shape torch.Size([10000, 1, 32, 32]), targets shape torch.Size([10000])
+Size of validation set: 6000. Size of test set: 10000
+Experiment : No.1/1
+CFFL server model validation accuracy : 14.7833%
+CFFL server model test accuracy : 14.6400%
+
+Epoch 1:
+credits, credit threshold: tensor(0.1667)
+tensor([0.2398, 0.2116, 0.2050, 0.1714, 0.1722])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.2718, 0.1965, 0.1789, 0.1712, 0.1816])
+Reputable parties pretrain:  [0, 1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['40.680%', '91.280%', '92.360%', '92.800%', '93.620%']
+Workers DSSGD     accuracies:  ['35.230%', '49.450%', '49.970%', '48.740%', '48.580%']
+
+Workers before    accuracies:  ['14.640%', '14.640%', '14.640%', '14.640%', '14.640%']
+Workers CFFL      accuracies:  ['30.180%', '31.800%', '37.800%', '37.940%', '37.920%']
+
+Workers before pr accuracies:  ['83.890%', '90.970%', '92.320%', '94.230%', '92.840%']
+Workers CFFL pret accuracies:  ['85.870%', '91.920%', '93.210%', '94.860%', '93.740%']
+
+Epoch 21:
+credits, credit threshold: tensor(0.1667)
+tensor([0.2001, 0.2002, 0.2002, 0.1992, 0.2002])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.2053, 0.1902, 0.1917, 0.1998, 0.2130])
+Reputable parties pretrain:  [0, 1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['90.440%', '95.660%', '96.590%', '97.100%', '96.150%']
+Workers DSSGD     accuracies:  ['96.050%', '96.310%', '96.470%', '96.460%', '96.410%']
+
+Workers before    accuracies:  ['14.640%', '14.640%', '14.640%', '14.640%', '14.640%']
+Workers CFFL      accuracies:  ['97.030%', '97.290%', '97.190%', '97.270%', '97.200%']
+
+Workers before pr accuracies:  ['83.890%', '90.970%', '92.320%', '94.230%', '92.840%']
+Workers CFFL pret accuracies:  ['95.190%', '96.730%', '97.040%', '97.450%', '97.080%']
+
+Epoch 41:
+credits, credit threshold: tensor(0.1667)
+tensor([0.2000, 0.1999, 0.2002, 0.1998, 0.2001])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.2005, 0.2012, 0.1974, 0.1989, 0.2020])
+Reputable parties pretrain:  [0, 1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['90.430%', '95.670%', '96.660%', '97.230%', '97.410%']
+Workers DSSGD     accuracies:  ['96.830%', '96.830%', '96.620%', '96.410%', '96.010%']
+
+Workers before    accuracies:  ['14.640%', '14.640%', '14.640%', '14.640%', '14.640%']
+Workers CFFL      accuracies:  ['97.910%', '98.030%', '98.200%', '98.100%', '98.120%']
+
+Workers before pr accuracies:  ['83.890%', '90.970%', '92.320%', '94.230%', '92.840%']
+Workers CFFL pret accuracies:  ['86.990%', '91.870%', '93.380%', '94.160%', '94.150%']
+
+Epoch 61:
+credits, credit threshold: tensor(0.1667)
+tensor([0.2003, 0.2000, 0.2003, 0.1995, 0.2000])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.2005, 0.2002, 0.2001, 0.2009, 0.1983])
+Reputable parties pretrain:  [0, 1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['90.460%', '95.660%', '96.670%', '97.280%', '97.550%']
+Workers DSSGD     accuracies:  ['96.420%', '96.280%', '95.680%', '95.220%', '95.050%']
+
+Workers before    accuracies:  ['14.640%', '14.640%', '14.640%', '14.640%', '14.640%']
+Workers CFFL      accuracies:  ['98.120%', '98.120%', '98.270%', '98.240%', '98.200%']
+
+Workers before pr accuracies:  ['83.890%', '90.970%', '92.320%', '94.230%', '92.840%']
+Workers CFFL pret accuracies:  ['88.820%', '92.620%', '93.750%', '92.980%', '93.000%']
+
+Epoch 81:
+credits, credit threshold: tensor(0.1667)
+tensor([0.2002, 0.1999, 0.2000, 0.2000, 0.1999])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.1985, 0.2000, 0.2012, 0.2002, 0.2002])
+Reputable parties pretrain:  [0, 1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['90.450%', '95.660%', '96.650%', '97.320%', '97.570%']
+Workers DSSGD     accuracies:  ['95.410%', '94.920%', '93.560%', '92.640%', '92.670%']
+
+Workers before    accuracies:  ['14.640%', '14.640%', '14.640%', '14.640%', '14.640%']
+Workers CFFL      accuracies:  ['98.150%', '98.130%', '98.340%', '98.290%', '98.310%']
+
+Workers before pr accuracies:  ['83.890%', '90.970%', '92.320%', '94.230%', '92.840%']
+Workers CFFL pret accuracies:  ['91.430%', '94.230%', '94.190%', '93.790%', '94.110%']
+pretraining 24.37134075164795
+evaluation after pretraining 1.0708131790161133
+workers local training 5197.259689331055
+server aggregation 33.03351044654846
+server aggregation with pretraining 32.27330040931702
+server aggregation dssgd 31.806998014450073
+fed model eval on valid loader 11.949347257614136
+credit updates 0.15625977516174316
+assign updates 2.485159158706665
+performance update 196.08774614334106
+total seconds 5530.494164466858
+Time_dict-----
+{"pretraining": 24.37134075164795, "evaluation after pretraining": 1.0708131790161133, "workers local training": 5197.259689331055, "server aggregation": 33.03351044654846, "server aggregation with pretraining": 32.27330040931702, "server aggregation dssgd": 31.806998014450073, "fed model eval on valid loader": 11.949347257614136, "credit updates": 0.15625977516174316, "assign updates": 2.485159158706665, "performance update": 196.08774614334106}
+-----
+Performance and Fairness analysis: 
+Worker credits : [0.19999222457408905, 0.19997306168079376, 0.19996438920497894, 0.2000168114900589, 0.20005351305007935]
+Number of reputable parties:  5
+Worker credits pretrain: [0.19837018847465515, 0.20207731425762177, 0.2012711465358734, 0.1978924572467804, 0.20038890838623047]
+Number of reputable parties with pretrain:  5
+----Results without pretrain
+standalone_best_worker  -  0.9733999967575073
+CFFL_best_worker  -  0.9842000007629395
+rr_dssgd_best  -  0.9533999562263489
+standlone_vs_rrdssgd  -  [0.9619571034168046]
+standalone_vs_final  -  [0.9016011600760332]
+----
+----Results with pretrain
+standalone_best_worker  -  0.9759999513626099
+CFFL_best_worker  -  0.955299973487854
+rr_dssgd_best  -  0.9496999979019165
+standlone_vs_rrdssgd  -  [0.9619571034168046]
+standalone_vs_final  -  [0.9616951629384457]
+----
+for all without pretraining:
+standalone_vs_final_mean [0.9016011600760332]
+standlone_vs_rrdssgd_mean [0.9619571034168046]
+rr_dssgd_best_mean 0.9533999562263489
+CFFL_best_worker_mean 0.9842000007629395
+standalone_best_worker_mean 0.9733999967575073
+
+for all the pretraining included:
+standalone_vs_final_mean [0.9616951629384457]
+standlone_vs_rrdssgd_mean [0.9619571034168046]
+rr_dssgd_best_mean 0.9496999979019165
+CFFL_best_worker_mean 0.955299973487854
+standalone_best_worker_mean 0.9759999513626099
+[Finished in 5535.5s]
+
+
+Experimental settings are:  {'gpu': 0, 'device': device(type='cuda', index=0), 'dataset': 'mnist', 'sample_size_cap': 3000, 'n_workers': 5, 'split': 'powerlaw', 'theta': 0.1, 'batch_size': 32, 'train_val_split_ratio': 0.9, 'alpha': 1, 'epoch_sample_size': inf, 'n_freeriders': 0, 'model_fn': <class 'utils.models.MLP_Net'>, 'optimizer_fn': <class 'torch.optim.sgd.SGD'>, 'loss_fn': NLLLoss(), 'pretraining_lr': 0.01, 'dssgd_lr': 0.01, 'lr': 0.1, 'grad_clip': 0.001, 'gamma': 1, 'pretrain_epochs': 5, 'fl_epochs': 100, 'fl_individual_epochs': 5, 'aggregate_mode': 'sum', 'device_ids': [0]}
+MNIST data shape torch.Size([60000, 1, 32, 32]), targets shape torch.Size([60000])
+MNIST data shape torch.Size([10000, 1, 32, 32]), targets shape torch.Size([10000])
+Size of validation set: 6000. Size of test set: 10000
+Experiment : No.1/1
+CFFL server model validation accuracy : 10.1667%
+CFFL server model test accuracy : 11.0000%
+
+Epoch 1:
+credits, credit threshold: tensor(0.1667)
+tensor([0.2488, 0.2151, 0.1911, 0.1712, 0.1738])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.2488, 0.2151, 0.1911, 0.1712, 0.1738])
+Reputable parties pretrain:  [0, 1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['70.180%', '88.750%', '92.400%', '91.220%', '87.510%']
+Workers DSSGD     accuracies:  ['15.740%', '33.390%', '45.840%', '51.460%', '55.160%']
+
+Workers before    accuracies:  ['11.000%', '11.000%', '11.000%', '11.000%', '11.000%']
+Workers CFFL      accuracies:  ['42.290%', '42.210%', '37.370%', '37.280%', '35.570%']
+
+Workers before pr accuracies:  ['72.250%', '89.180%', '91.290%', '92.350%', '93.030%']
+Workers CFFL pret accuracies:  ['76.960%', '90.590%', '91.960%', '93.200%', '93.680%']
+
+Epoch 21:
+credits, credit threshold: tensor(0.1667)
+tensor([0.2018, 0.1991, 0.2004, 0.1998, 0.1990])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.2018, 0.1991, 0.2004, 0.1998, 0.1990])
+Reputable parties pretrain:  [0, 1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['90.130%', '95.400%', '96.480%', '97.200%', '97.550%']
+Workers DSSGD     accuracies:  ['93.940%', '92.550%', '91.870%', '92.320%', '93.010%']
+
+Workers before    accuracies:  ['11.000%', '11.000%', '11.000%', '11.000%', '11.000%']
+Workers CFFL      accuracies:  ['97.110%', '97.420%', '97.420%', '97.420%', '97.660%']
+
+Workers before pr accuracies:  ['72.250%', '89.180%', '91.290%', '92.350%', '93.030%']
+Workers CFFL pret accuracies:  ['95.140%', '97.010%', '97.120%', '97.410%', '97.580%']
+
+Epoch 41:
+credits, credit threshold: tensor(0.1667)
+tensor([0.2005, 0.1996, 0.1994, 0.2010, 0.1995])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.2005, 0.1996, 0.1994, 0.2010, 0.1995])
+Reputable parties pretrain:  [0, 1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['90.040%', '95.470%', '96.420%', '97.220%', '97.460%']
+Workers DSSGD     accuracies:  ['87.720%', '88.830%', '90.830%', '92.590%', '94.600%']
+
+Workers before    accuracies:  ['11.000%', '11.000%', '11.000%', '11.000%', '11.000%']
+Workers CFFL      accuracies:  ['97.780%', '97.920%', '97.870%', '98.040%', '98.040%']
+
+Workers before pr accuracies:  ['72.250%', '89.180%', '91.290%', '92.350%', '93.030%']
+Workers CFFL pret accuracies:  ['81.860%', '87.890%', '89.150%', '88.940%', '90.530%']
+
+Epoch 61:
+credits, credit threshold: tensor(0.1667)
+tensor([0.1992, 0.2001, 0.2002, 0.2001, 0.2003])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.1992, 0.2001, 0.2002, 0.2001, 0.2003])
+Reputable parties pretrain:  [0, 1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['89.970%', '95.460%', '96.420%', '97.210%', '97.470%']
+Workers DSSGD     accuracies:  ['93.020%', '93.310%', '93.550%', '92.830%', '92.070%']
+
+Workers before    accuracies:  ['11.000%', '11.000%', '11.000%', '11.000%', '11.000%']
+Workers CFFL      accuracies:  ['97.980%', '97.870%', '98.100%', '98.160%', '98.150%']
+
+Workers before pr accuracies:  ['72.250%', '89.180%', '91.290%', '92.350%', '93.030%']
+Workers CFFL pret accuracies:  ['87.770%', '91.940%', '91.820%', '91.880%', '92.390%']
+
+Epoch 81:
+credits, credit threshold: tensor(0.1667)
+tensor([0.1992, 0.1986, 0.2012, 0.2007, 0.2002])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.1992, 0.1986, 0.2012, 0.2007, 0.2002])
+Reputable parties pretrain:  [0, 1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['89.940%', '95.450%', '96.420%', '97.230%', '97.460%']
+Workers DSSGD     accuracies:  ['89.920%', '89.380%', '90.300%', '91.310%', '92.260%']
+
+Workers before    accuracies:  ['11.000%', '11.000%', '11.000%', '11.000%', '11.000%']
+Workers CFFL      accuracies:  ['97.830%', '97.970%', '98.060%', '98.190%', '98.150%']
+
+Workers before pr accuracies:  ['72.250%', '89.180%', '91.290%', '92.350%', '93.030%']
+Workers CFFL pret accuracies:  ['90.390%', '93.680%', '93.740%', '93.720%', '94.140%']
+pretraining 12.949213743209839
+evaluation after pretraining 1.0691559314727783
+workers local training 2657.8996658325195
+server aggregation 39.69674849510193
+server aggregation with pretraining 39.11211037635803
+server aggregation dssgd 38.87777638435364
+fed model eval on valid loader 14.19779372215271
+credit updates 0.21591782569885254
+assign updates 3.5462496280670166
+performance update 238.3868215084076
+total seconds 3045.951453447342
+Time_dict-----
+{"pretraining": 12.949213743209839, "evaluation after pretraining": 1.0691559314727783, "workers local training": 2657.8996658325195, "server aggregation": 39.69674849510193, "server aggregation with pretraining": 39.11211037635803, "server aggregation dssgd": 38.87777638435364, "fed model eval on valid loader": 14.19779372215271, "credit updates": 0.21591782569885254, "assign updates": 3.5462496280670166, "performance update": 238.3868215084076}
+-----
+Performance and Fairness analysis: 
+Worker credits : [0.19918526709079742, 0.20024682581424713, 0.20040160417556763, 0.2003292739391327, 0.19983696937561035]
+Number of reputable parties:  5
+Worker credits pretrain: [0.19918526709079742, 0.20024682581424713, 0.20040160417556763, 0.2003292739391327, 0.19983696937561035]
+Number of reputable parties with pretrain:  5
+----Results without pretrain
+standalone_best_worker  -  0.9643999934196472
+CFFL_best_worker  -  0.9810999631881714
+rr_dssgd_best  -  0.9239999651908875
+standlone_vs_rrdssgd  -  [0.9796209836925911]
+standalone_vs_final  -  [0.758221038520616]
+----
+----Results with pretrain
+standalone_best_worker  -  0.9745000004768372
+CFFL_best_worker  -  0.924299955368042
+rr_dssgd_best  -  0.9251999855041504
+standlone_vs_rrdssgd  -  [0.9796209836925911]
+standalone_vs_final  -  [0.995097842846376]
+----
+for all without pretraining:
+standalone_vs_final_mean [0.758221038520616]
+standlone_vs_rrdssgd_mean [0.9796209836925911]
+rr_dssgd_best_mean 0.9239999651908875
+CFFL_best_worker_mean 0.9810999631881714
+standalone_best_worker_mean 0.9643999934196472
+
+for all the pretraining included:
+standalone_vs_final_mean [0.995097842846376]
+standlone_vs_rrdssgd_mean [0.9796209836925911]
+rr_dssgd_best_mean 0.9251999855041504
+CFFL_best_worker_mean 0.924299955368042
+standalone_best_worker_mean 0.9745000004768372
+[Finished in 3051.0s]
+
+
+ettings are:  {'gpu': 0, 'device': device(type='cuda', index=0), 'dataset': 'mnist', 'sample_size_cap': 3000, 'n_workers': 5, 'split': 'powerlaw', 'theta': 0.1, 'batch_size': 64, 'train_val_split_ratio': 0.9, 'alpha': 5, 'epoch_sample_size': inf, 'n_freeriders': 0, 'model_fn': <class 'utils.models.MLP_Net'>, 'optimizer_fn': <class 'torch.optim.sgd.SGD'>, 'loss_fn': NLLLoss(), 'pretraining_lr': 0.01, 'dssgd_lr': 0.01, 'lr': 0.01, 'grad_clip': 0.001, 'gamma': 1, 'pretrain_epochs': 5, 'fl_epochs': 100, 'fl_individual_epochs': 5, 'aggregate_mode': 'sum', 'device_ids': [0]}
+MNIST data shape torch.Size([60000, 1, 32, 32]), targets shape torch.Size([60000])
+MNIST data shape torch.Size([10000, 1, 32, 32]), targets shape torch.Size([10000])
+------
+Train to split size: 3000. Validation size: 6000. Test size: 10000
+------
+Experiment : No.1/1
+CFFL server model validation accuracy : 8.2167%
+CFFL server model test accuracy : 8.0000%
+old R size : 5, new R size: 4
+credit_threshold 0.13333334028720856, credits [0.09098254144191742, 0.16099879145622253, 0.17991602420806885, 0.2712235450744629, 0.2968791127204895]
+old R size : 5, new R size: 4
+credit_threshold 0.13333334028720856, credits [0.10409364104270935, 0.1649358868598938, 0.20692338049411774, 0.24841661751270294, 0.275630384683609]
+
+Epoch 1:
+credits, credit threshold: tensor(0.1667)
+tensor([0.0000, 0.1771, 0.1979, 0.2984, 0.3266])
+Reputable parties:  [1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.0000, 0.1841, 0.2310, 0.2773, 0.3077])
+Reputable parties pretrain:  [1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['8.950%', '13.600%', '15.420%', '22.290%', '30.150%']
+Workers DSSGD     accuracies:  ['8.580%', '13.260%', '20.030%', '34.120%', '46.510%']
+
+Workers before    accuracies:  ['8.000%', '8.000%', '8.000%', '8.000%', '8.000%']
+Workers CFFL      accuracies:  ['17.770%', '60.960%', '62.440%', '63.180%', '62.890%']
+
+Workers before pr accuracies:  ['15.850%', '41.360%', '60.340%', '56.230%', '58.950%']
+Workers CFFL pret accuracies:  ['28.430%', '66.870%', '71.530%', '64.380%', '64.260%']
+
+Epoch 21:
+credits, credit threshold: tensor(0.1667)
+tensor([0.0000, 0.2492, 0.2491, 0.2510, 0.2508])
+Reputable parties:  [1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.0000, 0.2508, 0.2492, 0.2502, 0.2498])
+Reputable parties pretrain:  [1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['44.200%', '59.450%', '76.290%', '82.680%', '85.860%']
+Workers DSSGD     accuracies:  ['80.590%', '79.850%', '79.080%', '78.610%', '79.160%']
+
+Workers before    accuracies:  ['8.000%', '8.000%', '8.000%', '8.000%', '8.000%']
+Workers CFFL      accuracies:  ['61.210%', '88.850%', '88.460%', '89.580%', '89.950%']
+
+Workers before pr accuracies:  ['15.850%', '41.360%', '60.340%', '56.230%', '58.950%']
+Workers CFFL pret accuracies:  ['61.730%', '88.970%', '88.490%', '89.320%', '89.760%']
+
+Epoch 41:
+credits, credit threshold: tensor(0.1667)
+tensor([0.0000, 0.2496, 0.2503, 0.2503, 0.2498])
+Reputable parties:  [1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.0000, 0.2499, 0.2505, 0.2501, 0.2495])
+Reputable parties pretrain:  [1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['39.330%', '77.320%', '85.290%', '86.840%', '88.390%']
+Workers DSSGD     accuracies:  ['83.120%', '83.850%', '85.380%', '86.790%', '87.880%']
+
+Workers before    accuracies:  ['8.000%', '8.000%', '8.000%', '8.000%', '8.000%']
+Workers CFFL      accuracies:  ['66.330%', '86.310%', '85.870%', '87.130%', '87.380%']
+
+Workers before pr accuracies:  ['15.850%', '41.360%', '60.340%', '56.230%', '58.950%']
+Workers CFFL pret accuracies:  ['66.490%', '86.130%', '85.150%', '86.760%', '87.900%']
+
+Epoch 61:
+credits, credit threshold: tensor(0.1667)
+tensor([0.0000, 0.2482, 0.2504, 0.2507, 0.2506])
+Reputable parties:  [1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.0000, 0.2480, 0.2504, 0.2509, 0.2508])
+Reputable parties pretrain:  [1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['56.160%', '82.160%', '86.390%', '87.680%', '88.920%']
+Workers DSSGD     accuracies:  ['85.490%', '86.580%', '87.880%', '88.150%', '88.340%']
+
+Workers before    accuracies:  ['8.000%', '8.000%', '8.000%', '8.000%', '8.000%']
+Workers CFFL      accuracies:  ['68.290%', '88.000%', '87.970%', '88.380%', '89.090%']
+
+Workers before pr accuracies:  ['15.850%', '41.360%', '60.340%', '56.230%', '58.950%']
+Workers CFFL pret accuracies:  ['68.540%', '87.560%', '87.640%', '88.140%', '88.940%']
+
+Epoch 81:
+credits, credit threshold: tensor(0.1667)
+tensor([0.0000, 0.2480, 0.2503, 0.2507, 0.2510])
+Reputable parties:  [1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.0000, 0.2478, 0.2504, 0.2507, 0.2511])
+Reputable parties pretrain:  [1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['61.630%', '83.070%', '87.110%', '88.040%', '89.380%']
+Workers DSSGD     accuracies:  ['89.840%', '89.270%', '88.300%', '86.950%', '86.730%']
+
+Workers before    accuracies:  ['8.000%', '8.000%', '8.000%', '8.000%', '8.000%']
+Workers CFFL      accuracies:  ['68.710%', '89.040%', '89.680%', '89.310%', '89.970%']
+
+Workers before pr accuracies:  ['15.850%', '41.360%', '60.340%', '56.230%', '58.950%']
+Workers CFFL pret accuracies:  ['68.730%', '89.010%', '89.740%', '89.290%', '90.030%']
+pretraining 0.689610481262207
+evaluation after pretraining 1.2952916622161865
+workers local training 97.99335789680481
+server aggregation 51.28499484062195
+server aggregation with pretraining 48.54614758491516
+server aggregation dssgd 48.13452434539795
+fed model eval on valid loader 16.097296714782715
+credit updates 0.8612427711486816
+assign updates 4.040179014205933
+performance update 267.19146180152893
+total seconds 536.1341071128845
+Time_dict-----
+{"pretraining": 0.689610481262207, "evaluation after pretraining": 1.2952916622161865, "workers local training": 97.99335789680481, "server aggregation": 51.28499484062195, "server aggregation with pretraining": 48.54614758491516, "server aggregation dssgd": 48.13452434539795, "fed model eval on valid loader": 16.097296714782715, "credit updates": 0.8612427711486816, "assign updates": 4.040179014205933, "performance update": 267.19146180152893}
+-----
+Performance and Fairness analysis:
+Worker credits : [0.0, 0.24985700845718384, 0.24999403953552246, 0.25006961822509766, 0.2500794231891632]
+Number of reputable parties:  4
+Worker credits pretrain: [0.0, 0.2501967251300812, 0.24989305436611176, 0.24998284876346588, 0.24992738664150238]
+Number of reputable parties with pretrain:  4
+----Results without pretrain
+standalone_best_worker  -  0.8385999798774719
+CFFL_best_worker  -  0.9048999547958374
+rr_dssgd_best  -  0.8826999664306641
+standlone_vs_rrdssgd  -  [-0.4547820493274449]
+standalone_vs_final  -  [0.9805113014285811]
+----
+----Results with pretrain
+standalone_best_worker  -  0.8385999798774719
+CFFL_best_worker  -  0.9052000045776367
+rr_dssgd_best  -  0.8826999664306641
+standlone_vs_rrdssgd  -  [-0.4547820493274449]
+standalone_vs_final  -  [0.9805205634472722]
+----
+for all without pretraining:
+standalone_vs_final_mean [0.9805113014285811]
+standlone_vs_rrdssgd_mean [-0.4547820493274449]
+rr_dssgd_best_mean 0.8826999664306641
+CFFL_best_worker_mean 0.9048999547958374
+standalone_best_worker_mean 0.8385999798774719
+
+for all the pretraining included:
+standalone_vs_final_mean [0.9805205634472722]
+standlone_vs_rrdssgd_mean [-0.4547820493274449]
+rr_dssgd_best_mean 0.8826999664306641
+CFFL_best_worker_mean 0.9052000045776367
+standalone_best_worker_mean 0.8385999798774719
+
+
+
+'layer'-wise upload + standalone + dssgd E = 5
+
+Experimental settings are:  {'gpu': 0, 'device': device(type='cuda', index=0), 'dataset': 'mnist', 'sample_size_cap': 12000, 'n_workers': 20, 'split': 'powerlaw', 'theta': 0.1, 'batch_size': 16, 'train_val_split_ratio': 0.9, 'alpha': 5, 'epoch_sample_size': inf, 'n_freeriders': 0, 'model_fn': <class 'utils.models.MLP_Net'>, 'optimizer_fn': <class 'torch.optim.sgd.SGD'>, 'loss_fn': NLLLoss(), 'pretraining_lr': 0.1, 'dssgd_lr': 0.1, 'std_lr': 0.05, 'lr': 0.1, 'grad_clip': 0.001, 'gamma': 1, 'pretrain_epochs': 1, 'fl_epochs': 100, 'fl_individual_epochs': 5, 'aggregate_mode': 'sum', 'largest_criterion': 'layer', 'device_ids': [0]}
+MNIST data shape torch.Size([60000, 1, 32, 32]), targets shape torch.Size([60000])
+MNIST data shape torch.Size([10000, 1, 32, 32]), targets shape torch.Size([10000])
+------
+Train to split size: 12000. Validation size: 6000. Test size: 10000
+------
+Experiment : No.1/1
+Shard sizes are:  [71, 127, 183, 238, 294, 350, 406, 461, 517, 573, 628, 684, 740, 795, 851, 907, 963, 1018, 1074, 1120]
+CFFL server model validation accuracy : 9.8500%
+CFFL server model test accuracy : 9.7600%
+
+Epoch 1:
+credits, credit threshold: tensor(0.0333)
+tensor([0.0610, 0.0720, 0.0650, 0.0579, 0.0573, 0.0546, 0.0515, 0.0474, 0.0475,
+        0.0502, 0.0352, 0.0371, 0.0520, 0.0595, 0.0473, 0.0354, 0.0391, 0.0392,
+        0.0430, 0.0477])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+credits, credit_threshold pretrain: tensor(0.0333)
+tensor([0.0678, 0.0670, 0.0633, 0.0542, 0.0625, 0.0429, 0.0493, 0.0454, 0.0446,
+        0.0460, 0.0428, 0.0433, 0.0509, 0.0517, 0.0422, 0.0446, 0.0425, 0.0458,
+        0.0497, 0.0438])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['47.900%', '67.510%', '72.370%', '76.370%', '70.380%', '78.510%', '81.220%', '77.110%', '83.740%', '85.580%', '72.010%', '86.790%', '83.830%', '87.620%', '85.150%', '87.490%', '88.110%', '84.350%', '85.950%', '87.160%']
+Workers DSSGD     accuracies:  ['19.240%', '34.460%', '48.320%', '54.130%', '58.730%', '60.610%', '61.580%', '63.390%', '62.570%', '63.880%', '62.640%', '62.880%', '64.440%', '65.410%', '64.080%', '62.890%', '63.990%', '64.790%', '63.790%', '63.050%']
+
+Workers before    accuracies:  ['9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%']
+Workers CFFL      accuracies:  ['55.630%', '55.630%', '55.360%', '55.310%', '55.030%', '55.770%', '55.500%', '49.360%', '49.740%', '49.300%', '49.570%', '49.420%', '54.420%', '55.480%', '49.170%', '50.710%', '49.400%', '49.570%', '49.770%', '49.170%']
+
+Workers before pr accuracies:  ['37.570%', '46.200%', '35.470%', '54.230%', '25.390%', '56.050%', '55.790%', '63.290%', '56.170%', '56.400%', '48.830%', '66.970%', '64.790%', '56.580%', '65.400%', '64.170%', '64.130%', '66.330%', '49.780%', '80.940%']
+Workers CFFL pret accuracies:  ['52.000%', '59.920%', '33.480%', '58.940%', '25.890%', '69.280%', '61.130%', '63.620%', '74.000%', '60.710%', '59.580%', '74.750%', '72.200%', '76.800%', '71.810%', '68.370%', '74.390%', '72.970%', '62.350%', '78.810%']
+
+Epoch 21:
+credits, credit threshold: tensor(0.0333)
+tensor([0.0499, 0.0500, 0.0498, 0.0498, 0.0499, 0.0497, 0.0496, 0.0501, 0.0501,
+        0.0504, 0.0496, 0.0503, 0.0501, 0.0497, 0.0500, 0.0500, 0.0503, 0.0501,
+        0.0503, 0.0502])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+credits, credit_threshold pretrain: tensor(0.0333)
+tensor([0.0502, 0.0503, 0.0502, 0.0500, 0.0503, 0.0503, 0.0490, 0.0500, 0.0510,
+        0.0496, 0.0488, 0.0506, 0.0500, 0.0502, 0.0505, 0.0508, 0.0484, 0.0504,
+        0.0494, 0.0502])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['69.310%', '76.630%', '80.770%', '85.260%', '83.610%', '85.550%', '86.460%', '84.590%', '87.180%', '86.840%', '87.420%', '88.220%', '87.630%', '88.650%', '88.460%', '88.990%', '89.320%', '89.400%', '89.260%', '90.040%']
+Workers DSSGD     accuracies:  ['61.980%', '64.610%', '66.090%', '66.990%', '68.720%', '70.340%', '72.200%', '73.140%', '74.420%', '75.270%', '75.330%', '75.720%', '76.420%', '77.470%', '77.650%', '77.940%', '78.700%', '79.160%', '79.570%', '79.780%']
+
+Workers before    accuracies:  ['9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%']
+Workers CFFL      accuracies:  ['94.780%', '95.390%', '95.390%', '95.660%', '94.960%', '95.760%', '95.860%', '95.730%', '96.030%', '96.080%', '95.840%', '95.960%', '95.530%', '95.330%', '95.730%', '95.920%', '95.830%', '95.740%', '95.960%', '95.720%']
+
+Workers before pr accuracies:  ['37.570%', '46.200%', '35.470%', '54.230%', '25.390%', '56.050%', '55.790%', '63.290%', '56.170%', '56.400%', '48.830%', '66.970%', '64.790%', '56.580%', '65.400%', '64.170%', '64.130%', '66.330%', '49.780%', '80.940%']
+Workers CFFL pret accuracies:  ['92.750%', '93.880%', '92.550%', '94.270%', '93.590%', '93.350%', '94.580%', '93.400%', '93.830%', '93.940%', '92.790%', '93.450%', '94.010%', '93.200%', '92.480%', '93.840%', '92.340%', '93.110%', '87.440%', '94.680%']
+
+Epoch 41:
+credits, credit threshold: tensor(0.0333)
+tensor([0.0500, 0.0500, 0.0500, 0.0499, 0.0500, 0.0500, 0.0499, 0.0500, 0.0500,
+        0.0502, 0.0500, 0.0500, 0.0500, 0.0500, 0.0499, 0.0499, 0.0501, 0.0500,
+        0.0500, 0.0499])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+credits, credit_threshold pretrain: tensor(0.0333)
+tensor([0.0499, 0.0500, 0.0502, 0.0498, 0.0500, 0.0499, 0.0499, 0.0501, 0.0499,
+        0.0491, 0.0497, 0.0501, 0.0502, 0.0501, 0.0499, 0.0505, 0.0499, 0.0502,
+        0.0501, 0.0505])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['69.400%', '76.620%', '80.720%', '85.120%', '83.490%', '85.570%', '86.470%', '84.620%', '87.140%', '86.720%', '87.380%', '88.170%', '87.630%', '88.630%', '88.440%', '89.060%', '89.360%', '89.440%', '89.280%', '90.040%']
+Workers DSSGD     accuracies:  ['85.900%', '85.030%', '83.730%', '83.080%', '81.220%', '79.710%', '77.510%', '75.760%', '74.380%', '73.730%', '73.350%', '72.920%', '72.990%', '73.540%', '73.360%', '74.720%', '75.130%', '76.130%', '77.810%', '79.030%']
+
+Workers before    accuracies:  ['9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%']
+Workers CFFL      accuracies:  ['94.650%', '95.790%', '95.520%', '96.040%', '95.640%', '95.750%', '96.150%', '95.950%', '96.160%', '96.400%', '95.930%', '96.290%', '96.340%', '96.120%', '96.300%', '96.120%', '96.300%', '96.430%', '96.350%', '96.400%']
+
+Workers before pr accuracies:  ['37.570%', '46.200%', '35.470%', '54.230%', '25.390%', '56.050%', '55.790%', '63.290%', '56.170%', '56.400%', '48.830%', '66.970%', '64.790%', '56.580%', '65.400%', '64.170%', '64.130%', '66.330%', '49.780%', '80.940%']
+Workers CFFL pret accuracies:  ['94.710%', '95.450%', '95.570%', '95.510%', '95.120%', '95.580%', '95.720%', '95.250%', '95.710%', '95.710%', '95.620%', '95.800%', '95.830%', '95.700%', '95.640%', '95.630%', '94.770%', '95.380%', '92.170%', '95.440%']
+
+Epoch 61:
+credits, credit threshold: tensor(0.0333)
+tensor([0.0499, 0.0499, 0.0500, 0.0500, 0.0500, 0.0500, 0.0500, 0.0501, 0.0500,
+        0.0500, 0.0498, 0.0499, 0.0501, 0.0500, 0.0500, 0.0500, 0.0500, 0.0501,
+        0.0500, 0.0499])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+credits, credit_threshold pretrain: tensor(0.0333)
+tensor([0.0504, 0.0500, 0.0499, 0.0497, 0.0499, 0.0506, 0.0502, 0.0498, 0.0502,
+        0.0501, 0.0490, 0.0501, 0.0501, 0.0506, 0.0500, 0.0496, 0.0503, 0.0495,
+        0.0501, 0.0498])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['69.650%', '76.680%', '80.680%', '85.030%', '83.410%', '85.560%', '86.420%', '84.590%', '87.040%', '86.720%', '87.380%', '88.240%', '87.650%', '88.680%', '88.470%', '89.120%', '89.310%', '89.420%', '89.290%', '90.040%']
+Workers DSSGD     accuracies:  ['89.030%', '89.150%', '89.000%', '88.740%', '88.740%', '88.570%', '88.310%', '88.100%', '87.690%', '87.420%', '86.950%', '86.490%', '85.840%', '85.460%', '85.380%', '84.590%', '84.350%', '84.290%', '84.250%', '83.900%']
+
+Workers before    accuracies:  ['9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%']
+Workers CFFL      accuracies:  ['87.710%', '93.630%', '90.330%', '92.090%', '92.460%', '90.220%', '91.410%', '91.840%', '92.850%', '93.810%', '92.800%', '92.420%', '91.210%', '93.720%', '93.110%', '92.460%', '90.410%', '92.400%', '93.080%', '92.140%']
+
+Workers before pr accuracies:  ['37.570%', '46.200%', '35.470%', '54.230%', '25.390%', '56.050%', '55.790%', '63.290%', '56.170%', '56.400%', '48.830%', '66.970%', '64.790%', '56.580%', '65.400%', '64.170%', '64.130%', '66.330%', '49.780%', '80.940%']
+Workers CFFL pret accuracies:  ['95.570%', '94.790%', '95.200%', '95.300%', '95.080%', '95.720%', '95.300%', '94.940%', '95.420%', '95.550%', '95.940%', '95.020%', '95.370%', '95.230%', '95.230%', '94.970%', '95.190%', '95.110%', '94.350%', '95.140%']
+
+Epoch 81:
+credits, credit threshold: tensor(0.0333)
+tensor([0.0499, 0.0500, 0.0500, 0.0501, 0.0500, 0.0500, 0.0498, 0.0501, 0.0500,
+        0.0500, 0.0500, 0.0499, 0.0500, 0.0500, 0.0500, 0.0501, 0.0499, 0.0499,
+        0.0501, 0.0501])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+credits, credit_threshold pretrain: tensor(0.0333)
+tensor([0.0498, 0.0500, 0.0499, 0.0500, 0.0500, 0.0500, 0.0498, 0.0499, 0.0499,
+        0.0494, 0.0502, 0.0501, 0.0506, 0.0499, 0.0496, 0.0502, 0.0497, 0.0504,
+        0.0505, 0.0501])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['69.650%', '76.700%', '80.630%', '85.030%', '83.360%', '85.530%', '86.420%', '84.550%', '86.980%', '86.730%', '87.380%', '88.200%', '87.650%', '88.700%', '88.520%', '89.110%', '89.310%', '89.450%', '89.270%', '90.030%']
+Workers DSSGD     accuracies:  ['92.230%', '92.240%', '92.290%', '92.260%', '92.880%', '93.140%', '93.420%', '93.770%', '94.040%', '94.210%', '94.480%', '94.680%', '94.790%', '94.920%', '95.040%', '95.040%', '94.890%', '94.810%', '94.940%', '94.690%']
+
+Workers before    accuracies:  ['9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%', '9.760%']
+Workers CFFL      accuracies:  ['94.390%', '95.430%', '94.540%', '95.440%', '95.110%', '95.030%', '95.320%', '94.820%', '95.500%', '95.570%', '95.110%', '95.570%', '95.360%', '95.950%', '95.670%', '95.220%', '95.890%', '95.260%', '95.260%', '95.600%']
+
+Workers before pr accuracies:  ['37.570%', '46.200%', '35.470%', '54.230%', '25.390%', '56.050%', '55.790%', '63.290%', '56.170%', '56.400%', '48.830%', '66.970%', '64.790%', '56.580%', '65.400%', '64.170%', '64.130%', '66.330%', '49.780%', '80.940%']
+Workers CFFL pret accuracies:  ['94.700%', '93.980%', '94.730%', '93.610%', '94.110%', '94.150%', '93.790%', '94.410%', '94.410%', '94.330%', '94.220%', '94.850%', '95.510%', '93.740%', '94.680%', '94.170%', '94.520%', '94.380%', '92.980%', '94.420%']
+pretraining 1.1762361526489258
+evaluation after pretraining 3.938035488128662
+workers local training 1829.8359372615814
+server aggregation 131.0298445224762
+server aggregation with pretraining 127.11355876922607
+server aggregation dssgd 124.68987965583801
+fed model eval on valid loader 11.482633352279663
+credit updates 0.7621841430664062
+assign updates 9.29301905632019
+performance update 754.7715525627136
+total seconds 2994.092880964279
+Time_dict-----
+{"pretraining": 1.1762361526489258, "evaluation after pretraining": 3.938035488128662, "workers local training": 1829.8359372615814, "server aggregation": 131.0298445224762, "server aggregation with pretraining": 127.11355876922607, "server aggregation dssgd": 124.68987965583801, "fed model eval on valid loader": 11.482633352279663, "credit updates": 0.7621841430664062, "assign updates": 9.29301905632019, "performance update": 754.7715525627136}
+-----
+Performance and Fairness analysis: 
+Worker credits : [0.05012303590774536, 0.05008484795689583, 0.05002167075872421, 0.05001005157828331, 0.05000017583370209, 0.050042714923620224, 0.05015750601887703, 0.04996877908706665, 0.04978257417678833, 0.05009479820728302, 0.049879830330610275, 0.050139572471380234, 0.0499468557536602, 0.05001411586999893, 0.04991823807358742, 0.049920931458473206, 0.05001460388302803, 0.0500418096780777, 0.04992211237549782, 0.0499158576130867]
+Number of reputable parties:  20
+Worker credits pretrain: [0.04992889240384102, 0.04991520568728447, 0.049935344606637955, 0.05019194260239601, 0.04966933652758598, 0.049903515726327896, 0.05002681165933609, 0.04992872104048729, 0.04993171617388725, 0.050379760563373566, 0.05007413774728775, 0.05044914409518242, 0.050092246383428574, 0.0501139834523201, 0.04934058338403702, 0.050175849348306656, 0.05009595304727554, 0.05053003504872322, 0.04999757558107376, 0.04931911826133728]
+Number of reputable parties with pretrain:  20
+----Results without pretrain
+standalone_best_worker  -  0.8867999911308289
+CFFL_best_worker  -  0.9601999521255493
+rr_dssgd_best  -  0.9547999501228333
+standlone_vs_rrdssgd  -  [-0.7746952225791542]
+standalone_vs_final  -  [0.3511680343787119]
+----
+----Results with pretrain
+standalone_best_worker  -  0.8944000005722046
+CFFL_best_worker  -  0.9575999975204468
+rr_dssgd_best  -  0.952299952507019
+standlone_vs_rrdssgd  -  [-0.7746952225791542]
+standalone_vs_final  -  [0.7904329339940547]
+----
+for all without pretraining:
+standalone_vs_final_mean [0.3511680343787119]
+standlone_vs_rrdssgd_mean [-0.7746952225791542]
+rr_dssgd_best_mean 0.9547999501228333
+CFFL_best_worker_mean 0.9601999521255493
+standalone_best_worker_mean 0.8867999911308289
+
+for all the pretraining included:
+standalone_vs_final_mean [0.7904329339940547]
+standlone_vs_rrdssgd_mean [-0.7746952225791542]
+rr_dssgd_best_mean 0.952299952507019
+CFFL_best_worker_mean 0.9575999975204468
+standalone_best_worker_mean 0.8944000005722046
+[Finished in 2999.0s]
+
+
+
+
+'all'-wise upload + standalone + dssgd E = 5
+
+
+
+Experimental settings are:  {'gpu': 0, 'device': device(type='cuda', index=0), 'dataset': 'mnist', 'sample_size_cap': 12000, 'n_workers': 20, 'split': 'powerlaw', 'theta': 0.1, 'batch_size': 16, 'train_val_split_ratio': 0.9, 'alpha': 5, 'epoch_sample_size': inf, 'n_freeriders': 0, 'model_fn': <class 'utils.models.MLP_Net'>, 'optimizer_fn': <class 'torch.optim.sgd.SGD'>, 'loss_fn': NLLLoss(), 'pretraining_lr': 0.1, 'dssgd_lr': 0.1, 'std_lr': 0.05, 'lr': 0.1, 'grad_clip': 0.001, 'gamma': 1, 'pretrain_epochs': 1, 'fl_epochs': 100, 'fl_individual_epochs': 5, 'aggregate_mode': 'sum', 'largest_criterion': 'all', 'device_ids': [0]}
+MNIST data shape torch.Size([60000, 1, 32, 32]), targets shape torch.Size([60000])
+MNIST data shape torch.Size([10000, 1, 32, 32]), targets shape torch.Size([10000])
+------
+Train to split size: 12000. Validation size: 6000. Test size: 10000
+------
+Experiment : No.1/1
+Shard sizes are:  [71, 127, 183, 238, 294, 350, 406, 461, 517, 573, 628, 684, 740, 795, 851, 907, 963, 1018, 1074, 1120]
+CFFL server model validation accuracy : 7.6667%
+CFFL server model test accuracy : 7.4700%
+old R size : 20, new R size: 19
+credit_threshold 0.03333333507180214, credits [0.07786428183317184, 0.06185687705874443, 0.06237664818763733, 0.05799536779522896, 0.049111414700746536, 0.052828993648290634, 0.050539955496788025, 0.060818105936050415, 0.051626723259687424, 0.04671495780348778, 0.046258971095085144, 0.04346931725740433, 0.04290066659450531, 0.04079851880669594, 0.047057051211595535, 0.03779225796461105, 0.0, 0.03841574117541313, 0.0492827482521534, 0.051512282341718674]
+
+Epoch 1:
+credits, credit threshold: tensor(0.0333)
+tensor([0.0564, 0.0528, 0.0547, 0.0564, 0.0421, 0.0460, 0.0501, 0.0550, 0.0536,
+        0.0471, 0.0516, 0.0546, 0.0450, 0.0453, 0.0481, 0.0469, 0.0454, 0.0492,
+        0.0466, 0.0532])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+credits, credit_threshold pretrain: tensor(0.0351)
+tensor([0.0779, 0.0619, 0.0624, 0.0580, 0.0491, 0.0528, 0.0505, 0.0608, 0.0516,
+        0.0467, 0.0463, 0.0435, 0.0429, 0.0408, 0.0471, 0.0378, 0.0000, 0.0384,
+        0.0493, 0.0515])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['35.860%', '61.170%', '68.220%', '71.640%', '65.710%', '77.810%', '84.370%', '81.000%', '79.850%', '82.740%', '77.310%', '84.780%', '86.720%', '86.850%', '86.120%', '80.780%', '83.000%', '86.310%', '87.670%', '88.060%']
+Workers DSSGD     accuracies:  ['25.980%', '44.520%', '59.450%', '63.450%', '59.880%', '59.610%', '62.340%', '61.730%', '60.180%', '60.420%', '58.600%', '53.460%', '48.660%', '47.730%', '44.950%', '41.730%', '42.700%', '41.420%', '39.850%', '39.910%']
+
+Workers before    accuracies:  ['7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%']
+Workers CFFL      accuracies:  ['38.210%', '37.850%', '38.480%', '37.950%', '39.210%', '38.320%', '37.610%', '37.830%', '37.960%', '38.580%', '38.250%', '39.010%', '36.590%', '39.130%', '38.150%', '39.100%', '37.100%', '37.710%', '37.390%', '36.320%']
+
+Workers before pr accuracies:  ['27.230%', '35.480%', '24.550%', '41.000%', '20.920%', '64.900%', '60.630%', '55.970%', '63.390%', '66.680%', '63.150%', '63.780%', '49.430%', '64.300%', '64.030%', '58.940%', '43.450%', '60.270%', '56.550%', '85.000%']
+Workers CFFL pret accuracies:  ['72.460%', '71.250%', '39.870%', '67.420%', '40.590%', '81.260%', '71.590%', '66.830%', '73.930%', '77.410%', '74.620%', '74.100%', '54.380%', '72.650%', '72.550%', '64.370%', '49.280%', '67.250%', '71.220%', '87.210%']
+
+Epoch 21:
+credits, credit threshold: tensor(0.0333)
+tensor([0.0500, 0.0501, 0.0500, 0.0500, 0.0502, 0.0497, 0.0498, 0.0501, 0.0497,
+        0.0503, 0.0500, 0.0501, 0.0500, 0.0502, 0.0503, 0.0500, 0.0500, 0.0498,
+        0.0498, 0.0501])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+credits, credit_threshold pretrain: tensor(0.0351)
+tensor([0.0529, 0.0529, 0.0531, 0.0525, 0.0543, 0.0525, 0.0526, 0.0526, 0.0526,
+        0.0529, 0.0525, 0.0522, 0.0521, 0.0516, 0.0523, 0.0521, 0.0000, 0.0527,
+        0.0523, 0.0532])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['68.110%', '77.060%', '80.630%', '85.300%', '83.010%', '86.440%', '86.630%', '84.660%', '86.970%', '86.850%', '87.210%', '88.340%', '88.070%', '88.480%', '88.460%', '88.630%', '88.950%', '89.380%', '89.420%', '90.120%']
+Workers DSSGD     accuracies:  ['72.280%', '71.570%', '70.070%', '69.390%', '69.010%', '68.690%', '68.550%', '68.190%', '68.590%', '68.840%', '69.310%', '69.850%', '71.080%', '72.110%', '73.210%', '73.890%', '74.800%', '75.440%', '76.050%', '77.020%']
+
+Workers before    accuracies:  ['7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%']
+Workers CFFL      accuracies:  ['95.580%', '95.300%', '95.420%', '95.870%', '95.750%', '95.800%', '96.040%', '95.600%', '95.730%', '95.950%', '95.790%', '95.390%', '95.850%', '95.520%', '95.700%', '95.840%', '95.930%', '95.770%', '96.170%', '95.890%']
+
+Workers before pr accuracies:  ['27.230%', '35.480%', '24.550%', '41.000%', '20.920%', '64.900%', '60.630%', '55.970%', '63.390%', '66.680%', '63.150%', '63.780%', '49.430%', '64.300%', '64.030%', '58.940%', '43.450%', '60.270%', '56.550%', '85.000%']
+Workers CFFL pret accuracies:  ['93.540%', '94.210%', '94.770%', '94.650%', '94.230%', '94.800%', '94.090%', '95.030%', '94.770%', '94.890%', '95.230%', '94.410%', '92.080%', '90.810%', '94.130%', '92.810%', '86.430%', '92.700%', '94.850%', '94.500%']
+
+Epoch 41:
+credits, credit threshold: tensor(0.0333)
+tensor([0.0500, 0.0500, 0.0500, 0.0500, 0.0499, 0.0501, 0.0501, 0.0499, 0.0500,
+        0.0500, 0.0502, 0.0500, 0.0502, 0.0501, 0.0501, 0.0499, 0.0498, 0.0500,
+        0.0498, 0.0498])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+credits, credit_threshold pretrain: tensor(0.0351)
+tensor([0.0528, 0.0528, 0.0527, 0.0528, 0.0526, 0.0526, 0.0527, 0.0524, 0.0525,
+        0.0527, 0.0527, 0.0527, 0.0526, 0.0526, 0.0524, 0.0522, 0.0000, 0.0528,
+        0.0522, 0.0531])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['68.160%', '77.080%', '80.640%', '85.190%', '82.930%', '86.430%', '86.660%', '84.610%', '86.910%', '86.730%', '87.140%', '88.320%', '88.070%', '88.540%', '88.380%', '88.560%', '88.980%', '89.370%', '89.540%', '90.150%']
+Workers DSSGD     accuracies:  ['67.080%', '65.800%', '65.150%', '65.600%', '64.700%', '63.890%', '64.270%', '66.450%', '67.230%', '68.370%', '70.510%', '72.520%', '74.640%', '76.850%', '79.270%', '80.890%', '82.400%', '83.810%', '84.830%', '85.590%']
+
+Workers before    accuracies:  ['7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%']
+Workers CFFL      accuracies:  ['95.800%', '96.300%', '95.610%', '96.140%', '96.160%', '95.860%', '96.420%', '96.030%', '96.150%', '96.520%', '96.110%', '96.240%', '96.670%', '96.360%', '96.600%', '96.270%', '96.520%', '96.260%', '96.450%', '96.620%']
+
+Workers before pr accuracies:  ['27.230%', '35.480%', '24.550%', '41.000%', '20.920%', '64.900%', '60.630%', '55.970%', '63.390%', '66.680%', '63.150%', '63.780%', '49.430%', '64.300%', '64.030%', '58.940%', '43.450%', '60.270%', '56.550%', '85.000%']
+Workers CFFL pret accuracies:  ['86.900%', '91.860%', '86.600%', '91.280%', '90.670%', '91.700%', '91.660%', '94.350%', '93.350%', '94.090%', '91.610%', '94.680%', '93.490%', '94.590%', '91.960%', '93.960%', '90.500%', '91.290%', '92.870%', '93.340%']
+
+Epoch 61:
+credits, credit threshold: tensor(0.0333)
+tensor([0.0500, 0.0498, 0.0499, 0.0500, 0.0500, 0.0500, 0.0502, 0.0501, 0.0501,
+        0.0500, 0.0501, 0.0501, 0.0502, 0.0501, 0.0498, 0.0498, 0.0500, 0.0500,
+        0.0497, 0.0500])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+credits, credit_threshold pretrain: tensor(0.0351)
+tensor([0.0527, 0.0526, 0.0526, 0.0527, 0.0526, 0.0526, 0.0526, 0.0526, 0.0529,
+        0.0527, 0.0527, 0.0528, 0.0526, 0.0527, 0.0527, 0.0525, 0.0000, 0.0523,
+        0.0524, 0.0528])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['68.250%', '77.110%', '80.590%', '85.220%', '82.810%', '86.420%', '86.630%', '84.580%', '86.910%', '86.690%', '87.160%', '88.330%', '88.050%', '88.560%', '88.370%', '88.580%', '89.000%', '89.400%', '89.490%', '90.120%']
+Workers DSSGD     accuracies:  ['84.260%', '83.970%', '83.400%', '82.880%', '82.720%', '82.290%', '82.520%', '83.180%', '84.180%', '85.060%', '85.670%', '86.600%', '87.620%', '88.500%', '89.450%', '89.850%', '90.240%', '90.650%', '91.070%', '91.320%']
+
+Workers before    accuracies:  ['7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%']
+Workers CFFL      accuracies:  ['94.800%', '95.020%', '94.400%', '95.790%', '94.860%', '94.840%', '95.610%', '94.980%', '95.190%', '95.810%', '95.060%', '95.380%', '96.130%', '95.220%', '95.490%', '95.050%', '95.920%', '95.550%', '95.270%', '95.640%']
+
+Workers before pr accuracies:  ['27.230%', '35.480%', '24.550%', '41.000%', '20.920%', '64.900%', '60.630%', '55.970%', '63.390%', '66.680%', '63.150%', '63.780%', '49.430%', '64.300%', '64.030%', '58.940%', '43.450%', '60.270%', '56.550%', '85.000%']
+Workers CFFL pret accuracies:  ['90.920%', '91.990%', '92.080%', '92.910%', '91.460%', '92.780%', '93.940%', '92.130%', '94.080%', '91.820%', '92.880%', '93.540%', '93.910%', '94.410%', '93.930%', '94.010%', '90.510%', '89.530%', '90.050%', '93.870%']
+
+Epoch 81:
+credits, credit threshold: tensor(0.0333)
+tensor([0.0500, 0.0501, 0.0501, 0.0501, 0.0501, 0.0501, 0.0500, 0.0495, 0.0503,
+        0.0500, 0.0501, 0.0499, 0.0499, 0.0501, 0.0499, 0.0498, 0.0501, 0.0500,
+        0.0500, 0.0500])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+credits, credit_threshold pretrain: tensor(0.0351)
+tensor([0.0526, 0.0526, 0.0526, 0.0526, 0.0526, 0.0526, 0.0526, 0.0526, 0.0526,
+        0.0526, 0.0526, 0.0526, 0.0526, 0.0526, 0.0526, 0.0527, 0.0000, 0.0525,
+        0.0528, 0.0527])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['68.350%', '77.100%', '80.590%', '85.200%', '82.820%', '86.400%', '86.660%', '84.610%', '86.910%', '86.670%', '87.180%', '88.340%', '88.090%', '88.530%', '88.380%', '88.590%', '89.010%', '89.430%', '89.490%', '90.120%']
+Workers DSSGD     accuracies:  ['93.040%', '92.890%', '92.840%', '92.660%', '92.520%', '92.200%', '92.070%', '92.010%', '91.800%', '91.540%', '91.400%', '91.670%', '91.880%', '92.020%', '92.170%', '92.730%', '92.920%', '93.470%', '93.540%', '93.940%']
+
+Workers before    accuracies:  ['7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%', '7.470%']
+Workers CFFL      accuracies:  ['90.620%', '92.270%', '91.940%', '92.870%', '93.850%', '92.350%', '93.800%', '93.060%', '93.180%', '91.700%', '92.060%', '91.770%', '93.230%', '92.140%', '92.760%', '91.750%', '93.220%', '93.500%', '93.370%', '92.430%']
+
+Workers before pr accuracies:  ['27.230%', '35.480%', '24.550%', '41.000%', '20.920%', '64.900%', '60.630%', '55.970%', '63.390%', '66.680%', '63.150%', '63.780%', '49.430%', '64.300%', '64.030%', '58.940%', '43.450%', '60.270%', '56.550%', '85.000%']
+Workers CFFL pret accuracies:  ['95.200%', '95.470%', '95.520%', '95.630%', '95.930%', '95.780%', '96.030%', '95.400%', '95.780%', '95.750%', '95.690%', '95.540%', '95.890%', '95.710%', '95.860%', '95.740%', '90.550%', '95.690%', '95.800%', '95.940%']
+pretraining 1.2117640972137451
+evaluation after pretraining 4.001312255859375
+workers local training 1809.7095129489899
+server aggregation 127.90951800346375
+server aggregation with pretraining 124.10232973098755
+server aggregation dssgd 121.68641829490662
+fed model eval on valid loader 11.39322304725647
+credit updates 0.4028186798095703
+assign updates 7.803590536117554
+performance update 759.8844404220581
+total seconds 2968.1049280166626
+Time_dict-----
+{"pretraining": 1.2117640972137451, "evaluation after pretraining": 4.001312255859375, "workers local training": 1809.7095129489899, "server aggregation": 127.90951800346375, "server aggregation with pretraining": 124.10232973098755, "server aggregation dssgd": 121.68641829490662, "fed model eval on valid loader": 11.39322304725647, "credit updates": 0.4028186798095703, "assign updates": 7.803590536117554, "performance update": 759.8844404220581}
+-----
+Performance and Fairness analysis: 
+Worker credits : [0.049921926110982895, 0.04993390664458275, 0.04998021945357323, 0.04994994029402733, 0.050099439918994904, 0.049836087971925735, 0.05005001649260521, 0.05012969672679901, 0.0500570684671402, 0.04997086524963379, 0.04990355297923088, 0.05000464245676994, 0.049982111901044846, 0.04997532442212105, 0.050131626427173615, 0.050000984221696854, 0.05001351237297058, 0.05001315474510193, 0.0500200130045414, 0.050025925040245056]
+Number of reputable parties:  20
+Worker credits pretrain: [0.05263534188270569, 0.05263534188270569, 0.05263534188270569, 0.052635353058576584, 0.052635353058576584, 0.05263534188270569, 0.05263534188270569, 0.05263534188270569, 0.05263467878103256, 0.052619241178035736, 0.05261858180165291, 0.05263454467058182, 0.05261871963739395, 0.052635353058576584, 0.052619241178035736, 0.05263548716902733, 0.0, 0.052631087601184845, 0.052634868770837784, 0.05263548716902733]
+Number of reputable parties with pretrain:  19
+----Results without pretrain
+standalone_best_worker  -  0.8947999477386475
+CFFL_best_worker  -  0.960099995136261
+rr_dssgd_best  -  0.9673999547958374
+standlone_vs_rrdssgd  -  [0.7016162509221242]
+standalone_vs_final  -  [0.852594371677728]
+----
+----Results with pretrain
+standalone_best_worker  -  0.8668999671936035
+CFFL_best_worker  -  0.9603999853134155
+rr_dssgd_best  -  0.9383999705314636
+standlone_vs_rrdssgd  -  [0.7016162509221242]
+standalone_vs_final  -  [-0.01599758042682347]
+----
+for all without pretraining:
+standalone_vs_final_mean [0.852594371677728]
+standlone_vs_rrdssgd_mean [0.7016162509221242]
+rr_dssgd_best_mean 0.9673999547958374
+CFFL_best_worker_mean 0.960099995136261
+standalone_best_worker_mean 0.8947999477386475
+
+for all the pretraining included:
+standalone_vs_final_mean [-0.01599758042682347]
+standlone_vs_rrdssgd_mean [0.7016162509221242]
+rr_dssgd_best_mean 0.9383999705314636
+CFFL_best_worker_mean 0.9603999853134155
+standalone_best_worker_mean 0.8668999671936035
+[Finished in 2973.0s]
+
+
+credit-sum and new setting with largest_criterion all
+ettings are:  {'gpu': 0, 'device': device(type='cuda', index=0), 'dataset': 'mnist', 'sample_size_cap': 3000, 'n_workers': 5, 'split': 'powerlaw', 'theta': 0.1, 'batch_size': 16, 'train_val_split_ratio': 0.9, 'alpha': 5, 'epoch_sample_size': inf, 'n_freeriders': 0, 'model_fn': <class 'utils.models.MLP_Net'>, 'optimizer_fn': <class 'torch.optim.sgd.SGD'>, 'loss_fn': NLLLoss(), 'pretraining_lr': 0.005, 'dssgd_lr': 0.005, 'std_lr': 0.05, 'lr': 0.1, 'grad_clip': 0.001, 'gamma': 1, 'pretrain_epochs': 5, 'fl_epochs': 100, 'fl_individual_epochs': 5, 'aggregate_mode': 'credit-sum', 'largest_criterion': 'all', 'device_ids': [0]}
+MNIST data shape torch.Size([60000, 1, 32, 32]), targets shape torch.Size([60000])
+MNIST data shape torch.Size([10000, 1, 32, 32]), targets shape torch.Size([10000])
+------
+Train to split size: 3000. Validation size: 6000. Test size: 10000
+------
+Experiment : No.1/1
+Shard sizes are:  [71, 336, 600, 865, 1128]
+CFFL server model validation accuracy : 13.1000%
+CFFL server model test accuracy : 13.1600%
+
+Epoch 1:
+credits, credit threshold: tensor(0.1333)
+tensor([0.2211, 0.1984, 0.1819, 0.1986, 0.2000])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1333)
+tensor([0.1657, 0.1900, 0.2149, 0.2152, 0.2142])
+Reputable parties pretrain:  [0, 1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['23.100%', '46.250%', '42.030%', '61.960%', '69.380%']
+Workers DSSGD     accuracies:  ['14.430%', '18.090%', '22.060%', '27.770%', '34.940%']
+
+Workers before    accuracies:  ['13.160%', '13.160%', '13.160%', '13.160%', '13.160%']
+Workers CFFL      accuracies:  ['51.540%', '82.400%', '79.600%', '84.480%', '89.110%']
+
+Workers before pr accuracies:  ['21.130%', '28.590%', '50.260%', '55.110%', '62.110%']
+Workers CFFL pret accuracies:  ['22.240%', '29.650%', '50.710%', '53.510%', '62.770%']
+
+Epoch 21:
+credits, credit threshold: tensor(0.1333)
+tensor([0.2014, 0.2011, 0.2004, 0.1991, 0.1981])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1333)
+tensor([0.2019, 0.2025, 0.1979, 0.1989, 0.1988])
+Reputable parties pretrain:  [0, 1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['66.490%', '84.080%', '87.430%', '89.020%', '89.900%']
+Workers DSSGD     accuracies:  ['83.820%', '83.180%', '82.710%', '83.630%', '84.750%']
+
+Workers before    accuracies:  ['13.160%', '13.160%', '13.160%', '13.160%', '13.160%']
+Workers CFFL      accuracies:  ['68.810%', '84.490%', '88.350%', '89.730%', '90.990%']
+
+Workers before pr accuracies:  ['21.130%', '28.590%', '50.260%', '55.110%', '62.110%']
+Workers CFFL pret accuracies:  ['82.120%', '84.590%', '86.600%', '85.770%', '86.350%']
+
+Epoch 41:
+credits, credit threshold: tensor(0.1333)
+tensor([0.2007, 0.2003, 0.1998, 0.1996, 0.1996])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1333)
+tensor([0.2002, 0.2001, 0.2007, 0.1993, 0.1998])
+Reputable parties pretrain:  [0, 1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['66.680%', '84.050%', '87.450%', '89.150%', '89.760%']
+Workers DSSGD     accuracies:  ['84.930%', '86.480%', '87.620%', '87.720%', '87.030%']
+
+Workers before    accuracies:  ['13.160%', '13.160%', '13.160%', '13.160%', '13.160%']
+Workers CFFL      accuracies:  ['69.290%', '84.720%', '88.380%', '89.760%', '91.000%']
+
+Workers before pr accuracies:  ['21.130%', '28.590%', '50.260%', '55.110%', '62.110%']
+Workers CFFL pret accuracies:  ['87.230%', '88.690%', '89.270%', '89.770%', '89.750%']
+
+Epoch 61:
+credits, credit threshold: tensor(0.1333)
+tensor([0.1998, 0.2006, 0.2004, 0.1996, 0.1995])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1333)
+tensor([0.1990, 0.2004, 0.2004, 0.1990, 0.2012])
+Reputable parties pretrain:  [0, 1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['67.000%', '84.030%', '87.350%', '89.140%', '89.770%']
+Workers DSSGD     accuracies:  ['88.920%', '88.620%', '87.490%', '86.710%', '86.630%']
+
+Workers before    accuracies:  ['13.160%', '13.160%', '13.160%', '13.160%', '13.160%']
+Workers CFFL      accuracies:  ['69.610%', '84.830%', '88.420%', '89.810%', '91.060%']
+
+Workers before pr accuracies:  ['21.130%', '28.590%', '50.260%', '55.110%', '62.110%']
+Workers CFFL pret accuracies:  ['86.850%', '88.860%', '89.290%', '89.680%', '90.050%']
+
+Epoch 81:
+credits, credit threshold: tensor(0.1333)
+tensor([0.2005, 0.2003, 0.2001, 0.1990, 0.2001])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1333)
+tensor([0.2001, 0.1999, 0.1999, 0.1992, 0.2009])
+Reputable parties pretrain:  [0, 1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['67.290%', '84.070%', '87.440%', '89.160%', '89.820%']
+Workers DSSGD     accuracies:  ['87.030%', '87.350%', '88.530%', '88.650%', '88.310%']
+
+Workers before    accuracies:  ['13.160%', '13.160%', '13.160%', '13.160%', '13.160%']
+Workers CFFL      accuracies:  ['69.880%', '84.880%', '88.430%', '89.860%', '91.010%']
+
+Workers before pr accuracies:  ['21.130%', '28.590%', '50.260%', '55.110%', '62.110%']
+Workers CFFL pret accuracies:  ['86.400%', '88.950%', '89.260%', '89.660%', '89.820%']
+pretraining 1.4362528324127197
+evaluation after pretraining 1.069901704788208
+workers local training 282.30170941352844
+server aggregation 36.371060371398926
+server aggregation with pretraining 34.82954478263855
+server aggregation dssgd 34.29056143760681
+fed model eval on valid loader 12.976099252700806
+credit updates 0.15597915649414062
+assign updates 3.064009189605713
+performance update 210.22542691230774
+total seconds 616.720545053482
+Time_dict-----
+{"pretraining": 1.4362528324127197, "evaluation after pretraining": 1.069901704788208, "workers local training": 282.30170941352844, "server aggregation": 36.371060371398926, "server aggregation with pretraining": 34.82954478263855, "server aggregation dssgd": 34.29056143760681, "fed model eval on valid loader": 12.976099252700806, "credit updates": 0.15597915649414062, "assign updates": 3.064009189605713, "performance update": 210.22542691230774}
+-----
+Performance and Fairness analysis:
+Worker credits : [0.19966301321983337, 0.2003079354763031, 0.20016168057918549, 0.1997852623462677, 0.20008213818073273]
+Number of reputable parties:  5
+Worker credits pretrain: [0.19995537400245667, 0.20003582537174225, 0.20009486377239227, 0.19984528422355652, 0.2000686079263687]
+Number of reputable parties with pretrain:  5
+----Results without pretrain
+standalone_best_worker  -  0.897599995136261
+CFFL_best_worker  -  0.9097999930381775
+rr_dssgd_best  -  0.8649999499320984
+standlone_vs_rrdssgd  -  [-0.8861355587504647]
+standalone_vs_final  -  [0.9993996733150556]
+----
+----Results with pretrain
+standalone_best_worker  -  0.897599995136261
+CFFL_best_worker  -  0.8976999521255493
+rr_dssgd_best  -  0.8649999499320984
+standlone_vs_rrdssgd  -  [-0.8861355587504647]
+standalone_vs_final  -  [0.9972095190397539]
+----
+for all without pretraining:
+standalone_vs_final_mean [0.9993996733150556]
+standlone_vs_rrdssgd_mean [-0.8861355587504647]
+rr_dssgd_best_mean 0.8649999499320984
+CFFL_best_worker_mean 0.9097999930381775
+standalone_best_worker_mean 0.897599995136261
+
+for all the pretraining included:
+standalone_vs_final_mean [0.9972095190397539]
+standlone_vs_rrdssgd_mean [-0.8861355587504647]
+rr_dssgd_best_mean 0.8649999499320984
+CFFL_best_worker_mean 0.8976999521255493
+standalone_best_worker_mean 0.897599995136261
+
+
+credit-sum new-settings with largest_crition layer
+ettings are:  {'gpu': 0, 'device': device(type='cuda', index=0), 'dataset': 'mnist', 'sample_size_cap': 3000, 'n_workers': 5, 'split': 'powerlaw', 'theta': 0.1, 'batch_size': 16, 'train_val_split_ratio': 0.9, 'alpha': 5, 'epoch_sample_size': inf, 'n_freeriders': 0, 'model_fn': <class 'utils.models.MLP_Net'>, 'optimizer_fn': <class 'torch.optim.sgd.SGD'>, 'loss_fn': NLLLoss(), 'pretraining_lr': 0.005, 'dssgd_lr': 0.005, 'std_lr': 0.005, 'lr': 0.1, 'grad_clip': 0.001, 'gamma': 1, 'pretrain_epochs': 5, 'fl_epochs': 100, 'fl_individual_epochs': 5, 'aggregate_mode': 'credit-sum', 'largest_criterion': 'layer', 'device_ids': [0]}
+MNIST data shape torch.Size([60000, 1, 32, 32]), targets shape torch.Size([60000])
+MNIST data shape torch.Size([10000, 1, 32, 32]), targets shape torch.Size([10000])
+------
+Train to split size: 3000. Validation size: 6000. Test size: 10000
+------
+Experiment : No.1/1
+Shard sizes are:  [71, 336, 600, 865, 1128]
+CFFL server model validation accuracy : 7.8333%
+CFFL server model test accuracy : 8.1400%
+old R size : 5, new R size: 4
+credit_threshold 0.13333334028720856, credits [0.0, 0.2067304402589798, 0.22612090408802032, 0.22283026576042175, 0.21137696504592896]
+
+Epoch 1:
+credits, credit threshold: tensor(0.1333)
+tensor([0.1943, 0.2153, 0.1782, 0.1945, 0.2178])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.0000, 0.2067, 0.2261, 0.2228, 0.2114])
+Reputable parties pretrain:  [1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['8.950%', '14.810%', '19.990%', '23.310%', '26.830%']
+Workers DSSGD     accuracies:  ['8.670%', '13.860%', '21.700%', '30.290%', '36.390%']
+
+Workers before    accuracies:  ['8.140%', '8.140%', '8.140%', '8.140%', '8.140%']
+Workers CFFL      accuracies:  ['54.800%', '80.750%', '86.590%', '87.400%', '89.350%']
+
+Workers before pr accuracies:  ['15.700%', '46.070%', '53.370%', '66.540%', '72.680%']
+Workers CFFL pret accuracies:  ['21.930%', '45.320%', '50.650%', '66.700%', '72.190%']
+
+Epoch 21:
+credits, credit threshold: tensor(0.1333)
+tensor([0.2020, 0.2002, 0.1994, 0.1976, 0.2007])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.0000, 0.2513, 0.2509, 0.2502, 0.2476])
+Reputable parties pretrain:  [1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['25.810%', '75.420%', '84.580%', '86.910%', '87.910%']
+Workers DSSGD     accuracies:  ['85.830%', '87.350%', '88.370%', '88.640%', '86.980%']
+
+Workers before    accuracies:  ['8.140%', '8.140%', '8.140%', '8.140%', '8.140%']
+Workers CFFL      accuracies:  ['71.390%', '85.300%', '88.460%', '89.750%', '90.410%']
+
+Workers before pr accuracies:  ['15.700%', '46.070%', '53.370%', '66.540%', '72.680%']
+Workers CFFL pret accuracies:  ['63.610%', '88.110%', '88.420%', '88.110%', '88.640%']
+
+Epoch 41:
+credits, credit threshold: tensor(0.1333)
+tensor([0.2019, 0.2018, 0.1992, 0.1977, 0.1994])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.0000, 0.2501, 0.2501, 0.2491, 0.2507])
+Reputable parties pretrain:  [1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['46.180%', '82.310%', '87.000%', '88.010%', '88.760%']
+Workers DSSGD     accuracies:  ['87.900%', '88.240%', '87.980%', '88.220%', '88.080%']
+
+Workers before    accuracies:  ['8.140%', '8.140%', '8.140%', '8.140%', '8.140%']
+Workers CFFL      accuracies:  ['71.960%', '85.410%', '88.500%', '89.820%', '90.460%']
+
+Workers before pr accuracies:  ['15.700%', '46.070%', '53.370%', '66.540%', '72.680%']
+Workers CFFL pret accuracies:  ['67.900%', '89.310%', '89.580%', '89.820%', '90.000%']
+
+Epoch 61:
+credits, credit threshold: tensor(0.1333)
+tensor([0.2010, 0.2006, 0.1992, 0.1991, 0.2000])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.0000, 0.2500, 0.2498, 0.2500, 0.2502])
+Reputable parties pretrain:  [1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['59.880%', '83.020%', '87.040%', '88.460%', '88.790%']
+Workers DSSGD     accuracies:  ['85.740%', '85.070%', '85.320%', '86.940%', '88.290%']
+
+Workers before    accuracies:  ['8.140%', '8.140%', '8.140%', '8.140%', '8.140%']
+Workers CFFL      accuracies:  ['72.220%', '85.450%', '88.470%', '89.830%', '90.470%']
+
+Workers before pr accuracies:  ['15.700%', '46.070%', '53.370%', '66.540%', '72.680%']
+Workers CFFL pret accuracies:  ['69.290%', '89.330%', '89.550%', '89.790%', '90.190%']
+
+Epoch 81:
+credits, credit threshold: tensor(0.1333)
+tensor([0.2003, 0.2006, 0.1998, 0.1993, 0.2000])
+Reputable parties:  [0, 1, 2, 3, 4]
+
+credits, credit_threshold pretrain: tensor(0.1667)
+tensor([0.0000, 0.2504, 0.2495, 0.2505, 0.2496])
+Reputable parties pretrain:  [1, 2, 3, 4]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['64.910%', '83.850%', '87.030%', '88.280%', '88.810%']
+Workers DSSGD     accuracies:  ['84.980%', '87.050%', '89.490%', '90.910%', '90.470%']
+
+Workers before    accuracies:  ['8.140%', '8.140%', '8.140%', '8.140%', '8.140%']
+Workers CFFL      accuracies:  ['72.330%', '85.460%', '88.480%', '89.840%', '90.490%']
+
+Workers before pr accuracies:  ['15.700%', '46.070%', '53.370%', '66.540%', '72.680%']
+Workers CFFL pret accuracies:  ['69.670%', '89.290%', '89.500%', '89.740%', '90.030%']
+pretraining 1.5064606666564941
+evaluation after pretraining 1.3500008583068848
+workers local training 288.52360129356384
+server aggregation 44.377918004989624
+server aggregation with pretraining 42.553348779678345
+server aggregation dssgd 41.87536549568176
+fed model eval on valid loader 15.035136938095093
+credit updates 0.1843881607055664
+assign updates 3.331050395965576
+performance update 255.1057689189911
+total seconds 693.8430395126343
+Time_dict-----
+{"pretraining": 1.5064606666564941, "evaluation after pretraining": 1.3500008583068848, "workers local training": 288.52360129356384, "server aggregation": 44.377918004989624, "server aggregation with pretraining": 42.553348779678345, "server aggregation dssgd": 41.87536549568176, "fed model eval on valid loader": 15.035136938095093, "credit updates": 0.1843881607055664, "assign updates": 3.331050395965576, "performance update": 255.1057689189911}
+-----
+Performance and Fairness analysis:
+Worker credits : [0.199818417429924, 0.20048128068447113, 0.1994604468345642, 0.19976171851158142, 0.20047803223133087]
+Number of reputable parties:  5
+Worker credits pretrain: [0.0, 0.24996128678321838, 0.2498256266117096, 0.25023266673088074, 0.24998043477535248]
+Number of reputable parties with pretrain:  4
+----Results without pretrain
+standalone_best_worker  -  0.8858999609947205
+CFFL_best_worker  -  0.9050999879837036
+rr_dssgd_best  -  0.8876000046730042
+standlone_vs_rrdssgd  -  [-0.48482417446448045]
+standalone_vs_final  -  [0.9969156434330476]
+----
+----Results with pretrain
+standalone_best_worker  -  0.8858999609947205
+CFFL_best_worker  -  0.8991999626159668
+rr_dssgd_best  -  0.8876000046730042
+standlone_vs_rrdssgd  -  [-0.48482417446448045]
+standalone_vs_final  -  [0.9871125625741598]
+----
+for all without pretraining:
+standalone_vs_final_mean [0.9969156434330476]
+standlone_vs_rrdssgd_mean [-0.48482417446448045]
+rr_dssgd_best_mean 0.8876000046730042
+CFFL_best_worker_mean 0.9050999879837036
+standalone_best_worker_mean 0.8858999609947205
+
+for all the pretraining included:
+standalone_vs_final_mean [0.9871125625741598]
+standlone_vs_rrdssgd_mean [-0.48482417446448045]
+rr_dssgd_best_mean 0.8876000046730042
+CFFL_best_worker_mean 0.8991999626159668
+standalone_best_worker_mean 0.8858999609947205
+
+
+ettings are:  {'gpu': 0, 'device': device(type='cuda', index=0), 'dataset': 'mnist', 'sample_size_cap': 12000, 'n_workers': 20, 'split': 'powerlaw', 'theta': 0.1, 'batch_size': 16, 'train_val_split_ratio': 0.9, 'alpha': 5, 'epoch_sample_size': inf, 'n_freeriders': 0, 'model_fn': <class 'utils.models.MLP_Net'>, 'optimizer_fn': <class 'torch.optim.sgd.SGD'>, 'loss_fn': NLLLoss(), 'pretraining_lr': 0.005, 'dssgd_lr': 0.005, 'std_lr': 0.005, 'lr': 0.1, 'grad_clip': 0.001, 'gamma': 1, 'pretrain_epochs': 5, 'fl_epochs': 100, 'fl_individual_epochs': 5, 'aggregate_mode': 'credit-sum', 'largest_criterion': 'layer', 'device_ids': [0]}
+MNIST data shape torch.Size([60000, 1, 32, 32]), targets shape torch.Size([60000])
+MNIST data shape torch.Size([10000, 1, 32, 32]), targets shape torch.Size([10000])
+------
+Train to split size: 12000. Validation size: 6000. Test size: 10000
+------
+Experiment : No.1/1
+Shard sizes are:  [71, 127, 183, 238, 294, 350, 406, 461, 517, 573, 628, 684, 740, 795, 851, 907, 963, 1018, 1074, 1120]
+CFFL server model validation accuracy : 8.9167%
+CFFL server model test accuracy : 8.4400%
+
+Epoch 1:
+credits, credit threshold: tensor(0.0333)
+tensor([0.0516, 0.0585, 0.0510, 0.0515, 0.0493, 0.0495, 0.0505, 0.0515, 0.0509,
+        0.0492, 0.0502, 0.0506, 0.0531, 0.0468, 0.0484, 0.0477, 0.0510, 0.0457,
+        0.0452, 0.0478])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+credits, credit_threshold pretrain: tensor(0.0333)
+tensor([0.0339, 0.0430, 0.0457, 0.0458, 0.0455, 0.0477, 0.0465, 0.0536, 0.0548,
+        0.0547, 0.0573, 0.0551, 0.0519, 0.0571, 0.0547, 0.0501, 0.0528, 0.0504,
+        0.0485, 0.0507])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['9.140%', '10.740%', '11.960%', '12.130%', '13.520%', '13.250%', '14.520%', '15.920%', '16.330%', '16.690%', '17.570%', '18.850%', '20.750%', '21.100%', '22.250%', '24.480%', '24.390%', '21.670%', '26.700%', '28.740%']
+Workers DSSGD     accuracies:  ['9.080%', '10.800%', '13.180%', '15.970%', '18.940%', '20.930%', '23.970%', '28.820%', '34.680%', '39.520%', '43.420%', '47.180%', '50.320%', '50.910%', '53.580%', '54.040%', '54.390%', '55.130%', '56.820%', '57.610%']
+
+Workers before    accuracies:  ['8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%']
+Workers CFFL      accuracies:  ['46.960%', '68.030%', '71.250%', '74.540%', '79.230%', '83.930%', '85.260%', '81.820%', '80.190%', '82.190%', '86.030%', '88.320%', '87.450%', '87.660%', '67.390%', '74.330%', '88.890%', '89.180%', '89.560%', '90.080%']
+
+Workers before pr accuracies:  ['11.660%', '18.920%', '24.640%', '27.840%', '27.780%', '35.710%', '41.700%', '46.390%', '51.770%', '50.130%', '51.890%', '60.080%', '62.020%', '54.080%', '67.320%', '61.500%', '67.260%', '70.560%', '73.200%', '75.670%']
+Workers CFFL pret accuracies:  ['12.530%', '20.180%', '26.100%', '31.840%', '31.780%', '40.810%', '42.690%', '46.000%', '51.460%', '49.140%', '51.300%', '60.070%', '61.140%', '53.580%', '66.970%', '61.390%', '66.610%', '70.340%', '73.090%', '75.620%']
+
+Epoch 21:
+credits, credit threshold: tensor(0.0333)
+tensor([0.0508, 0.0510, 0.0511, 0.0509, 0.0507, 0.0493, 0.0500, 0.0499, 0.0501,
+        0.0495, 0.0500, 0.0498, 0.0497, 0.0499, 0.0494, 0.0497, 0.0498, 0.0496,
+        0.0498, 0.0490])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+credits, credit_threshold pretrain: tensor(0.0333)
+tensor([0.0502, 0.0502, 0.0503, 0.0503, 0.0502, 0.0501, 0.0502, 0.0502, 0.0498,
+        0.0501, 0.0498, 0.0495, 0.0500, 0.0499, 0.0498, 0.0498, 0.0500, 0.0501,
+        0.0498, 0.0497])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['34.230%', '42.010%', '52.790%', '67.220%', '72.810%', '78.300%', '79.500%', '78.470%', '81.120%', '83.350%', '84.130%', '84.530%', '85.150%', '85.110%', '86.030%', '87.550%', '87.430%', '87.350%', '82.760%', '88.790%']
+Workers DSSGD     accuracies:  ['67.700%', '67.050%', '66.250%', '64.990%', '64.030%', '63.140%', '62.810%', '61.940%', '62.070%', '61.640%', '62.440%', '63.680%', '64.920%', '65.950%', '66.890%', '67.520%', '67.930%', '67.670%', '66.960%', '66.260%']
+
+Workers before    accuracies:  ['8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%']
+Workers CFFL      accuracies:  ['71.020%', '78.500%', '81.450%', '85.970%', '84.770%', '86.310%', '87.540%', '85.590%', '87.540%', '88.450%', '88.160%', '89.530%', '88.960%', '89.530%', '89.720%', '89.810%', '90.190%', '90.400%', '90.300%', '91.200%']
+
+Workers before pr accuracies:  ['11.660%', '18.920%', '24.640%', '27.840%', '27.780%', '35.710%', '41.700%', '46.390%', '51.770%', '50.130%', '51.890%', '60.080%', '62.020%', '54.080%', '67.320%', '61.500%', '67.260%', '70.560%', '73.200%', '75.670%']
+Workers CFFL pret accuracies:  ['74.890%', '79.860%', '78.760%', '81.690%', '83.300%', '84.340%', '79.400%', '80.100%', '79.550%', '81.570%', '79.570%', '80.170%', '78.580%', '80.270%', '81.190%', '79.310%', '82.920%', '84.940%', '84.760%', '84.530%']
+
+Epoch 41:
+credits, credit threshold: tensor(0.0333)
+tensor([0.0504, 0.0505, 0.0503, 0.0503, 0.0502, 0.0494, 0.0499, 0.0499, 0.0504,
+        0.0497, 0.0498, 0.0499, 0.0499, 0.0500, 0.0499, 0.0498, 0.0503, 0.0497,
+        0.0502, 0.0494])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+credits, credit_threshold pretrain: tensor(0.0333)
+tensor([0.0502, 0.0503, 0.0501, 0.0501, 0.0499, 0.0501, 0.0501, 0.0501, 0.0500,
+        0.0499, 0.0499, 0.0499, 0.0499, 0.0501, 0.0498, 0.0501, 0.0499, 0.0499,
+        0.0501, 0.0497])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['42.410%', '63.310%', '71.420%', '81.730%', '80.990%', '83.450%', '84.780%', '83.680%', '86.130%', '87.080%', '86.090%', '87.580%', '87.000%', '87.860%', '88.010%', '88.520%', '88.780%', '88.580%', '88.630%', '89.590%']
+Workers DSSGD     accuracies:  ['75.200%', '75.210%', '75.300%', '75.590%', '75.990%', '76.340%', '76.970%', '77.700%', '78.300%', '79.350%', '80.410%', '81.430%', '82.230%', '82.680%', '83.160%', '83.370%', '83.510%', '83.520%', '83.470%', '83.240%']
+
+Workers before    accuracies:  ['8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%']
+Workers CFFL      accuracies:  ['71.380%', '78.830%', '81.630%', '86.040%', '84.800%', '86.480%', '87.630%', '85.670%', '87.650%', '88.470%', '88.190%', '89.550%', '89.130%', '89.550%', '89.780%', '89.840%', '90.280%', '90.400%', '90.360%', '91.240%']
+
+Workers before pr accuracies:  ['11.660%', '18.920%', '24.640%', '27.840%', '27.780%', '35.710%', '41.700%', '46.390%', '51.770%', '50.130%', '51.890%', '60.080%', '62.020%', '54.080%', '67.320%', '61.500%', '67.260%', '70.560%', '73.200%', '75.670%']
+Workers CFFL pret accuracies:  ['84.110%', '86.340%', '87.220%', '87.730%', '87.660%', '88.420%', '88.740%', '87.360%', '88.450%', '88.820%', '88.710%', '89.090%', '88.280%', '88.610%', '88.950%', '88.990%', '89.440%', '89.440%', '89.210%', '88.830%']
+
+Epoch 61:
+credits, credit threshold: tensor(0.0333)
+tensor([0.0504, 0.0503, 0.0500, 0.0502, 0.0501, 0.0495, 0.0498, 0.0502, 0.0502,
+        0.0500, 0.0498, 0.0499, 0.0500, 0.0500, 0.0500, 0.0499, 0.0502, 0.0498,
+        0.0501, 0.0497])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+credits, credit_threshold pretrain: tensor(0.0333)
+tensor([0.0500, 0.0501, 0.0501, 0.0501, 0.0500, 0.0500, 0.0500, 0.0500, 0.0501,
+        0.0500, 0.0497, 0.0500, 0.0500, 0.0499, 0.0502, 0.0500, 0.0500, 0.0499,
+        0.0500, 0.0499])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['54.140%', '71.100%', '76.790%', '83.800%', '82.870%', '84.890%', '85.780%', '84.330%', '87.080%', '87.410%', '86.580%', '87.940%', '87.560%', '87.810%', '88.120%', '88.440%', '88.640%', '88.640%', '88.580%', '89.670%']
+Workers DSSGD     accuracies:  ['87.740%', '87.730%', '87.660%', '87.620%', '88.020%', '87.960%', '87.770%', '87.490%', '87.440%', '87.420%', '87.220%', '87.360%', '87.260%', '87.070%', '87.040%', '86.620%', '86.330%', '86.110%', '85.880%', '85.500%']
+
+Workers before    accuracies:  ['8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%']
+Workers CFFL      accuracies:  ['71.700%', '79.000%', '81.730%', '86.080%', '84.900%', '86.570%', '87.640%', '85.710%', '87.670%', '88.520%', '88.250%', '89.590%', '89.220%', '89.570%', '89.780%', '89.860%', '90.240%', '90.470%', '90.410%', '91.250%']
+
+Workers before pr accuracies:  ['11.660%', '18.920%', '24.640%', '27.840%', '27.780%', '35.710%', '41.700%', '46.390%', '51.770%', '50.130%', '51.890%', '60.080%', '62.020%', '54.080%', '67.320%', '61.500%', '67.260%', '70.560%', '73.200%', '75.670%']
+Workers CFFL pret accuracies:  ['83.560%', '86.500%', '87.350%', '88.460%', '87.670%', '88.850%', '89.090%', '87.200%', '89.170%', '89.230%', '88.690%', '89.980%', '89.260%', '89.390%', '89.380%', '89.630%', '89.990%', '89.570%', '89.550%', '90.050%']
+
+Epoch 81:
+credits, credit threshold: tensor(0.0333)
+tensor([0.0501, 0.0501, 0.0501, 0.0501, 0.0500, 0.0498, 0.0500, 0.0501, 0.0501,
+        0.0500, 0.0500, 0.0499, 0.0500, 0.0500, 0.0500, 0.0499, 0.0501, 0.0498,
+        0.0501, 0.0499])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+
+credits, credit_threshold pretrain: tensor(0.0333)
+tensor([0.0500, 0.0501, 0.0500, 0.0500, 0.0500, 0.0499, 0.0500, 0.0501, 0.0500,
+        0.0499, 0.0501, 0.0500, 0.0499, 0.0501, 0.0500, 0.0500, 0.0500, 0.0499,
+        0.0501, 0.0500])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['61.420%', '74.340%', '78.370%', '84.710%', '83.700%', '85.260%', '86.110%', '84.920%', '87.050%', '86.880%', '86.400%', '87.960%', '87.060%', '87.850%', '87.900%', '88.430%', '88.940%', '88.450%', '88.370%', '89.480%']
+Workers DSSGD     accuracies:  ['89.060%', '89.050%', '89.230%', '89.150%', '89.290%', '89.450%', '89.530%', '89.660%', '89.790%', '90.020%', '90.010%', '90.160%', '90.280%', '90.530%', '90.540%', '90.600%', '90.680%', '90.450%', '90.280%', '90.070%']
+
+Workers before    accuracies:  ['8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%', '8.440%']
+Workers CFFL      accuracies:  ['71.810%', '79.080%', '81.860%', '86.160%', '84.910%', '86.590%', '87.660%', '85.760%', '87.670%', '88.540%', '88.260%', '89.640%', '89.270%', '89.590%', '89.800%', '89.870%', '90.270%', '90.490%', '90.380%', '91.280%']
+
+Workers before pr accuracies:  ['11.660%', '18.920%', '24.640%', '27.840%', '27.780%', '35.710%', '41.700%', '46.390%', '51.770%', '50.130%', '51.890%', '60.080%', '62.020%', '54.080%', '67.320%', '61.500%', '67.260%', '70.560%', '73.200%', '75.670%']
+Workers CFFL pret accuracies:  ['83.420%', '86.510%', '87.120%', '88.620%', '87.490%', '88.890%', '89.220%', '87.280%', '89.180%', '89.140%', '88.410%', '90.220%', '89.110%', '89.440%', '89.270%', '89.560%', '90.030%', '89.600%', '89.360%', '90.270%']
+pretraining 5.0057971477508545
+evaluation after pretraining 4.428544282913208
+workers local training 1045.6506669521332
+server aggregation 153.6217896938324
+server aggregation with pretraining 151.7931113243103
+server aggregation dssgd 149.11450576782227
+fed model eval on valid loader 13.51628565788269
+credit updates 0.6525282859802246
+assign updates 13.262909650802612
+performance update 940.0152883529663
+total seconds 2477.061427116394
+Time_dict-----
+{"pretraining": 5.0057971477508545, "evaluation after pretraining": 4.428544282913208, "workers local training": 1045.6506669521332, "server aggregation": 153.6217896938324, "server aggregation with pretraining": 151.7931113243103, "server aggregation dssgd": 149.11450576782227, "fed model eval on valid loader": 13.51628565788269, "credit updates": 0.6525282859802246, "assign updates": 13.262909650802612, "performance update": 940.0152883529663}
+-----
+Performance and Fairness analysis:
+Worker credits : [0.05015191063284874, 0.050081413239240646, 0.05001653730869293, 0.05008072406053543, 0.050089988857507706, 0.04982020705938339, 0.04989613592624664, 0.0500541552901268, 0.050045792013406754, 0.049984365701675415, 0.049963273108005524, 0.04999624565243721, 0.04992298781871796, 0.050001733005046844, 0.04999471828341484, 0.04999709501862526, 0.05009692534804344, 0.04982057958841324, 0.05002788081765175, 0.04995740205049515]
+Number of reputable parties:  20
+Worker credits pretrain: [0.05001663416624069, 0.049997296184301376, 0.05001015588641167, 0.05001072585582733, 0.05000239238142967, 0.04995602369308472, 0.04996774345636368, 0.05002313107252121, 0.050009045749902725, 0.04997491091489792, 0.050002239644527435, 0.05000843480229378, 0.05002467706799507, 0.04997033253312111, 0.05006460100412369, 0.049973588436841965, 0.05007334426045418, 0.04997565224766731, 0.050011392682790756, 0.04992774873971939]
+Number of reputable parties with pretrain:  20
+----Results without pretrain
+standalone_best_worker  -  0.8952999711036682
+CFFL_best_worker  -  0.9125999808311462
+rr_dssgd_best  -  0.9291999936103821
+standlone_vs_rrdssgd  -  [0.5895738627532372]
+standalone_vs_final  -  [0.988583249846096]
+----
+----Results with pretrain
+standalone_best_worker  -  0.8952999711036682
+CFFL_best_worker  -  0.902899980545044
+rr_dssgd_best  -  0.9291999936103821
+standlone_vs_rrdssgd  -  [0.5895738627532372]
+standalone_vs_final  -  [0.9533811958707841]
+----
+for all without pretraining:
+standalone_vs_final_mean [0.988583249846096]
+standlone_vs_rrdssgd_mean [0.5895738627532372]
+rr_dssgd_best_mean 0.9291999936103821
+CFFL_best_worker_mean 0.9125999808311462
+standalone_best_worker_mean 0.8952999711036682
+
+for all the pretraining included:
+standalone_vs_final_mean [0.9533811958707841]
+standlone_vs_rrdssgd_mean [0.5895738627532372]
+rr_dssgd_best_mean 0.9291999936103821
+CFFL_best_worker_mean 0.902899980545044
+standalone_best_worker_mean 0.8952999711036682
+ettings are:  {'gpu': 0, 'device': device(type='cuda', index=0), 'dataset': 'mnist', 'sample_size_cap': 6000, 'n_workers': 10, 'split': 'classimbalance', 'theta': 0.1, 'batch_size': 16, 'train_val_split_ratio': 0.9, 'alpha': 5, 'epoch_sample_size': inf, 'n_freeriders': 0, 'model_fn': <class 'utils.models.MLP_Net'>, 'optimizer_fn': <class 'torch.optim.sgd.SGD'>, 'loss_fn': NLLLoss(), 'pretraining_lr': 0.005, 'dssgd_lr': 0.005, 'std_lr': 0.005, 'lr': 0.1, 'grad_clip': 0.001, 'gamma': 1, 'pretrain_epochs': 5, 'fl_epochs': 100, 'fl_individual_epochs': 5, 'aggregate_mode': 'credit-sum', 'largest_criterion': 'layer', 'device_ids': [0]}
+MNIST data shape torch.Size([60000, 1, 32, 32]), targets shape torch.Size([60000])
+MNIST data shape torch.Size([10000, 1, 32, 32]), targets shape torch.Size([10000])
+------
+Train to split size: 6000. Validation size: 6000. Test size: 10000
+------
+Experiment : No.1/1
+class_sizes for each party [ 1  2  3  4  5  6  7  8  9 10]
+Shard sizes are:  [600, 600, 600, 600, 600, 600, 600, 600, 600, 600]
+CFFL server model validation accuracy : 10.7167%
+CFFL server model test accuracy : 10.8700%
+
+Epoch 1:
+credits, credit threshold: tensor(0.0667)
+tensor([0.1131, 0.1158, 0.1143, 0.0996, 0.0858, 0.0729, 0.0763, 0.1130, 0.1072,
+        0.1021])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+credits, credit_threshold pretrain: tensor(0.0667)
+tensor([0.0826, 0.0833, 0.0809, 0.0837, 0.0899, 0.0942, 0.0902, 0.1279, 0.1313,
+        0.1359])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['9.800%', '15.160%', '13.870%', '17.980%', '17.690%', '16.080%', '16.480%', '18.400%', '19.410%', '19.470%']
+Workers DSSGD     accuracies:  ['18.600%', '13.290%', '10.610%', '12.180%', '15.330%', '17.470%', '19.290%', '20.080%', '20.520%', '20.960%']
+
+Workers before    accuracies:  ['10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%']
+Workers CFFL      accuracies:  ['9.800%', '21.120%', '31.010%', '40.150%', '49.410%', '56.340%', '59.980%', '59.680%', '77.530%', '85.550%']
+
+Workers before pr accuracies:  ['9.800%', '21.110%', '30.300%', '38.340%', '47.060%', '46.650%', '50.460%', '53.080%', '54.430%', '56.210%']
+Workers CFFL pret accuracies:  ['9.800%', '21.110%', '30.640%', '39.290%', '48.370%', '53.790%', '60.690%', '69.190%', '73.710%', '78.530%']
+
+Epoch 21:
+credits, credit threshold: tensor(0.0667)
+tensor([0.1008, 0.1005, 0.1001, 0.0990, 0.0994, 0.0986, 0.0999, 0.1008, 0.0993,
+        0.1017])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+credits, credit_threshold pretrain: tensor(0.0667)
+tensor([0.0984, 0.0989, 0.0986, 0.0966, 0.0997, 0.0957, 0.0995, 0.1022, 0.1027,
+        0.1076])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['9.800%', '21.120%', '30.950%', '39.640%', '49.220%', '55.740%', '63.540%', '72.510%', '78.620%', '84.460%']
+Workers DSSGD     accuracies:  ['49.250%', '50.940%', '49.080%', '49.970%', '50.980%', '52.670%', '54.960%', '58.160%', '61.270%', '63.910%']
+
+Workers before    accuracies:  ['10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%']
+Workers CFFL      accuracies:  ['9.800%', '21.120%', '31.060%', '40.240%', '49.650%', '56.640%', '65.410%', '74.600%', '81.320%', '88.390%']
+
+Workers before pr accuracies:  ['9.800%', '21.110%', '30.300%', '38.340%', '47.060%', '46.650%', '50.460%', '53.080%', '54.430%', '56.210%']
+Workers CFFL pret accuracies:  ['9.800%', '21.120%', '31.120%', '40.370%', '49.640%', '56.550%', '65.210%', '74.440%', '80.290%', '87.720%']
+
+Epoch 41:
+credits, credit threshold: tensor(0.0667)
+tensor([0.0996, 0.0997, 0.0997, 0.0994, 0.0998, 0.0996, 0.1002, 0.1011, 0.1001,
+        0.1008])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+credits, credit_threshold pretrain: tensor(0.0667)
+tensor([0.0989, 0.0989, 0.0993, 0.0978, 0.0998, 0.0986, 0.1002, 0.1013, 0.1021,
+        0.1032])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['9.800%', '21.120%', '31.070%', '40.210%', '49.430%', '56.020%', '64.470%', '73.630%', '80.150%', '86.710%']
+Workers DSSGD     accuracies:  ['69.720%', '69.730%', '68.480%', '68.210%', '68.270%', '69.120%', '69.930%', '70.680%', '71.850%', '72.470%']
+
+Workers before    accuracies:  ['10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%']
+Workers CFFL      accuracies:  ['9.800%', '21.120%', '31.070%', '40.240%', '49.680%', '56.640%', '65.480%', '74.630%', '81.400%', '88.420%']
+
+Workers before pr accuracies:  ['9.800%', '21.110%', '30.300%', '38.340%', '47.060%', '46.650%', '50.460%', '53.080%', '54.430%', '56.210%']
+Workers CFFL pret accuracies:  ['9.800%', '21.120%', '31.150%', '40.440%', '49.700%', '56.600%', '65.470%', '74.640%', '80.620%', '88.130%']
+
+Epoch 61:
+credits, credit threshold: tensor(0.0667)
+tensor([0.0996, 0.0998, 0.0995, 0.0996, 0.1000, 0.0998, 0.1004, 0.1008, 0.1000,
+        0.1005])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+credits, credit_threshold pretrain: tensor(0.0667)
+tensor([0.0997, 0.0996, 0.0996, 0.0987, 0.1000, 0.0998, 0.0996, 0.1009, 0.1005,
+        0.1015])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['9.800%', '21.120%', '31.070%', '40.190%', '49.550%', '56.050%', '64.770%', '73.870%', '80.100%', '87.100%']
+Workers DSSGD     accuracies:  ['74.570%', '74.480%', '75.100%', '74.810%', '73.610%', '71.680%', '70.180%', '69.670%', '69.560%', '70.640%']
+
+Workers before    accuracies:  ['10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%']
+Workers CFFL      accuracies:  ['9.800%', '21.120%', '31.070%', '40.250%', '49.680%', '56.630%', '65.480%', '74.640%', '81.460%', '88.430%']
+
+Workers before pr accuracies:  ['9.800%', '21.110%', '30.300%', '38.340%', '47.060%', '46.650%', '50.460%', '53.080%', '54.430%', '56.210%']
+Workers CFFL pret accuracies:  ['9.800%', '21.120%', '31.150%', '40.430%', '49.720%', '56.650%', '65.520%', '74.740%', '80.780%', '88.170%']
+
+Epoch 81:
+credits, credit threshold: tensor(0.0667)
+tensor([0.1000, 0.1002, 0.1002, 0.0994, 0.0999, 0.0994, 0.0998, 0.1008, 0.1001,
+        0.1001])
+Reputable parties:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+credits, credit_threshold pretrain: tensor(0.0667)
+tensor([0.0997, 0.0997, 0.0997, 0.0999, 0.1004, 0.0993, 0.0994, 0.1006, 0.1005,
+        0.1009])
+Reputable parties pretrain:  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+Below are testset accuracies: ---
+Workers standalone accuracies:  ['9.800%', '21.110%', '31.070%', '40.200%', '49.550%', '56.090%', '64.990%', '73.930%', '80.190%', '87.270%']
+Workers DSSGD     accuracies:  ['77.430%', '78.080%', '79.260%', '79.990%', '79.350%', '78.360%', '77.860%', '76.800%', '76.570%', '78.500%']
+
+Workers before    accuracies:  ['10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%', '10.870%']
+Workers CFFL      accuracies:  ['9.800%', '21.120%', '31.070%', '40.260%', '49.660%', '56.610%', '65.490%', '74.670%', '81.480%', '88.410%']
+
+Workers before pr accuracies:  ['9.800%', '21.110%', '30.300%', '38.340%', '47.060%', '46.650%', '50.460%', '53.080%', '54.430%', '56.210%']
+Workers CFFL pret accuracies:  ['9.800%', '21.120%', '31.140%', '40.450%', '49.750%', '56.680%', '65.520%', '74.780%', '80.840%', '88.230%']
+pretraining 2.6781113147735596
+evaluation after pretraining 1.9093067646026611
+workers local training 573.5367102622986
+server aggregation 62.55663514137268
+server aggregation with pretraining 61.08559250831604
+server aggregation dssgd 59.859424114227295
+fed model eval on valid loader 11.107487201690674
+credit updates 0.23166203498840332
+assign updates 4.293513298034668
+performance update 371.1232604980469
+total seconds 1148.3817031383514
+Time_dict-----
+{"pretraining": 2.6781113147735596, "evaluation after pretraining": 1.9093067646026611, "workers local training": 573.5367102622986, "server aggregation": 62.55663514137268, "server aggregation with pretraining": 61.08559250831604, "server aggregation dssgd": 59.859424114227295, "fed model eval on valid loader": 11.107487201690674, "credit updates": 0.23166203498840332, "assign updates": 4.293513298034668, "performance update": 371.1232604980469}
+-----
+Performance and Fairness analysis:
+Worker credits : [0.09964720904827118, 0.09983541071414948, 0.09958501905202866, 0.09979569166898727, 0.10023856908082962, 0.10000254213809967, 0.10016778111457825, 0.10023491829633713, 0.09995433688163757, 0.10053853690624237]
+Number of reputable parties:  10
+Worker credits pretrain: [0.09982970356941223, 0.09984729439020157, 0.09988076239824295, 0.09941040724515915, 0.1002010926604271, 0.09974892437458038, 0.0996919497847557, 0.10018687695264816, 0.10038208961486816, 0.10082091391086578]
+Number of reputable parties with pretrain:  10
+----Results without pretrain
+standalone_best_worker  -  0.8728999495506287
+CFFL_best_worker  -  0.8841999769210815
+rr_dssgd_best  -  0.8159999847412109
+standlone_vs_rrdssgd  -  [0.05131051598690467]
+standalone_vs_final  -  [0.9999608494873149]
+----
+----Results with pretrain
+standalone_best_worker  -  0.8728999495506287
+CFFL_best_worker  -  0.8822999596595764
+rr_dssgd_best  -  0.8159999847412109
+standlone_vs_rrdssgd  -  [0.05131051598690467]
+standalone_vs_final  -  [0.9999905899836388]
+----
+for all without pretraining:
+standalone_vs_final_mean [0.9999608494873149]
+standlone_vs_rrdssgd_mean [0.05131051598690467]
+rr_dssgd_best_mean 0.8159999847412109
+CFFL_best_worker_mean 0.8841999769210815
+standalone_best_worker_mean 0.8728999495506287
+
+for all the pretraining included:
+standalone_vs_final_mean [0.9999905899836388]
+standlone_vs_rrdssgd_mean [0.05131051598690467]
+rr_dssgd_best_mean 0.8159999847412109
+CFFL_best_worker_mean 0.8822999596595764
+standalone_best_worker_mean 0.8728999495506287
+
