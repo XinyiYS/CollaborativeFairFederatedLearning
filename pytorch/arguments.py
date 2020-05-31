@@ -188,6 +188,7 @@ sst_args = {
 	'class_num': 5,
 	'kernel_num': 128,
 	'kernel_sizes': [3,3,3],
+	'static':False,
 
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(), 
@@ -232,6 +233,7 @@ mr_args = {
 	'class_num': 2,
 	'kernel_num': 128,
 	'kernel_sizes': [3,3,3],
+	'static':False,
 
 	'optimizer_fn': optim.SGD,
 	'loss_fn': nn.NLLLoss(), 
