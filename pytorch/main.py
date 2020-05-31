@@ -80,7 +80,9 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 
 	# for the repeats of the experiment
 	# only need to prepare the data once
-	data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'], n_workers=args['n_workers'], sample_size_cap=args['sample_size_cap'], train_val_split_ratio=args['train_val_split_ratio'], device=args['device'])
+	data_prep = Data_Prepper(args['dataset'], 
+		train_batch_size=args['batch_size'], n_workers=args['n_workers'], sample_size_cap=args['sample_size_cap'], 
+		train_val_split_ratio=args['train_val_split_ratio'], device=args['device'], args_dict=args)
 
 	for i in range(repeat):
 		print()
@@ -145,22 +147,24 @@ if __name__ == '__main__':
 	# init steps	
 
 
+
 	experiment_args = []	
 	args = copy.deepcopy(mr_args)
 	for n_workers in [5, 10, 20]:
 		args['n_workers'] = n_workers
+		args['alpha'] = 5
 
 		experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args, repeat=1)
+	run_experiments_full(experiment_args)
 
-
-
-	experiment_args = []	
-	args = copy.deepcopy(sst_args)
-	for n_workers in [5, 10, 20]:
-		args['n_workers'] = n_workers
-		experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args, repeat=1)
+	# experiment_args = []	
+	# args = copy.deepcopy(cifar_cnn_args)
+	# for n_workers, sample_size_cap in [[5, 10000], [10, 20000], [20, 40000]]:
+	# 	args['n_workers'] = n_workers
+	# 	args['sample_size_cap'] = sample_size_cap
+			
+	# 	experiment_args.append(copy.deepcopy(args))
+	# run_experiments_full(experiment_args, repeat=1)
 
 
 

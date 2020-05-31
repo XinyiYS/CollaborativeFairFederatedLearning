@@ -21,7 +21,10 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 	performance_dicts = []
 	performance_dicts_pretrain = []
 
-	data_prep = Data_Prepper(args['dataset'], train_batch_size=args['batch_size'], n_workers=args['n_workers'], sample_size_cap=args['sample_size_cap'], train_val_split_ratio=args['train_val_split_ratio'], device=args['device'])
+	data_prep = Data_Prepper(args['dataset'], 
+		train_batch_size=args['batch_size'], n_workers=args['n_workers'], sample_size_cap=args['sample_size_cap'], 
+		train_val_split_ratio=args['train_val_split_ratio'], device=args['device'], args_dict=args)
+
 	for i in range(repeat):
 
 		print("Experiment : No.{}/{}".format(str(i+1) ,str(repeat)))
@@ -82,19 +85,20 @@ from arguments import adult_args, mnist_args, names_args, update_gpu, mr_args, s
 if __name__ == '__main__':
 	# init steps
 	# args = mnist_args
-	args = mnist_args
-	args['n_workers'] = 5
-	args['sample_size_cap'] = 40000
-	args['theta'] = 0.1 
-	args['largest_criterion'] = 'layer'
-	args['batch_size'] = 16
-	args['gamma'] = 1
-	args['split']='powerlaw'
-	args['grad_clip']=0.001
-	args['pretrain_epochs']=5
-	args['pretraining_lr']=0.005
-	args['dssgd_lr']=0.005
-	args['aggregate_mode']='credit-sum'
+	args = mr_args
+	# args = cifar_cnn_args
+	# args['n_workers'] = 20
+	# args['sample_size_cap'] = 40000
+	# args['theta'] = 0.1 
+	# args['largest_criterion'] = 'layer'
+	# args['batch_size'] = 128
+	# args['gamma'] = 1
+	# args['split']='powerlaw'
+	# args['grad_clip']=0.001
+	# args['pretrain_epochs']=5
+	# args['pretraining_lr']=0.005
+	# args['dssgd_lr']=0.005
+	# args['aggregate_mode']='credit-sum'
 
 	run_experiments(args, 1)
 	

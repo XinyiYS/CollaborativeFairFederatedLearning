@@ -10,8 +10,9 @@ from torch.utils.data.sampler import SubsetRandomSampler
 from torchtext.data import Field, LabelField, BucketIterator
 
 class Data_Prepper:
-	def __init__(self, name, train_batch_size, n_workers, sample_size_cap=-1, test_batch_size=100, valid_batch_size=None, train_val_split_ratio=0.8, device=None):
+	def __init__(self, name, train_batch_size, n_workers, sample_size_cap=-1, test_batch_size=100, valid_batch_size=None, train_val_split_ratio=0.8, device=None,args_dict=args_dict):
 		self.args = None
+		self.args_dict = args_dict
 		self.name = name
 		self.device = device
 		self.n_workers = n_workers
@@ -32,10 +33,10 @@ class Data_Prepper:
 			self.args.embed_num = len(self.args.text_field.vocab)
 			self.args.class_num = len(self.args.label_field.vocab)
 			
-			self.args.embed_dim = 128
-			self.args.kernel_num = 128
-			self.args.kernel_sizes = [3,4,5]
-			self.args.static = False
+			self.args.embed_dim = self.args_dict['embed_dim']
+			self.args.kernel_num = self.args_dict['kernel_num']
+			self.args.kernel_sizes = self.args_dict['kernel_sizes']
+			self.args.static = self.args_dict['static']
 			print("Model embedding arguments:", self.args)
 
 
