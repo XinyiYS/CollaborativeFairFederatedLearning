@@ -10,7 +10,7 @@ from torch.utils.data.sampler import SubsetRandomSampler
 from torchtext.data import Field, LabelField, BucketIterator
 
 class Data_Prepper:
-	def __init__(self, name, train_batch_size, n_workers, sample_size_cap=-1, test_batch_size=100, valid_batch_size=None, train_val_split_ratio=0.8, device=None,args_dict=args_dict):
+	def __init__(self, name, train_batch_size, n_workers, sample_size_cap=-1, test_batch_size=100, valid_batch_size=None, train_val_split_ratio=0.8, device=None,args_dict=None):
 		self.args = None
 		self.args_dict = args_dict
 		self.name = name
@@ -410,12 +410,12 @@ def get_train_valid_indices(n_samples, train_val_split_ratio, sample_size_cap=No
 def split_torchtext_dataset_ratios(data, ratios):
 	train_datasets = []
 	while len(ratios) > 1:
-		ratio = ratios.pop(0)
-		split_ratio = ratio / sum(ratios)
+
+		split_ratio = ratios[0] / sum(ratios)
+		ratios.pop(0)
 		train_dataset, data = data.split(split_ratio=split_ratio, random_state=random.seed(1234))
 		train_datasets.append(train_dataset)
 	train_datasets.append(data)
-
 	return train_datasets
 
 
