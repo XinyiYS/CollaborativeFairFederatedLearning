@@ -104,6 +104,7 @@ class RNN(nn.Module):
 		return torch.zeros(1, self.hidden_size).to(self.device)
 
 # https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
+# LeNet
 class CNNCifar(nn.Module):
 	def __init__(self, device=None):
 		super(CNNCifar, self).__init__()
@@ -212,6 +213,94 @@ class ResNet18_torch(nn.Module):
 
 		return x
 
+
+
+class AlexNet(nn.Module):
+	def __init__(self, device=None, num_classes=10):
+		super(AlexNet, self).__init__()
+		self.features = nn.Sequential(
+			nn.Conv2d(3, 64, kernel_size=3, stride=2, padding=1),
+			nn.ReLU(inplace=True),
+			nn.MaxPool2d(kernel_size=2),
+			nn.Conv2d(64, 192, kernel_size=3, padding=1),
+			nn.ReLU(inplace=True),
+			nn.MaxPool2d(kernel_size=2),
+			nn.Conv2d(192, 384, kernel_size=3, padding=1),
+			nn.ReLU(inplace=True),
+			nn.Conv2d(384, 256, kernel_size=3, padding=1),
+			nn.ReLU(inplace=True),
+			nn.Conv2d(256, 256, kernel_size=3, padding=1),
+			nn.ReLU(inplace=True),
+			nn.MaxPool2d(kernel_size=2),
+		)
+		self.classifier = nn.Sequential(
+			nn.Dropout(),
+			nn.Linear(256 * 2 * 2, 4096),
+			nn.ReLU(inplace=True),
+			nn.Dropout(),
+			nn.Linear(4096, 4096),
+			nn.ReLU(inplace=True),
+			nn.Linear(4096, num_classes),
+		)
+
+	def forward(self, x):
+		x = self.features(x)
+		x = x.view(x.size(0), 256 * 2 * 2)
+		x = self.classifier(x)
+		return x
+
+
+
+
+cfg = {
+	'VGG11': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
+	'VGG13': [64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
+	'VGG16': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'],
+	'VGG19': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'],
+}
+
+
+class VGG(nn.Module):
+	def __init__(self, vgg_name, device=None):
+		super(VGG, self).__init__()
+		self.features = self._make_layers(cfg[vgg_name])
+		self.classifier = nn.Linear(512, 10)
+
+	def forward(self, x):
+		out = self.features(x)
+		out = out.view(out.size(0), -1)
+		out = self.classifier(out)
+		return out
+
+	def _make_layers(self, cfg):
+		layers = []
+		in_channels = 3
+		for x in cfg:
+			if x == 'M':
+				layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
+			else:
+				layers += [nn.Conv2d(in_channels, x, kernel_size=3, padding=1),
+						   nn.BatchNorm2d(x),
+						   nn.ReLU(inplace=True)]
+				in_channels = x
+		layers += [nn.AvgPool2d(kernel_size=1, stride=1)]
+		return nn.Sequential(*layers)
+
+
+def VGG11(device=None):
+	return VGG('VGG11',device=device)
+
+
+def VGG13(device=None):
+	return VGG('VGG13',device=device)
+
+
+def VGG16(device=None):
+	return VGG('VGG16',device=device)
+
+
+def VGG19(device=None):
+	return VGG('VGG19',device=device)
 
 class CNN_Text(nn.Module):
 	

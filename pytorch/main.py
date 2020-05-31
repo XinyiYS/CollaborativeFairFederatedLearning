@@ -145,23 +145,24 @@ if __name__ == '__main__':
 	# init steps	
 
 
+	experiment_args = []	
+	args = copy.deepcopy(mr_args)
+	for n_workers in [5, 10, 20]:
+		args['n_workers'] = n_workers
+
+		experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args, repeat=1)
+
+
 
 	experiment_args = []	
 	args = copy.deepcopy(sst_args)
 	for n_workers in [5, 10, 20]:
 		args['n_workers'] = n_workers
-		args['alpha'] = 5
 		experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args, repeat=1)
 
-	experiment_args = []	
-	args = copy.deepcopy(sst_args)
-	for n_workers in [5, 10, 20]:
-		args['n_workers'] = n_workers
-		args['alpha'] = 5
-		args['largest_criterion'] = 'layer'
-		experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args, repeat=1)
+
 
 	'''
 
