@@ -153,6 +153,19 @@ if __name__ == '__main__':
 	for n_workers in [5, 10, 20]:
 		args['n_workers'] = n_workers
 		args['alpha'] = 5
+		args['fl_epochs'] = 200
+
+		experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args)
+
+
+
+	experiment_args = []	
+	args = copy.deepcopy(sst_args)
+	for n_workers in [5, 10, 20]:
+		args['n_workers'] = n_workers
+		args['alpha'] = 5
+		args['fl_epochs'] = 200
 
 		experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args)
