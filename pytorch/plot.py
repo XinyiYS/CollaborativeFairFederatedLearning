@@ -11,6 +11,12 @@ all_party_fmt_styles = ['', '--','-.', 'o-', 'v-',
 
 best_worker_fmt_styles = ['ro-', 'c.-', 'm<-', 'b<-']
 
+acc_top_bottom_limits = {'adult':[0.70, 0.85],
+						'mr':  [0.4, 0.9],
+						'sst': [0, 0.5],
+						'mnist': [0.4, 1],
+						'cifar10':[0, 0.7]}
+
 # Add 'b<-' for w/o pretrain
 FONTSIZE = 17
 
@@ -41,10 +47,9 @@ def plot(df, save_dir=None, name='adult', plot_type=1, show=False, **kwargs):
 	
 
 	# reformat the yticks
-	if name =='adult':
-		bottom, top = 0.70, 0.85
-	else: # for MNIST
-		# for the classimbalance setting, lowest party has acc ~= 10%
+	if name in acc_top_bottom_limits:
+		bottom, top = acc_top_bottom_limits[name]
+	else:
 		bottom, top = 0, 1.0
 
 	if 'bottom' in kwargs and 'top' in kwargs:
