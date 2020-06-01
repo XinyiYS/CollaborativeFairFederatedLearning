@@ -102,8 +102,7 @@ class Federated_Learner:
 			dssgd_optimizer = optimizer_fn(dssgd_model.parameters(), lr=dssgd_lr)
 			# dssgd_optimizer = optimizer_fn(dssgd_model.parameters(), lr=lr)
 			# 0.977 ** 100 ~= 0.1    a smaller decay rate
-			# dssgd_scheduler = torch.optim.lr_scheduler.ExponentialLR(dssgd_optimizer, gamma = gamma)
-			dssgd_scheduler = None
+			dssgd_scheduler = torch.optim.lr_scheduler.ExponentialLR(dssgd_optimizer, gamma = gamma)
 
 			worker = Worker(train_loader=worker_train_loader,
 							model=model, optimizer=optimizer, scheduler=scheduler,

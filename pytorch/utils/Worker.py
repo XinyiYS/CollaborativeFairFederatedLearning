@@ -94,17 +94,22 @@ class Worker():
 				loss.backward()
 				self.optimizer.step()
 
+				self.standalone_optimizer.zero_grad()
+				outputs = self.standalone_model(batch_data)
+				loss = self.loss_fn(outputs, batch_target)
+				loss.backward()
+				self.standalone_optimizer.step()
 
+				# dssgd model
+				self.dssgd_optimizer.zero_grad()
+				outputs = self.dssgd_model(batch_data)
+				loss = self.loss_fn(outputs, batch_target)
+				loss.backward()
+				self.dssgd_optimizer.step()
+
+				'''
 				# E = 1 for standalone and dssgd
-				# and B = 1
 				if not is_pretrain and epoch == 0:
-					# standalone model does not include pre-train
-					# standalone model only trains 1 epoch per communication round
-					'''
-					for data, target in zip(batch_data, batch_target):
-						data = data.unsqueeze(0)
-						target = target.unsqueeze(0)
-					'''
 
 					self.standalone_optimizer.zero_grad()
 					outputs = self.standalone_model(batch_data)
@@ -118,14 +123,17 @@ class Worker():
 					loss = self.loss_fn(outputs, batch_target)
 					loss.backward()
 					self.dssgd_optimizer.step()
+				'''
+
 
 				if iter >= self.epoch_sample_size:
 					# specifically for NLP task to terminate for training efficiency
 					break
 
-			if is_pretrain:
-				# NO lr decay during pretraining
-				continue
+		if not is_pretrain:
+			# NO lr decay during pretraining
+			self.standalone_scheduler.step()
+			self.dssgd_scheduler.step()
 			self.scheduler_pretrain.step()
 			self.scheduler.step()
 
