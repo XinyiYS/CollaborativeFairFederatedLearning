@@ -39,7 +39,7 @@ adult_args = {
 	'loss_fn': nn.NLLLoss(),  #CrossEntropyLoss NLLLoss
 	'pretraining_lr' : 5e-3,  # only used during pretraining for CFFL models, no decay
 	'dssgd_lr': 1e-3, # used for dssgd model, no decay	
-	'std_lr': 1e-3,
+	'std_lr': 1e-2,
 	'lr': 1e-3, # initial lr, with decay
 	'grad_clip': 0.001,
 	'gamma':1,  #0.97**100 ~= 0.1
