@@ -257,7 +257,8 @@ class Data_Prepper:
 		elif name == 'imdb':
 
 			from torch import long as torch_long
-			text_field = Field(tokenize = 'spacy', preprocessing = generate_bigrams)
+			# text_field = Field(tokenize = 'spacy', preprocessing = generate_bigrams) # generate_bigrams takes about 2 minutes
+			text_field = Field(tokenize = 'spacy')
 			label_field = LabelField(dtype = torch_long)
 
 			dirname = '.data/imdb/aclImdb'
@@ -266,10 +267,15 @@ class Data_Prepper:
 			from torchtext import datasets
 
 
-			train_data, test_data = datasets.IMDB.splits(text_field, label_field)
+			train_data, test_data = datasets.IMDB.splits(text_field, label_field) # 25000, 25000 samples each
 
-			test_data, _ = test_data.split(split_ratio=0.01 ,random_state = random.seed(1234))
-			train_data, valid_data = train_data.split(split_ratio=0.8 ,random_state = random.seed(1234))
+			# use 5000 out of 25000 of test_data as the test_data
+			test_data, remaining = test_data.split(split_ratio=0.2 ,random_state = random.seed(1234))
+			
+			# use 5000 out of the remaining 2000 of test_data as valid data
+			valid_data, remaining = remaining.split(split_ratio=0.25 ,random_state = random.seed(1234))
+
+			# train_data, valid_data = train_data.split(split_ratio=self.train_val_split_ratio ,random_state = random.seed(1234))
 
 			indices_list = powerlaw(list(range(len(train_data))), self.n_workers)
 			ratios = [len(indices) / len(train_data) for indices in  indices_list]

@@ -588,9 +588,12 @@ def compute_credits_sinh(credits, credit_threshold, R, val_accs, alpha=5, credit
 			credits[i] = 0
 
 	if R_size != len(R):
-		print("old R size : {}, new R size: {}".format(R_size, len(R)))
-		print("credit_threshold {}, credits {}".format(credit_threshold.item(), credits.tolist()))
+		# normalize among the reputable parties
+		credits /= credits.sum().float()
 		credit_threshold = compute_credit_threshold(len(R))
+
+		print("old R size : {}, new R size: {}".format(R_size, len(R)))
+		print("new credit_threshold {}, credits {}".format(credit_threshold.item(), credits.tolist()))
 
 	return credits, credit_threshold, R
 

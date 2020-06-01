@@ -144,20 +144,27 @@ imdb_args = {
 
 
 	# model parameters
-	'model_fn': RNN_IMDB,
+	'model_fn': CNN_Text, #RNN_IMDB
+	'embed_num': 20000,
+	'embed_dim': 300,
+	'class_num': 2,
+	'kernel_num': 128,
+	'kernel_sizes': [3,3,3],
+	'static':False,
+
 	'optimizer_fn': optim.Adam,
 	'loss_fn': nn.NLLLoss(), 
 	'pretraining_lr' : 1e-4, # only used during pretraining for CFFL models, no decay
 	'dssgd_lr': 1e-4, # used for dssgd model, no decay
 	'lr': 1e-4,
-	'grad_clip':0.1,
+	'grad_clip':1e-3,
 	'gamma':1,   #0.955**100 ~= 0.01
 
 	# training parameters
-	'pretrain_epochs': 1,
+	'pretrain_epochs': 5,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
-	'aggregate_mode':'sum',  # 'mean', 'sum', credit-sum
+	'aggregate_mode':'credit-sum',  # 'mean', 'sum', credit-sum
 	'largest_criterion': 'all', #'layer'
 
 }
