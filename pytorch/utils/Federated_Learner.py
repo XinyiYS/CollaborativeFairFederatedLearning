@@ -404,38 +404,54 @@ class Federated_Learner:
 		and apply to its local model
 		"""
 
-		# preprocess to get the topk largest values for all (only need sort it once for the highest credit)
-		# no pretrain
-		absolute_values = torch.cat([update.data.view(-1).abs() for update in self.aggregated_gradient_updates])
-		topk, _ = torch.topk(absolute_values, int(len(absolute_values) * max(self.credits)))
+		if self.args['largest_criterion'] == 'all':
 
-		# pretrain
-		absolute_values = torch.cat([update.data.view(-1).abs() for update in self.aggregated_gradient_updates_pretrain])
-		topk_pretrain, _ = torch.topk(absolute_values, int(len(absolute_values) * max(self.credits_pretrain)))
-		del absolute_values, _
-
-		for i, worker in enumerate(self.workers):
-
+			# preprocess to get the topk largest values for all (only need sort it once for the highest credit)
 			# no pretrain
-			if i in self.R:
-				agg_grad_update = copy.deepcopy(self.aggregated_gradient_updates)
-				# num_param_downloads = int(self.credits[i] * worker.param_count)
-				num_downloads  = int(self.credits[i] * worker.param_count)
-				allocated_grad = mask_grad_update_by_magnitude(agg_grad_update, topk[num_downloads-1])
-				
-				add_update_to_model(worker.model, allocated_grad)
-				add_update_to_model(worker.model, self.filtered_updates[i], weight=-1.0)
+			absolute_values = torch.cat([update.data.view(-1).abs() for update in self.aggregated_gradient_updates])
+			topk, _ = torch.topk(absolute_values, int(len(absolute_values) * max(self.credits)))
+
+			# pretrain
+			absolute_values = torch.cat([update.data.view(-1).abs() for update in self.aggregated_gradient_updates_pretrain])
+			topk_pretrain, _ = torch.topk(absolute_values, int(len(absolute_values) * max(self.credits_pretrain)))
+			del absolute_values, _
+
+			for i, worker in enumerate(self.workers):
+
+				# no pretrain
+				if i in self.R:
+					agg_grad_update = copy.deepcopy(self.aggregated_gradient_updates)
+					# num_param_downloads = int(self.credits[i] * worker.param_count)
+					num_downloads  = int(self.credits[i] * worker.param_count)
+					allocated_grad = mask_grad_update_by_magnitude(agg_grad_update, topk[num_downloads-1])
+					
+					add_update_to_model(worker.model, allocated_grad)
+					add_update_to_model(worker.model, self.filtered_updates[i], weight=-1.0)
 
 
-			# with pretrain
-			if i in self.R_pretrain:
-				agg_grad_update = copy.deepcopy(self.aggregated_gradient_updates_pretrain)
-				num_downloads  = int(self.credits_pretrain[i] * worker.param_count)
-				allocated_grad = mask_grad_update_by_magnitude(agg_grad_update, topk_pretrain[num_downloads-1])
+				# with pretrain
+				if i in self.R_pretrain:
+					agg_grad_update = copy.deepcopy(self.aggregated_gradient_updates_pretrain)
+					num_downloads  = int(self.credits_pretrain[i] * worker.param_count)
+					allocated_grad = mask_grad_update_by_magnitude(agg_grad_update, topk_pretrain[num_downloads-1])
 
-				add_update_to_model(worker.model_pretrain, allocated_grad)
-				add_update_to_model(worker.model_pretrain, self.filtered_updates_pretrain[i], weight=-1.0)
+					add_update_to_model(worker.model_pretrain, allocated_grad)
+					add_update_to_model(worker.model_pretrain, self.filtered_updates_pretrain[i], weight=-1.0)
 
+		elif self.args['largest_criterion'] == 'layer':
+			
+			for i, worker in enumerate(self.workers):
+				# no pretrain
+				if i in self.R:
+					allocated_grad = mask_grad_update_by_order(self.aggregated_gradient_updates, mask_order=None, mask_percentile=self.credits[i], mode='layer')
+					add_update_to_model(worker.model, allocated_grad)
+					add_update_to_model(worker.model, self.filtered_updates[i], weight=-1.0)
+
+				# with pretrain
+				if i in self.R_pretrain:
+					allocated_grad = mask_grad_update_by_order(self.aggregated_gradient_updates_pretrain, mask_order=None, mask_percentile=self.credits_pretrain[i], mode='layer')
+					add_update_to_model(worker.model_pretrain, allocated_grad)
+					add_update_to_model(worker.model_pretrain, self.filtered_updates_pretrain[i], weight=-1.0)
 		return
 
 	def performance_summary(self, to_print=False):

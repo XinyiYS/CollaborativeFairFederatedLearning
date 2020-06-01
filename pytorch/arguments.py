@@ -24,7 +24,7 @@ adult_args = {
 	# setting parameters
 	'dataset': 'adult',
 	'sample_size_cap': 4000,
-	'n_workers': 10,
+	'n_workers': 5,
 	'split': 'powerlaw',
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
 	'batch_size': 64,
