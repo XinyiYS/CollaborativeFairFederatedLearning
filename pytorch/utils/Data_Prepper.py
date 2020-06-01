@@ -180,15 +180,15 @@ class Data_Prepper:
 			'''
 			from torchvision import transforms			
 			transform_train = transforms.Compose([
-			    transforms.RandomCrop(32, padding=4),
-			    transforms.RandomHorizontalFlip(),
-			    transforms.ToTensor(),
-			    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+				transforms.RandomCrop(32, padding=4),
+				transforms.RandomHorizontalFlip(),
+				transforms.ToTensor(),
+				transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 			])
 
 			transform_test = transforms.Compose([
-			    transforms.ToTensor(),
-			    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+				transforms.ToTensor(),
+				transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 			])
 			'''
 
@@ -358,10 +358,11 @@ class FastCIFAR10(CIFAR10):
 
 		self.targets = torch.Tensor(self.targets).long()
 
-		# https://github.com/kuangliu/pytorch-cifar/blob/master/main.py
-		for i, (mean, std) in enumerate(zip((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))):
+
+		# https://github.com/kuangliu/pytorch-cifar/issues/16
+		# https://github.com/kuangliu/pytorch-cifar/issues/8
+		for i, (mean, std) in enumerate(zip((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))):
 			self.data[:,i].sub_(mean).div_(std)
-		
 
 		# Put both data and targets on GPU in advance
 		self.data, self.targets = self.data, self.targets
