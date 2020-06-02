@@ -12,9 +12,9 @@ all_party_fmt_styles = ['', '--','-.', 'o-', 'v-',
 best_worker_fmt_styles = ['ro-', 'c.-', 'm<-', 'b<-']
 
 acc_top_bottom_limits = {'adult':[0.70, 0.85],
-						'mr':  [0.4, 0.9],
-						'sst': [0, 0.5],
-						'mnist': [0.4, 1],
+						'mr':  [0.5, 0.8],
+						'sst': [0.2, 0.5],
+						'mnist': [0, 1],
 						'cifar10':[0, 0.7]}
 
 # Add 'b<-' for w/o pretrain

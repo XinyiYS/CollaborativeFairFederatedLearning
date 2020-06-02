@@ -49,7 +49,7 @@ def parse(dirname, folder):
 		setup['size'] = int(setup['sample_size_cap'])
 		setup['B'] = int(setup['batch_size'])
 		setup['lr'] = float(setup['lr'])
-		setup['alpha'] = int(setup['alpha'])
+		setup['alpha'] = float(setup['alpha'])
 		setup['theta'] = float(setup['theta'])
 		setup['n_freeriders'] = int(setup['n_freeriders'])
 		setup['pretrain_epochs'] = int(setup['pretrain_epochs'])

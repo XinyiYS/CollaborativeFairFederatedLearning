@@ -38,12 +38,10 @@ class Data_Prepper:
 			self.args.kernel_sizes = self.args_dict['kernel_sizes']
 			self.args.static = self.args_dict['static']
 			print("Model embedding arguments:", self.args)
-
+			print('------')
 			train_size = sum([len(train_dataset) for train_dataset in self.train_datasets])
 			print('------')
 			print("Train to split size: {}. Validation size: {}. Test size: {}".format(train_size, len(self.validation_dataset), len(self.test_dataset)))
-			print('------')
-			exit()
 
 		else:
 			self.train_dataset, self.validation_dataset, self.test_dataset = self.prepare_dataset(name)
@@ -219,7 +217,6 @@ class Data_Prepper:
 
 			import torchtext.datasets as datasets
 			train_data, validation_data, test_data = datasets.SST.splits(text_field, label_field, fine_grained=True)
-
 			max_workers = 20.0
 			if self.n_workers < max_workers:
 				train_data, _ = train_data.split(split_ratio=self.n_workers/max_workers, random_state=random.seed(1234))
