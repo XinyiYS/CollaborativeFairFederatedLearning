@@ -147,48 +147,23 @@ if __name__ == '__main__':
 	# init steps	
 
 
-	experiment_args = []	
-	args = copy.deepcopy(adult_args)
-	for n_workers, sample_size_cap in [[5, 4000], [10, 8000], [20, 16000]]:
-		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		args['theta'] = 0.1
-
-		experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args, repeat=1)
 
 	experiment_args = []	
-	args = copy.deepcopy(adult_args)
-	for n_workers, sample_size_cap in [[5, 4000], [10, 8000], [20, 16000]]:
+	args = copy.deepcopy(mr_args)
+	for n_workers in [5, 10]:
 		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		args['theta'] = 1
 
 		experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args, repeat=1)
+	run_experiments_full(experiment_args)
 
 	experiment_args = []	
-	args = copy.deepcopy(adult_args)
-	for n_workers, sample_size_cap in [[5, 4000], [10, 8000], [20, 16000]]:
+	args = copy.deepcopy(sst_args)
+	for n_workers in [5, 10]:
 		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		args['theta'] = 0.1
-		args['n_freeriders'] = 1
 
 		experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args, repeat=1)
-
-	experiment_args = []	
-	args = copy.deepcopy(adult_args)
-	for n_workers, sample_size_cap in [[5, 4000], [10, 8000], [20, 16000]]:
-		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		args['theta'] = 1
-		args['n_freeriders'] = 1
-
-		experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args, repeat=1)
-
+	run_experiments_full(experiment_args)
+	
 	'''
 
 	experiment_args = []	
@@ -196,12 +171,21 @@ if __name__ == '__main__':
 	for n_workers, sample_size_cap in [[5, 10000], [10, 20000], [20, 40000]]:
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap
-		args['fl_epochs'] = 200
-		args['largest_criterion'] = 'layer'
 			
 		experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args, repeat=1)
 
+
+
+	experiment_args = []	
+	args = copy.deepcopy(cifar_cnn_args)
+	for n_workers, sample_size_cap in [[5, 10000], [10, 20000], [20, 40000]]:
+		args['n_workers'] = n_workers
+		args['sample_size_cap'] = sample_size_cap
+		args['largest_criterion'] = 'layer'
+			
+		experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args, repeat=1)
 
 
 	experiment_args = []	
@@ -247,19 +231,6 @@ if __name__ == '__main__':
 		args['theta'] = 0.1
 		# args['n_freeriders'] = 1
 
-		experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args, repeat=1)
-
-
-	
-	args = copy.deepcopy(cifar_cnn_args)
-	for n_workers, sample_size_cap in [[5, 10000], [10, 20000], [20, 40000]]:
-		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		args['n_freeriders'] = 1
-		args['alpha'] = 5
-		args['theta'] = 0.1
-		
 		experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args, repeat=1)
 
