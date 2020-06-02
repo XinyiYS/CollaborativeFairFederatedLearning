@@ -285,7 +285,7 @@ cifar_cnn_args = {
 	'loss_fn': nn.NLLLoss(),#  nn.CrossEntropyLoss(), 
 	'pretraining_lr' : 5e-3, # only used during pretraining for CFFL models, no decay
 	'dssgd_lr': 1e-2, # used for dssgd model, no decay
-	'std_lr': 1e-2,
+	'std_lr': 5e-2,
 	'lr': 1e-2,
 	'grad_clip':1e-3,
 	'gamma':0.977,   #0.955**100 ~= 0.01
