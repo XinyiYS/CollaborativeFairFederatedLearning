@@ -222,7 +222,7 @@ class Federated_Learner:
 			filtered_grad_update = mask_grad_update_by_order(clipped_grad_update, mask_order=None, mask_percentile=worker.theta, mode=self.args['largest_criterion']) 
 			
 
-			fed_val_acc = self.one_on_one_evaluate(self.federated_model_pretrain, worker.model_pretrain, filtered_grad_update, worker.theta)
+			fed_val_acc = self.one_on_one_evaluate(self.federated_model_pretrain, worker.model_pretrain, filtered_grad_update, worker.theta, is_pretrain=True)
 			worker_val_accs_pretrain.append(fed_val_acc)
 
 			# minus the uploaded grad updates
@@ -386,8 +386,8 @@ class Federated_Learner:
 		self.convert_tensors_in_dicts()
 		return
 
-	def one_on_one_evaluate(self, federated_model, worker_model, filtered_grad_update, theta):
-		if theta == 1:
+	def one_on_one_evaluate(self, federated_model, worker_model, filtered_grad_update, theta, is_pretrain=False):
+		if theta == 1 and not is_pretrain:
 			fed_val_acc = evaluate(worker_model, self.valid_loader, self.device, verbose=False)[1]
 		else:
 			model_to_eval = copy.deepcopy(federated_model)

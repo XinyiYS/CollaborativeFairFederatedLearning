@@ -215,8 +215,8 @@ def plot_convergence(dirname):
 		credit_top = 1. / n_workers * 1.5
 		credit_bottom = -0.01
 
-		plot(credits_df, credits_figure_dir, name=setup['dataset'].capitalize() + ' credits', plot_type=0, ylabel='Credits', top=credit_top, bottom=credit_bottom)
-		plot(credits_df_pretrain, credits_pretrain_figure_dir, name=setup['dataset'].capitalize() + ' credits pretrain', plot_type=0, ylabel='Credits',top=credit_top, bottom=credit_bottom )
+		plot(credits_df, credits_figure_dir, name=setup['dataset'].capitalize() + ' reputations', plot_type=0, ylabel='Reputations', top=credit_top, bottom=credit_bottom)
+		plot(credits_df_pretrain, credits_pretrain_figure_dir, name=setup['dataset'].capitalize() + ' reputations pretrain', plot_type=0, ylabel='Reputations',top=credit_top, bottom=credit_bottom )
 
 		# plot(credits_df, credits_figure_dir, name=setup['dataset'], plot_type=0)
 
