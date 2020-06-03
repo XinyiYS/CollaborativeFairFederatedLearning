@@ -256,8 +256,8 @@ class Federated_Learner:
 		self.credits_pretrain = torch.zeros((self.n_workers))
 
 		# init the credit_th to be a 2/3 * 1/(len(R)) instead of 0
-		self.credit_threshold = compute_credit_threshold(self.n_workers)
-		self.credit_threshold_pretrain = compute_credit_threshold(self.n_workers)
+		self.credit_threshold = compute_credit_threshold(self.n_workers,self.args['split'])
+		self.credit_threshold_pretrain = compute_credit_threshold(self.n_workers,self.args['split'])
 
 		self.R = list(range(self.n_workers))
 		self.R_pretrain = list(range(self.n_workers))
@@ -607,7 +607,7 @@ def compute_credits_sinh(credits, credit_threshold, R, val_accs, alpha=5, credit
 	if R_size != len(R):
 		# normalize among the reputable parties
 		credits /= credits.sum().float()
-		credit_threshold = compute_credit_threshold(len(R))
+		credit_threshold = compute_credit_threshold(len(R),self.args['split'])
 
 		print("old R size : {}, new R size: {}".format(R_size, len(R)))
 		print("new credit_threshold {}, credits {}".format(credit_threshold.item(), credits.tolist()))
@@ -661,5 +661,8 @@ def mask_grad_update_by_magnitude(grad_update, mask_constant):
 		grad_update[i].data[update.data.abs() < mask_constant] = 0
 	return grad_update
 
-def compute_credit_threshold(R_size):
-	return torch.clamp(2./3 * torch.div(1., R_size), min=0, max=1).float()
+def compute_credit_threshold(R_size,split):
+	if split=='classimbalance':
+		return torch.clamp(1./6 * torch.div(1., R_size), min=0, max=1).float()
+	else:
+		return torch.clamp(1./3 * torch.div(1., R_size), min=0, max=1).float()
