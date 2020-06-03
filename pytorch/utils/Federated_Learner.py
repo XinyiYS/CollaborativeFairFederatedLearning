@@ -59,6 +59,9 @@ class Federated_Learner:
 			self.federated_model = model_fn(args=self.data_prepper.args, device=device)
 		else:
 			self.federated_model = model_fn(device=device)
+
+		self.load_locked_model_initializations()
+
 		if len(self.args['device_ids']) > 1:
 			print("From Federaed Learner - Let's use {} gpus.".format(len(self.args['device_ids'])))
 			self.federated_model = 	nn.DataParallel(self.federated_model, device_ids=self.args['device_ids'])
@@ -360,6 +363,25 @@ class Federated_Learner:
 
 		self.convert_tensors_in_dicts()
 		return
+
+	def load_locked_model_initializations(self, dirname='initialized_models'):
+		import os
+		models_dir = os.path.join(dirname, self.args['dataset'])
+		os.makedirs(models_dir, exist_ok=True)
+		model_name =  self.federated_model.__class__.__name__
+		model_path = os.path.join(models_dir, model_name)
+		if os.path.isfile(model_path):
+			try:
+				self.federated_model.load_state_dict(torch.load(model_path))
+				print("Successfully loaded the previously initialzied {} for {}".format(model_name, self.args['dataset']))
+			except Exception as e:
+				print(str(e))
+				print("Due to the above error, saving {} to overwrite the existing file.".format(model_name))
+				torch.save(self.federated_model.state_dict(), model_path)
+		else:
+			print("Saving a fresh {} model for {}.".format(model_name, self.args['dataset']))
+			torch.save(self.federated_model.state_dict(), model_path)
+
 
 	def one_on_one_evaluate(self, federated_model, worker_model, filtered_grad_update, theta, is_pretrain=False):
 		if theta == 1 and not is_pretrain:

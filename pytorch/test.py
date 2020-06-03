@@ -81,24 +81,34 @@ from arguments import adult_args, mnist_args, names_args, update_gpu, mr_args, s
 # except RuntimeError:
 # 	pass
 
+def init_deterministic():
+	torch.manual_seed(1234)
+	np.random.seed(1234)
+	torch.backends.cudnn.deterministic = True
+	torch.backends.cudnn.benchmark = False
 
 if __name__ == '__main__':
 	# init steps
-	# args = mnist_args
-	args = mr_args
+	init_deterministic()
+
+	args = adult_args
+	args['theta'] = 0.1
+	args['n_workers'] = 5
+	args['sample_size_cap'] = 4000
+	args['fl_epochs'] = 20
+	args['fl_individual_epochs'] = 5
 	# args = cifar_cnn_args
 	# args['n_workers'] = 20
 	# args['sample_size_cap'] = 40000
 	# args['theta'] = 0.1 
-	# args['largest_criterion'] = 'layer'
 	# args['batch_size'] = 128
-	# args['gamma'] = 1
+	args['gamma'] = 0.977
 	# args['split']='powerlaw'
 	# args['grad_clip']=0.001
 	# args['pretrain_epochs']=5
 	# args['pretraining_lr']=0.005
 	# args['dssgd_lr']=0.005
-	# args['aggregate_mode']='credit-sum'
+	args['aggregate_mode']='sum'
 
 	run_experiments(args, 1)
 	

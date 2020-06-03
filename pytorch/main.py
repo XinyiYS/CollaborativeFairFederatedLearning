@@ -145,19 +145,49 @@ def run_experiments_full(experiment_args, repeat=1):
 
 from arguments import adult_args, mnist_args, names_args, update_gpu, cifar_cnn_args, mr_args, sst_args, imdb_args
 
+def init_deterministic():
+	torch.manual_seed(1234)
+	np.random.seed(1234)
+	torch.backends.cudnn.deterministic = True
+	torch.backends.cudnn.benchmark = False
+
 if __name__ == '__main__':
 	# init steps	
+	init_deterministic()
 
 	experiment_args = []	
-	args = copy.deepcopy(mr_args)
-	for n_workers in [5]:
+	args = copy.deepcopy(cifar_cnn_args)
+	for n_workers, sample_size_cap in [[5, 10000]]:
 		args['n_workers'] = n_workers
-
+		args['sample_size_cap'] = sample_size_cap
+		args['largest_criterion'] = 'layer'
+		args['fl_individual_epochs'] = 1
+			
 		experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args)
+	run_experiments_full(experiment_args, repeat=1)
 
 
 	'''
+
+	experiment_args = []	
+	args = copy.deepcopy(mnist_args)
+	for n_workers, sample_size_cap in [[5, 3000], [10, 6000], [20, 12000]]:
+		
+		for theta in [0.1, 1]:
+			args['n_workers'] = n_workers
+			args['sample_size_cap'] = sample_size_cap
+			args['aggregate_mode'] = 'sum'
+			args['theta'] = theta
+			args['split'] ='classimbalance'
+			args['fl_individual_epochs'] = 1
+			args['dssgd_lr'] = 5e-2
+			args['std_lr'] = 5e-2
+			args['lr'] = 5e-2
+
+			experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args, repeat=1)
+
+
 
 	experiment_args = []	
 	args = copy.deepcopy(mnist_args)
