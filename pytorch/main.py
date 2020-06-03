@@ -61,8 +61,10 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 							str(repeat), args['aggregate_mode'], args['alpha'],args['n_freeriders'], model_name,
 							)
 	logdir = os.path.join(logs_dir, subdir)
-
-	os.mkdir(logdir)
+	try:
+		os.mkdir(logdir)
+	except Exception as e:
+		print(str(e))
 
 	if 'complete.txt' in os.listdir(logdir):
 		return
