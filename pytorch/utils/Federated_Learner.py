@@ -149,10 +149,8 @@ class Federated_Learner:
 			dssgd_model_after = copy.deepcopy(worker.dssgd_model)
 			model_pretrain_after = copy.deepcopy(worker.model_pretrain)
 
-
 			self.clock('workers local training')
 
-			
 			# recover the model before training for clipped grad update later
 			worker.model.load_state_dict(model_before.state_dict())
 
@@ -177,7 +175,6 @@ class Federated_Learner:
 			# add the clipped grad to local model
 			# add_update_to_model(worker.model, clipped_grad_update, device=self.device)
 
-
 			filtered_grad_update = mask_grad_update_by_order(clipped_grad_update, mask_order=None, mask_percentile=worker.theta, mode=self.args['largest_criterion']) 
 
 
@@ -192,18 +189,9 @@ class Federated_Learner:
 			# after evaluation, meaning it does not receive allocated_grad, so no need to minus its own
 			self.filtered_updates.append(filtered_grad_update)
 
-			if i in self.R:
-				if self.args['aggregate_mode'] == 'sum':
-					weight = 1.0
-				elif self.args['aggregate_mode'] == 'credit-sum':
-					weight = self.credits[i]
-				else: # default average
-					weight = self.shard_sizes[i] *1. / sum(self.shard_sizes)
-				add_gradient_updates(self.aggregated_gradient_updates, filtered_grad_update, weight)
+			self.clock('gradient clipping and filtering')
 
-			self.clock('server aggregation')
-
-			# repeat for with pretraining
+			# for with pretraining
 
 			worker.model_pretrain.load_state_dict(model_pretrain_before.state_dict())
 			raw_grad_update = compute_grad_update(model_pretrain_before, model_pretrain_after, device=self.device)				
@@ -229,17 +217,9 @@ class Federated_Learner:
 			# minus the uploaded grad updates
 			# add_update_to_model(worker.model_pretrain, filtered_grad_update, weight= -1.0)
 			self.filtered_updates_pretrain.append(filtered_grad_update)
+			
+			self.clock('gradient clipping and filtering for pretrain')
 
-			if i in self.R_pretrain:
-				if self.args['aggregate_mode'] == 'sum':
-					weight = 1.0
-				elif self.args['aggregate_mode'] == 'credit-sum':
-					weight = self.credits_pretrain[i]
-				else: # default fedavg
-					weight = self.shard_sizes[i] *1. / sum(self.shard_sizes)
-				add_gradient_updates(self.aggregated_gradient_updates_pretrain, filtered_grad_update, weight)
-
-			self.clock('server aggregation with pretraining')
 
 			# for DSSGD model
 
@@ -266,14 +246,6 @@ class Federated_Learner:
 			# clipped stats
 			print(pd.DataFrame(data=data_rows, columns=columns))
 			'''
-
-		add_update_to_model(self.federated_model, self.aggregated_gradient_updates, device=self.device)
-		self.federated_val_acc = evaluate(self.federated_model, self.valid_loader, device=self.device, verbose=False)[1]
-
-		add_update_to_model(self.federated_model_pretrain, self.aggregated_gradient_updates_pretrain, device=self.device)
-		self.federated_val_acc_pretrain = evaluate(self.federated_model_pretrain, self.valid_loader, device=self.device, verbose=False)[1]
-
-		self.clock('fed model eval on valid loader')
 
 		return worker_val_accs, worker_val_accs_pretrain, dssgd_val_accs
 
@@ -329,19 +301,23 @@ class Federated_Learner:
 		for epoch in range(fl_epochs):
 
 
-			# 1. training locally and update the federated_model
+			# 1. training locally
 			worker_val_accs, worker_val_accs_pretrain, dssgd_val_accs = self.train_locally(fl_individual_epochs,save_gpu=self.save_gpu)
 
 			# 2. update the credits and credit_threshold
 			# and update the reputable parties set
-
 			self.credits, self.credit_threshold, self.R  = compute_credits_sinh(self.credits, self.credit_threshold, self.R, worker_val_accs, alpha=self.args['alpha'])
 			self.credits_pretrain, self.credit_threshold_pretrain, self.R_pretrain = compute_credits_sinh(self.credits_pretrain, self.credit_threshold_pretrain, self.R_pretrain, worker_val_accs_pretrain, alpha=self.args['alpha'])
 
 			self.clock('credit updates')
 
 
-			# 3. gradient downloads and uploads according to credits and thetas
+			# 3. aggregate the gradients and update the federated model
+			self.aggregate_gradients_and_update_federated_model()
+			self.clock('aggregate gradients and update FL model')
+
+
+			# 4. gradient downloads and uploads according to credits and thetas
 			self.assign_updates_with_filter()
 			self.clock('assign updates')
 
@@ -366,11 +342,9 @@ class Federated_Learner:
 			self.performance_dict_pretrain['dssgd_val_accs'].append(dssgd_val_accs)
 
 			self.performance_dict['credits'].append(self.credits)
-			self.performance_dict['federated_val_acc'].append(self.federated_val_acc)
 			self.performance_dict['credit_threshold'].append(self.credit_threshold)
 
 			self.performance_dict_pretrain['credits'].append(self.credits_pretrain)
-			self.performance_dict_pretrain['federated_val_acc'].append(self.federated_val_acc_pretrain)
 			self.performance_dict_pretrain['credit_threshold'].append(self.credit_threshold_pretrain)
 			# print()
 			self.clock('performance update')
@@ -397,6 +371,35 @@ class Federated_Learner:
 			del model_to_eval
 		return fed_val_acc
 
+	def aggregate_gradients_and_update_federated_model(self):
+		self.aggregated_gradient_updates = [torch.zeros(param.shape).to(self.device) for param in self.federated_model.parameters()]
+		self.aggregated_gradient_updates_pretrain = [torch.zeros(param.shape).to(self.device) for param in self.federated_model.parameters()]
+
+		for i in self.R:
+			filtered_grad_update = self.filtered_updates[i]
+			if self.args['aggregate_mode'] == 'sum':
+				weight = 1.0
+			elif self.args['aggregate_mode'] == 'credit-sum':
+				weight = self.credits[i]
+			else: # default average
+				weight = self.shard_sizes[i] * 1. / sum(self.shard_sizes)
+			add_gradient_updates(self.aggregated_gradient_updates, filtered_grad_update, weight)
+
+		add_update_to_model(self.federated_model, self.aggregated_gradient_updates, device=self.device)
+		# self.federated_val_acc = evaluate(self.federated_model, self.valid_loader, device=self.device, verbose=False)[1]
+
+		for i in self.R_pretrain:
+			filtered_grad_update = self.filtered_updates_pretrain[i]
+			if self.args['aggregate_mode'] == 'sum':
+				weight = 1.0
+			elif self.args['aggregate_mode'] == 'credit-sum':
+				weight = self.credits_pretrain[i]
+			else: # default fedavg
+				weight = self.shard_sizes[i] *1. / sum(self.shard_sizes)
+			add_gradient_updates(self.aggregated_gradient_updates_pretrain, filtered_grad_update, weight)
+
+		add_update_to_model(self.federated_model_pretrain, self.aggregated_gradient_updates_pretrain, device=self.device)
+		# self.federated_val_acc_pretrain = evaluate(self.federated_model_pretrain, self.valid_loader, device=self.device, verbose=False)[1]
 
 	def assign_updates_with_filter(self):
 		"""
@@ -456,7 +459,6 @@ class Federated_Learner:
 		return
 
 	def performance_summary(self, to_print=False):
-
 		self.dssgd_models_test_accs = self.evaluate_workers_performance(self.test_loader, mode='dssgd')
 		self.worker_standalone_test_accs = self.evaluate_workers_performance(self.test_loader, mode='standalone')
 		self.cffl_test_accs = self.evaluate_workers_performance(self.test_loader)
@@ -570,7 +572,6 @@ class Federated_Learner:
 			return [evaluate(worker.model_pretrain, eval_loader, device, verbose=False)[1] for worker in self.workers]
 		else:
 			return [evaluate(worker.model, eval_loader, device, verbose=False)[1] for worker in self.workers]
-
 	def clock(self, key):
 		self.timestamp_  = time.time()
 		self.time_dict[key] += self.timestamp_ - self.timestamp
