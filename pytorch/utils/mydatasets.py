@@ -4,7 +4,7 @@ import random
 import tarfile
 from six.moves import urllib
 from torchtext import data
-
+import os
 
 class TarDataset(data.Dataset):
     """Defines a Dataset loaded from a downloadable tar archive.
@@ -20,6 +20,7 @@ class TarDataset(data.Dataset):
         path = os.path.join(root, cls.dirname)
         if not os.path.isdir(path):
             tpath = os.path.join(root, cls.filename)
+            os.makedirs(root, exist_ok=True)
             if not os.path.isfile(tpath):
                 print('downloading')
                 urllib.request.urlretrieve(cls.url, tpath)
