@@ -66,20 +66,21 @@ class Federated_Learner:
 		self.federated_model_pretrain = copy.deepcopy(self.federated_model)
 
 		self.workers = []
-		# add in free riders		
-		freerider = Worker(train_loader=None,
-						model=copy.deepcopy(self.federated_model),
-						model_pretrain = copy.deepcopy(self.federated_model),
-						standalone_model=copy.deepcopy(self.federated_model),
-						dssgd_model=copy.deepcopy(self.federated_model),
-						theta=theta,
-						device=device,
-						is_free_rider=True
-						)
-		for i in range(self.n_freeriders):
-			self.workers.append(freerider)
-			self.shard_sizes.insert(0, 0)
-			self.n_workers+=1
+		# add in free riders
+		if self.n_freeriders > 0:		
+			freerider = Worker(train_loader=None,
+							model=copy.deepcopy(self.federated_model),
+							model_pretrain = copy.deepcopy(self.federated_model),
+							standalone_model=copy.deepcopy(self.federated_model),
+							dssgd_model=copy.deepcopy(self.federated_model),
+							theta=theta,
+							device=device,
+							is_free_rider=True
+							)
+			for i in range(self.n_freeriders):
+				self.workers.append(freerider)
+				self.shard_sizes.insert(0, 0)
+				self.n_workers+=1
 		
 		# possible to enumerate through various model_fns, optimizer_fns, lrs,
 		# thetas, or even devices

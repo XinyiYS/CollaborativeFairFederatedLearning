@@ -8,7 +8,7 @@ import torch.nn as nn
 class Worker():
 
 	def __init__(self, train_loader, model=None, optimizer=None,scheduler=None,
-		model_pretrain=None, optimizer_pretrain=None, pretraining_lr=0.1, scheduler_pretrain=None,
+		model_pretrain=None, optimizer_pretrain=None, pretraining_lr=None, scheduler_pretrain=None,
 		standalone_model=None, standalone_optimizer=None, standalone_scheduler=None,
 		dssgd_model=None, dssgd_optimizer=None,dssgd_scheduler=None,
 		loss_fn=None, theta=0.1, grad_clip=0.01, epoch_sample_size=-1,
@@ -69,62 +69,30 @@ class Worker():
 
 				batch_data, batch_target = batch_data.to(self.device), batch_target.to(self.device)
 
-				# pretrain model
-
-				# introduce a slower pretraining process
+				# introduce separate (and slower) pretraining
 				if is_pretrain:
-					for g in self.optimizer_pretrain.param_groups:
-					    g['lr'] = self.pretraining_lr
+					prev_lrs = []
+					if self.pretraining_lr is not None: 
+						for g in self.optimizer_pretrain.param_groups:
+							prev_lrs.append(g['lr'])
+							g['lr'] = self.pretraining_lr
 
-				self.optimizer_pretrain.zero_grad()
-				outputs = self.model_pretrain(batch_data)
-				loss = self.loss_fn(outputs, batch_target)
-				loss.backward()
-				self.optimizer_pretrain.step()
-				iter += len(batch_data)
-
-				# if pretrain, skip the rest
-				if is_pretrain:
+					self.optimizer_pretrain.zero_grad()
+					self.loss_fn(self.model_pretrain(batch_data), batch_target).backward()
+					self.optimizer_pretrain.step()
+					
+					# change the lr back so it does not affect FL training
+					if self.pretraining_lr is not None: 
+						for g, lr in zip(self.optimizer_pretrain.param_groups, prev_lrs):
+							g['lr'] = lr
 					continue
 
-				# no pretrain model
-				self.optimizer.zero_grad()
-				outputs = self.model(batch_data)
-				loss = self.loss_fn(outputs, batch_target)
-				loss.backward()
-				self.optimizer.step()
-
-				self.standalone_optimizer.zero_grad()
-				outputs = self.standalone_model(batch_data)
-				loss = self.loss_fn(outputs, batch_target)
-				loss.backward()
-				self.standalone_optimizer.step()
-
-				# dssgd model
-				self.dssgd_optimizer.zero_grad()
-				outputs = self.dssgd_model(batch_data)
-				loss = self.loss_fn(outputs, batch_target)
-				loss.backward()
-				self.dssgd_optimizer.step()
-
-				'''
-				# E = 1 for standalone and dssgd
-				if not is_pretrain and epoch == 0:
-
-					self.standalone_optimizer.zero_grad()
-					outputs = self.standalone_model(batch_data)
-					loss = self.loss_fn(outputs, batch_target)
-					loss.backward()
-					self.standalone_optimizer.step()
-
-					# dssgd model
-					self.dssgd_optimizer.zero_grad()
-					outputs = self.dssgd_model(batch_data)
-					loss = self.loss_fn(outputs, batch_target)
-					loss.backward()
-					self.dssgd_optimizer.step()
-				'''
-
+				iter += len(batch_data)
+				for optimizer, model in zip([self.optimizer_pretrain, self.optimizer, self.standalone_optimizer, self.dssgd_optimizer] ,
+											[self.model_pretrain, self.model, self.standalone_model, self.dssgd_model]):
+					optimizer.zero_grad()
+					self.loss_fn(model(batch_data), batch_target).backward()
+					optimizer.step()
 
 				if iter >= self.epoch_sample_size:
 					# specifically for NLP task to terminate for training efficiency
@@ -132,10 +100,18 @@ class Worker():
 
 		if not is_pretrain:
 			# NO lr decay during pretraining
+
+			# print()
+			# print('standalone' , self.standalone_scheduler.get_last_lr())
+			# print('dssgd      ', self.dssgd_scheduler.get_last_lr())
+			# print('pretrain   ', self.scheduler_pretrain.get_last_lr())
+			# print('no pretrain', self.scheduler.get_last_lr())
+
 			self.standalone_scheduler.step()
 			self.dssgd_scheduler.step()
 			self.scheduler_pretrain.step()
 			self.scheduler.step()
+
 
 		if 'cuda' in str(self.device) and save_gpu:
 			cpu = torch.device('cpu')
