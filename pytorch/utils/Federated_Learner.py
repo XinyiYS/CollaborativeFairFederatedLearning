@@ -371,7 +371,7 @@ class Federated_Learner:
 			del model_to_eval
 		return fed_val_acc
 
-	def aggregate_gradients_and_update_federated_model(self):
+	def aggregate_gradients_and_update_federated_model(self, eta=1):
 		self.aggregated_gradient_updates = [torch.zeros(param.shape).to(self.device) for param in self.federated_model.parameters()]
 		self.aggregated_gradient_updates_pretrain = [torch.zeros(param.shape).to(self.device) for param in self.federated_model.parameters()]
 
@@ -385,7 +385,7 @@ class Federated_Learner:
 				weight = self.shard_sizes[i] * 1. / sum(self.shard_sizes)
 			add_gradient_updates(self.aggregated_gradient_updates, filtered_grad_update, weight)
 
-		add_update_to_model(self.federated_model, self.aggregated_gradient_updates, device=self.device)
+		add_update_to_model(self.federated_model, self.aggregated_gradient_updates, weight=eta, device=self.device)
 		# self.federated_val_acc = evaluate(self.federated_model, self.valid_loader, device=self.device, verbose=False)[1]
 
 		for i in self.R_pretrain:
@@ -398,7 +398,7 @@ class Federated_Learner:
 				weight = self.shard_sizes[i] *1. / sum(self.shard_sizes)
 			add_gradient_updates(self.aggregated_gradient_updates_pretrain, filtered_grad_update, weight)
 
-		add_update_to_model(self.federated_model_pretrain, self.aggregated_gradient_updates_pretrain, device=self.device)
+		add_update_to_model(self.federated_model_pretrain, self.aggregated_gradient_updates_pretrain, weight=eta, device=self.device)
 		# self.federated_val_acc_pretrain = evaluate(self.federated_model_pretrain, self.valid_loader, device=self.device, verbose=False)[1]
 
 	def assign_updates_with_filter(self):
