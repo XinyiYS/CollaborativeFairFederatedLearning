@@ -306,8 +306,8 @@ class Federated_Learner:
 
 			# 2. update the credits and credit_threshold
 			# and update the reputable parties set
-			self.credits, self.credit_threshold, self.R  = compute_credits_sinh(self.credits, self.credit_threshold, self.R, worker_val_accs, alpha=self.args['alpha'])
-			self.credits_pretrain, self.credit_threshold_pretrain, self.R_pretrain = compute_credits_sinh(self.credits_pretrain, self.credit_threshold_pretrain, self.R_pretrain, worker_val_accs_pretrain, alpha=self.args['alpha'])
+			self.credits, self.credit_threshold, self.R  = compute_credits_sinh(self.credits, self.credit_threshold, self.R, worker_val_accs, alpha=self.args['alpha'], split=self.arg['split'])
+			self.credits_pretrain, self.credit_threshold_pretrain, self.R_pretrain = compute_credits_sinh(self.credits_pretrain, self.credit_threshold_pretrain, self.R_pretrain, worker_val_accs_pretrain, alpha=self.args['alpha'],split=self.args['split'])
 
 			self.clock('credit updates')
 
@@ -578,7 +578,7 @@ class Federated_Learner:
 		self.timestamp = self.timestamp_
 
 
-def compute_credits_sinh(credits, credit_threshold, R, val_accs, alpha=5, credit_fade=1):
+def compute_credits_sinh(credits, credit_threshold, R, val_accs, alpha=5, credit_fade=1, split='powerlaw'):
 	# print('alpha used is :', alpha, ' current credits are : ', credits, ' current threshold: ', credit_threshold)
 	R_size = len(R)
 	total_val_accs = sum([val_accs[i] for i in R])
@@ -607,7 +607,7 @@ def compute_credits_sinh(credits, credit_threshold, R, val_accs, alpha=5, credit
 	if R_size != len(R):
 		# normalize among the reputable parties
 		credits /= credits.sum().float()
-		credit_threshold = compute_credit_threshold(len(R),self.args['split'])
+		credit_threshold = compute_credit_threshold(len(R), split)
 
 		print("old R size : {}, new R size: {}".format(R_size, len(R)))
 		print("new credit_threshold {}, credits {}".format(credit_threshold.item(), credits.tolist()))
