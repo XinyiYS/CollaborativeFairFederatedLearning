@@ -15,5 +15,7 @@ a.py
 *.vector_cache*
 *unused_logs*
 *logs*
+*lr_mixup*
+*E=1*
 
 *pytorch/archive*
