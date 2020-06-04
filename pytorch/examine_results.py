@@ -41,8 +41,8 @@ def collect_and_compile_performance(dirname):
 			f_data_row = ['P' + str(n_workers) + '_' + str(theta)] + [aggregate_dict[f_key][0] for f_key in fairness_keys]
 			f_data_row.append(aggregate_dict_pretrain['standalone_vs_final_mean'][0])
 
-			p_data_row = ['P' + str(n_workers) + '_' + str(theta)] + get_cffl_best(dirname, folder)
-
+			p_data_row = ['P' + str(n_workers) + '_' + str(theta)] + [aggregate_dict['rr_dssgd_best'][0], aggregate_dict['standalone_best_worker'][0], aggregate_dict['CFFL_best_worker'][0], aggregate_dict_pretrain['CFFL_best_worker'][0]]
+			# p_data_row = ['P' + str(n_workers) + '_' + str(theta)] + get_cffl_best(dirname, folder)
 			fairness_rows.append(f_data_row)
 			performance_rows.append(p_data_row)
 		except Exception as e:
@@ -121,5 +121,9 @@ def examine(dirname):
 
 
 if __name__ == '__main__':
-		dirname = 'Experiments_2020-05-01-19:15'
-		examine(dirname)
+		# dirname = 'sst/Experiments_2020-06-04-22:05'
+		# examine(dirname)
+		# exit()
+		import os
+		for dirname in os.listdir('adult'):
+			examine(os.path.join('adult', dirname))
