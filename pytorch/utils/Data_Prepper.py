@@ -245,8 +245,7 @@ class Data_Prepper:
 			label_field = LabelField(dtype = torch_long, sequential=False)
 			# label_field = data.Field(sequential=False)
 
-
-			train_data, dev_data = mydatasets.MR.splits(text_field, label_field, root='.data/mr')
+			train_data, dev_data = mydatasets.MR.splits(text_field, label_field, root='.data/mr', shuffle=False)
 
 			validation_data, test_data = dev_data.split(split_ratio=0.5, random_state = random.seed(1234))
 			
@@ -254,6 +253,13 @@ class Data_Prepper:
 			ratios = [len(indices) / len(train_data) for indices in  indices_list]
 
 			train_datasets = split_torchtext_dataset_ratios(train_data, ratios)
+
+			# print(train_data, dir(train_data))
+			# print((train_datasets[0].examples[0].text))
+			# print((train_datasets[0].examples[1].text))
+			# print((train_datasets[0].examples[2].text))
+			# exit()
+
 
 			text_field.build_vocab( *(train_datasets + [validation_data, test_data] ))
 			label_field.build_vocab( *(train_datasets + [validation_data, test_data] ))
@@ -395,8 +401,11 @@ class FastCIFAR10(CIFAR10):
 
 		return img, target
 
-def powerlaw(sample_indices, n_workers, alpha=1.65911332899):
+def powerlaw(sample_indices, n_workers, alpha=1.65911332899, shuffle=False):
 	# the smaller the alpha, the more extreme the division
+	if shuffle:
+		random.seed(1234)
+		random.shuffle(sample_indices)
 
 	from scipy.stats import powerlaw
 	import math
