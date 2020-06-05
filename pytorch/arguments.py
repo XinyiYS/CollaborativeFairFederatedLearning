@@ -43,6 +43,7 @@ adult_args = {
 	'lr': 1e-2, # initial lr, with decay
 	'grad_clip': 0.001,
 	'gamma':0.977,  #0.977**100 ~= 0.1
+	'credit_threshold_coef': 2.0/3.0,
 
 	# training parameters
 	'pretrain_epochs': 5,
@@ -76,15 +77,17 @@ mnist_args = {
 	'pretraining_lr' : 5e-3, # only used during pretraining for CFFL models, no decay
 	'dssgd_lr': 5e-3, # used for dssgd model, no decay
 	'std_lr': 5e-3,
-	'lr': 1e-1,
+	'lr': 5e-3,
 	'grad_clip':1e-3,
 	'gamma':0.977,   #0.955**100 ~= 0.01
+	'credit_threshold_coef': 1.0/3.0,
+
 
 	# training parameters
 	'pretrain_epochs': 5,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
-	'aggregate_mode':'credit-sum',  # 'mean', 'sum'
+	'aggregate_mode':'sum',  # 'mean', 'sum'
 	'largest_criterion': 'layer', #'layer'
 }
 
