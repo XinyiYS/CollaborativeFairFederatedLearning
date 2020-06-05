@@ -204,8 +204,9 @@ def plot_convergence(dirname):
 
 		if os.path.exists(cffl_figure_dir):
 			os.remove(cffl_figure_dir)
-		plot(cffl_df, cffl_figure_dir, name=setup['dataset'], plot_type=0)
-		plot(cffl_df_pretrain, cffl_pretrain_figure_dir, name=setup['dataset'], plot_type=0)
+
+		plot(cffl_df, cffl_figure_dir, name=setup['dataset'], plot_type=0, split=setup['split'])
+		plot(cffl_df_pretrain, cffl_pretrain_figure_dir, name=setup['dataset'], plot_type=0, split=setup['split'])
 
 
 
@@ -215,8 +216,8 @@ def plot_convergence(dirname):
 		credit_top = 1. / n_workers * 1.5
 		credit_bottom = -0.01
 
-		plot(credits_df, credits_figure_dir, name=setup['dataset'].capitalize() + ' reputations', plot_type=0, ylabel='Reputations', top=credit_top, bottom=credit_bottom)
-		plot(credits_df_pretrain, credits_pretrain_figure_dir, name=setup['dataset'].capitalize() + ' reputations pretrain', plot_type=0, ylabel='Reputations',top=credit_top, bottom=credit_bottom )
+		plot(credits_df, credits_figure_dir, name=setup['dataset'].capitalize(), plot_type=0, ylabel='Reputations', top=credit_top, bottom=credit_bottom)
+		plot(credits_df_pretrain, credits_pretrain_figure_dir, name=setup['dataset'].capitalize() + ' pretrain', plot_type=0, ylabel='Reputations',top=credit_top, bottom=credit_bottom)
 
 		# plot(credits_df, credits_figure_dir, name=setup['dataset'], plot_type=0)
 

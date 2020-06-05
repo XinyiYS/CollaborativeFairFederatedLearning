@@ -14,9 +14,10 @@ best_worker_fmt_styles = ['ro-', 'c.-', 'm<-', 'b<-']
 acc_top_bottom_limits = {'adult':[0.70, 0.85],
 						'mr':  [0.5, 0.8],
 						'sst': [0.2, 0.5],
-						'mnist': [0, 1],
+						'mnist': [0.4, 1],
 						'cifar10':[0, 0.7]}
 
+c_th_fmt_style = 'k--'
 # Add 'b<-' for w/o pretrain
 FONTSIZE = 17
 
@@ -27,11 +28,14 @@ def plot(df, save_dir=None, name='adult', plot_type=1, show=False, **kwargs):
 	# Data
 	index = np.arange(1, len(df)+1)
 
-
 	fmt_styles = best_worker_fmt_styles if plot_type == 2 else all_party_fmt_styles
 
 	for column, fmt in zip(df.columns, fmt_styles):
-		plt.plot(index, column, fmt, data=df, label=column, )
+
+		if column == 'threshold':
+			plt.plot(index, column, c_th_fmt_style, data=df, label=column, )
+		else:
+			plt.plot(index, column, fmt, data=df, label=column, )
 
 	if len(df.columns) > 10:
 		plt.legend(loc='lower right',fontsize=8)
@@ -51,6 +55,10 @@ def plot(df, save_dir=None, name='adult', plot_type=1, show=False, **kwargs):
 		bottom, top = acc_top_bottom_limits[name]
 	else:
 		bottom, top = 0, 1.0
+
+	if 'split' in kwargs and kwargs['split'] =='classimbalance':
+		bottom, top = 0, 1.0
+
 
 	if 'bottom' in kwargs and 'top' in kwargs:
 		bottom = kwargs['bottom']
