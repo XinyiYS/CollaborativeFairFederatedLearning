@@ -46,6 +46,7 @@ def collect_and_compile_performance(dirname):
 			fairness_rows.append(f_data_row)
 			performance_rows.append(p_data_row)
 		except Exception as e:
+			print("Compiling fairness and accuracy csvs")
 			print(e)
 
 	shorthand_f_keys = ['Distriubted', 'CFFL', 'CFFL pretrain']
@@ -53,6 +54,7 @@ def collect_and_compile_performance(dirname):
 	fair_df = fair_df.sort_values(' ')
 	print(fair_df.to_markdown())
 	
+	print(os.path.join(dirname, 'fairness.csv'))
 	fair_df.to_csv( os.path.join(dirname, 'fairness.csv'))
 
 	shorthand_p_keys = ['Distributed', 'Standalone', 'CFFL', 'CFFL pretrain']
@@ -66,11 +68,7 @@ def collect_and_compile_performance(dirname):
 
 
 def collate_pngs(dirname):
-	try:
-		os.mkdir(os.path.join(dirname, 'figures'))
-	except Exception as e:
-		print(e)
-		pass
+	os.makedirs(os.path.join(dirname, 'figures'), exist_ok=True)
 	figures_dir = os.path.join(dirname, 'figures')
 	
 	for directory in os.listdir(dirname):
@@ -121,9 +119,9 @@ def examine(dirname):
 
 
 if __name__ == '__main__':
-		# dirname = 'sst/Experiments_2020-06-04-22:05'
-		# examine(dirname)
-		# exit()
+		dirname = 'mr/Experiments_2020-06-05-01:07'
+		examine(dirname)
+		exit()
 		import os
-		for dirname in os.listdir('adult'):
-			examine(os.path.join('adult', dirname))
+		for dirname in os.listdir('cifar10'):
+			examine(os.path.join('cifar10', dirname))
