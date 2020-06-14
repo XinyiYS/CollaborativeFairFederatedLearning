@@ -112,7 +112,32 @@ standalone_acc_file = paths.concat(opt.folder, 'standalone_acc' .. opt.taskID ..
 torch.setnumthreads(opt.threads)
 torch.setdefaulttensortype('torch.FloatTensor')
 
-
+if opt.dataset == 'adult' then
+  adult_trainData = csvigo.load{ path = 'train_data.csv', mode = 'large'}
+  adult_trainlabel = csvigo.load{ path = 'train_labels.csv', mode = 'large' }
+  adult_testData = csvigo.load{ path = 'test_data.csv', mode = 'large'}
+  adult_testlabel = csvigo.load{ path = 'test_labels.csv', mode = 'large' }
+  trainData={}
+  testData={}
+  trainData.data={}
+  trainData.labels={}
+  testData.data={}
+  testData.labels={}
+  for i = 1, #adult_trainData do
+    trainData.data[i]=torch.Tensor(adult_trainData[i])
+    trainData.labels[i]=torch.IntTensor({math.floor(adult_trainlabel[i][1])+1})
+  end
+  for i = 1, #adult_testData do
+    testData.data[i]=torch.Tensor(adult_testData[i])
+    testData.labels[i]=torch.IntTensor({math.floor(adult_testlabel[i][1])+1})  
+  end 
+  function trainData:size()
+    return #trainData.labels
+  end
+  function testData:size()
+    return #testData.labels
+  end 
+end
 -- create training set and test set
 if opt.dataset == 'mnist' then
   nbTrainingPatches = 60000
@@ -133,14 +158,21 @@ if opt.dataset == 'svhn' then
   trainData.data:add(-mean):div(std)
   testData.data:add(-mean):div(std)
 end
-trainSize = math.ceil(opt.dataSizeFrac * trainData.labels:size(1))
-testSize  = testData.labels:size(1)
+if opt.dataset == 'adult' then
+  trainSize = math.ceil(opt.dataSizeFrac * #trainData.labels)
+  testSize  = #testData.labels
+else
+  trainSize = math.ceil(opt.dataSizeFrac * trainData.labels:size(1))
+  testSize  = testData.labels:size(1)
+end
+
 print('testSize: '..testSize)
 
 trainData.size = function() return trainSize end
 testData.size = function() return testSize end
 
 val_size=math.ceil(0.1*trainSize)
+train_size=trainSize-val_size
 -- test 1000 from test set,  randomly shuffle the test set to ensure that the different classes are balanced
 local test_shuffle = torch.randperm(testSize)
 
@@ -167,7 +199,11 @@ else
     -- local shffl = torch.randperm(#train_shard)
     accessed=1
     for nid = 1, opt.netSize do
-      shardSize[nid] = math.ceil(opt.shardSizeFrac * trainSize)
+      if opt.dataset == 'adult' then
+        shardSize[nid] = math.floor(train_size/20)
+      else
+        shardSize[nid] = math.ceil(opt.shardSizeFrac * trainSize)
+      end
       trainData.shard[nid] = shffl[{ {accessed,accessed+shardSize[nid]-1} }]
       accessed=accessed+shardSize[nid]
       print('balanced shardSize for party '.. nid .. ': ' .. shardSize[nid] ..'\n') 
@@ -201,7 +237,11 @@ else
     --   print(imbalanced_shardSizeFrac[i]) 
     -- end
     -- balanced: 600 each, total 600*opt.netSize, imbalanced partition among opt.netSize
-    total_records=math.ceil(opt.shardSizeFrac * trainSize * opt.netSize)
+    if opt.dataset == 'adult' then
+      total_records=math.floor(train_size/20)* opt.netSize
+    else  
+      total_records=math.ceil(opt.shardSizeFrac * trainSize * opt.netSize)
+    end
     local shffl = torch.randperm(trainData:size()-val_size)
     -- local shffl = torch.randperm(#train_shard)
     accessed=1
@@ -312,8 +352,8 @@ else
   torch.save(shardfile, trainData.shard)
 end
 
-print(trainData)
-print(testData)
+-- print(trainData)
+-- print(testData)
 
 if opt.dataset == 'svhn' then
    -- model parameters
@@ -338,10 +378,21 @@ elseif opt.dataset == 'mnist' then
    end
 end
 
-ninputs   = nfeats * width * height
-nhiddens  = 128 -- ninputs / 6
-nhiddens2 = 64 -- ninputs / 12
-noutputs  = 10
+if opt.dataset == 'mnist' then
+  ninputs   = nfeats * width * height
+  nhiddens  = 128 -- ninputs / 6
+  nhiddens2 = 64 -- ninputs / 12
+  noutputs  = 10
+end
+
+if opt.dataset == 'adult' then
+  ninputs   = 85
+  -- nhiddens  = 128 -- ninputs / 6
+  -- nhiddens2 = 64 -- ninputs / 12
+  nhiddens=32
+  noutputs  = 2
+  classes = {'1','0'}
+end
 
 nstates = {64,64,128}
 filtsize = 5
@@ -351,79 +402,90 @@ normkernel = image.gaussian1D(7)
 -- constructing the model
 model = nn.Sequential()
 
+if opt.model == 'LR' then
+  model:add(nn.Reshape(ninputs))
+  model:add(nn.Linear(ninputs,noutputs))
+end
+
+if opt.model == 'adult_mlp' then
+  -- Simple 2-layer neural network, with tanh hidden units
+  model:add(nn.Reshape(ninputs))
+  model:add(nn.Linear(ninputs,nhiddens))
+  model:add(nn.ReLU())
+  model:add(nn.Linear(nhiddens,noutputs))
+end
 ---if paths.filep(modelfile) then
 ---   model = torch.load(modelfile)
 ---   print('load model from file')
 ---else
-   if opt.model == 'linear' then
-      -- Simple linear model
-      model:add(nn.Reshape(ninputs))
-      model:add(nn.Linear(ninputs,noutputs))
+if opt.model == 'linear' then
+  -- Simple linear model
+  model:add(nn.Reshape(ninputs))
+  model:add(nn.Linear(ninputs,noutputs))
+elseif opt.model == 'mlp' then
+  -- Simple 2-layer neural network, with tanh hidden units
+  model:add(nn.Reshape(ninputs))
+  model:add(nn.Linear(ninputs,nhiddens))
+  model:add(nn.Tanh())
+  model:add(nn.Linear(nhiddens,noutputs))
 
-   elseif opt.model == 'mlp' then
-      -- Simple 2-layer neural network, with tanh hidden units
-      model:add(nn.Reshape(ninputs))
-      model:add(nn.Linear(ninputs,nhiddens))
-      model:add(nn.Tanh())
-      model:add(nn.Linear(nhiddens,noutputs))
+elseif opt.model == 'deep' then
+  -- Deep neural network, with ReLU hidden units
+  model:add(nn.Reshape(ninputs))
+  model:add(nn.Linear(ninputs,nhiddens))
+  model:add(nn.ReLU())
+  model:add(nn.Linear(nhiddens,nhiddens2))
+  model:add(nn.ReLU())
+  model:add(nn.Linear(nhiddens2,noutputs))
 
-   elseif opt.model == 'deep' then
-      -- Deep neural network, with ReLU hidden units
-      model:add(nn.Reshape(ninputs))
-      model:add(nn.Linear(ninputs,nhiddens))
-      model:add(nn.ReLU())
-      model:add(nn.Linear(nhiddens,nhiddens2))
-      model:add(nn.ReLU())
-      model:add(nn.Linear(nhiddens2,noutputs))
+  -- model:add(nn.Linear(nstates[3], noutputs))
 
-      -- model:add(nn.Linear(nstates[3], noutputs))
+elseif opt.model == 'cvn' then
+  if opt.dataset == 'mnist' then
+     -- stage 1 : mean suppresion -> filter bank -> squashing -> max pooling
+     model:add(nn.SpatialConvolutionMM(1, 32, 5, 5))
+     model:add(nn.Tanh())
+     model:add(nn.SpatialMaxPooling(3, 3, 3, 3))
 
-   elseif opt.model == 'cvn' then
-      if opt.dataset == 'mnist' then
-         -- stage 1 : mean suppresion -> filter bank -> squashing -> max pooling
-         model:add(nn.SpatialConvolutionMM(1, 32, 5, 5))
-         model:add(nn.Tanh())
-         model:add(nn.SpatialMaxPooling(3, 3, 3, 3))
+     -- stage 2 : mean suppresion -> filter bank -> squashing -> max pooling
+     model:add(nn.SpatialConvolutionMM(32, 64, 5, 5))
+     model:add(nn.Tanh())
+     model:add(nn.SpatialMaxPooling(2, 2, 2, 2))
 
-         -- stage 2 : mean suppresion -> filter bank -> squashing -> max pooling
-         model:add(nn.SpatialConvolutionMM(32, 64, 5, 5))
-         model:add(nn.Tanh())
-         model:add(nn.SpatialMaxPooling(2, 2, 2, 2))
+     -- stage 3 : standard 2-layer MLP:
+     model:add(nn.Reshape(64*2*2))
+     model:add(nn.Linear(64*2*2, 200))
+     model:add(nn.Tanh())
+     model:add(nn.Linear(200, noutputs))
 
-         -- stage 3 : standard 2-layer MLP:
-         model:add(nn.Reshape(64*2*2))
-         model:add(nn.Linear(64*2*2, 200))
-         model:add(nn.Tanh())
-         model:add(nn.Linear(200, noutputs))
+  elseif opt.dataset == 'svhn' then
+     -- stage 1 : filter bank -> squashing -> L2 pooling -> normalization
+     model:add(nn.SpatialConvolutionMM(nfeats, nstates[1], filtsize, filtsize))
+     model:add(nn.Tanh())
+     model:add(nn.SpatialLPPooling(nstates[1],2,poolsize,poolsize,poolsize,poolsize))
+     model:add(nn.SpatialSubtractiveNormalization(nstates[1], normkernel))
 
-      elseif opt.dataset == 'svhn' then
-         -- stage 1 : filter bank -> squashing -> L2 pooling -> normalization
-         model:add(nn.SpatialConvolutionMM(nfeats, nstates[1], filtsize, filtsize))
-         model:add(nn.Tanh())
-         model:add(nn.SpatialLPPooling(nstates[1],2,poolsize,poolsize,poolsize,poolsize))
-         model:add(nn.SpatialSubtractiveNormalization(nstates[1], normkernel))
-   
-         -- stage 2 : filter bank -> squashing -> L2 pooling -> normalization
-         model:add(nn.SpatialConvolutionMM(nstates[1], nstates[2], filtsize, filtsize))
-         model:add(nn.Tanh())
-         model:add(nn.SpatialLPPooling(nstates[2],2,poolsize,poolsize,poolsize,poolsize))
-         model:add(nn.SpatialSubtractiveNormalization(nstates[2], normkernel))
+     -- stage 2 : filter bank -> squashing -> L2 pooling -> normalization
+     model:add(nn.SpatialConvolutionMM(nstates[1], nstates[2], filtsize, filtsize))
+     model:add(nn.Tanh())
+     model:add(nn.SpatialLPPooling(nstates[2],2,poolsize,poolsize,poolsize,poolsize))
+     model:add(nn.SpatialSubtractiveNormalization(nstates[2], normkernel))
 
-         -- stage 3 : standard 2-layer neural network
-         model:add(nn.Reshape(nstates[2]*filtsize*filtsize))
-         model:add(nn.Linear(nstates[2]*filtsize*filtsize, nstates[3]))
-         model:add(nn.Tanh())
-         model:add(nn.Linear(nstates[3], noutputs))
-      end
-   end
+     -- stage 3 : standard 2-layer neural network
+     model:add(nn.Reshape(nstates[2]*filtsize*filtsize))
+     model:add(nn.Linear(nstates[2]*filtsize*filtsize, nstates[3]))
+     model:add(nn.Tanh())
+     model:add(nn.Linear(nstates[3], noutputs))
+  end
+end
 
-   -- define loss
-   model:add(nn.LogSoftMax())
+-- define loss
+model:add(nn.LogSoftMax())
 
 -- printing the model
 print(model)
-
 criterion = nn.ClassNLLCriterion()
+
 
 -- prepare for training
 

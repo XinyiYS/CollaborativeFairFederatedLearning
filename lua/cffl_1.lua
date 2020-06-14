@@ -49,24 +49,36 @@ pserver:copy(parameters)
 local pserver_dssgd = parameters * 0.0
 pserver_dssgd:copy(parameters)
 
-if paths.filep(psfile) and paths.filep(psfile_pretrain) then
-  print("\npre-trained aprior models exist")
-  ps = torch.load(psfile, 'binary')
-  ps_pretrain = torch.load(psfile_pretrain, 'binary')
+if opt.pretrain~=0 then
+  if paths.filep(psfile) and paths.filep(psfile_pretrain) then
+    print("\npre-trained aprior models exist")
+    ps = torch.load(psfile, 'binary')
+    ps_pretrain = torch.load(psfile_pretrain, 'binary')
+  else
+    -- same initialization for all parties to begin collaboration, or for standalone training
+     for nid = 1, opt.netSize do
+        ps[nid] = parameters * 0.0
+        ps[nid]:copy(parameters)
+        ps_pretrain[nid] = parameters * 0.0
+        ps_pretrain2[nid] = parameters * 0.0
+        ps_pretrain5[nid] = parameters * 0.0
+        ps_pretrain10[nid] = parameters * 0.0
+        ps_pretrain[nid]:copy(parameters)
+        ps_pretrain2[nid]:copy(parameters)
+        ps_pretrain5[nid]:copy(parameters)
+        ps_pretrain10[nid]:copy(parameters)
+     end
+  end
 else
-  -- same initialization for all parties to begin collaboration, or for standalone training
+  if paths.filep(psfile) then
+    print("\npre-trained aprior models exist")
+    ps = torch.load(psfile, 'binary')
+  else
    for nid = 1, opt.netSize do
       ps[nid] = parameters * 0.0
       ps[nid]:copy(parameters)
-      ps_pretrain[nid] = parameters * 0.0
-      ps_pretrain2[nid] = parameters * 0.0
-      ps_pretrain5[nid] = parameters * 0.0
-      ps_pretrain10[nid] = parameters * 0.0
-      ps_pretrain[nid]:copy(parameters)
-      ps_pretrain2[nid]:copy(parameters)
-      ps_pretrain5[nid]:copy(parameters)
-      ps_pretrain10[nid]:copy(parameters)
    end
+  end
 end
 
 
@@ -112,7 +124,6 @@ for i=1,opt.nepochs do
   max_acc_standalone[i] = 0
 end
 for nid = 1, opt.netSize do
-  -- print('epoch ',epoch)
   if paths.filep(psfile) then
     print("\nload pre-trained aprior models")
     parameters:copy(ps[nid])
@@ -128,17 +139,19 @@ for nid = 1, opt.netSize do
       standalone_acc[nid][e]=accuracy
       io.write('standalone epoch ' .. e .. ' party ' .. nid .. ' test acc ' .. accuracy,'\n')
       max_acc_standalone[e]=math.max(max_acc_standalone[e],accuracy)
-      if e==opt.pretrain then
-        ps_pretrain[nid]:copy(parameters)
-      end
-      if e==2 then
-        ps_pretrain2[nid]:copy(parameters)
-      end
-      if e==5 then
-        ps_pretrain5[nid]:copy(parameters)
-      end
-      if e==10 then
-        ps_pretrain10[nid]:copy(parameters)
+      if opt.pretrain~=0 then
+        if e==opt.pretrain then
+          ps_pretrain[nid]:copy(parameters)
+        end
+        if e==2 then
+          ps_pretrain2[nid]:copy(parameters)
+        end
+        if e==5 then
+          ps_pretrain5[nid]:copy(parameters)
+        end
+        if e==10 then
+          ps_pretrain10[nid]:copy(parameters)
+        end
       end
       io.write('in epoch '.. e .. ', max standalone test acc '.. max_acc_standalone[e],'\n')
     end
@@ -166,16 +179,22 @@ if not paths.filep(standalone_acc_file) then
 end
 
 -- ps at opt.nepochs
-if not paths.filep(psfile) or not paths.filep(psfile_pretrain)  or not paths.filep(psfile_pretrain2) or not paths.filep(psfile_pretrain5) or not paths.filep(psfile_pretrain10) then
-  io.write('save pre-trained paras and pre-trained paras of '.. opt.pretrain .. ' epochs','\n')
+if not paths.filep(psfile) then
+  io.write('save pre-trained paras','\n')
   torch.save(psfile, ps, 'binary')
-  torch.save(psfile_pretrain2, ps_pretrain2, 'binary')
-  torch.save(psfile_pretrain5, ps_pretrain5, 'binary')
-  torch.save(psfile_pretrain10, ps_pretrain10, 'binary')
-  if not paths.filep(psfile_pretrain) then 
-    torch.save(psfile_pretrain, ps_pretrain, 'binary')
+end
+if opt.pretrain~=0 then
+  if not paths.filep(psfile_pretrain)  or not paths.filep(psfile_pretrain2) or not paths.filep(psfile_pretrain5) or not paths.filep(psfile_pretrain10) then
+    io.write('save pre-trained paras and pre-trained paras of '.. opt.pretrain .. ' epochs','\n')
+    torch.save(psfile_pretrain2, ps_pretrain2, 'binary')
+    torch.save(psfile_pretrain5, ps_pretrain5, 'binary')
+    torch.save(psfile_pretrain10, ps_pretrain10, 'binary')
+    if not paths.filep(psfile_pretrain) then 
+      torch.save(psfile_pretrain, ps_pretrain, 'binary')
+    end
   end
 end
+
 if opt.IID==0 then
   for c=1,class_len do
     for nid = 1, opt.netSize do
@@ -256,6 +275,7 @@ if opt.pretrain~=0 then
  end
 else
   for nid = 1, opt.netSize do
+    parameters,gradParameters = model:getParameters()
     p[nid] = parameters * 0.0
     p[nid]:copy(parameters)
     io.write('load same init parameters','\n')
@@ -358,9 +378,6 @@ for e = epoch+1,opt.nepochs do
             local eid = perm[elmnt] 
             if math.abs(delta[eid]) >= threshold then
               upval = delta[eid]
-              -- if opt.range > 0 then
-              --    upval = cut(upval, opt.range)
-              -- end
               combined_p[eid] = combined_p[eid] + (upval / 1.0) 
               -- average sgd
               -- combined_p[eid] = combined_p[eid] + (upval / opt.netSize)
