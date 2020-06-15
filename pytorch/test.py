@@ -1,7 +1,7 @@
 import os
 import sys
 import json
-
+import random
 import numpy as np
 import torch
 
@@ -84,32 +84,33 @@ from arguments import adult_args, mnist_args, names_args, update_gpu, mr_args, s
 def init_deterministic():
 	torch.manual_seed(1234)
 	np.random.seed(1234)
-	torch.backends.cudnn.deterministic = True
-	torch.backends.cudnn.benchmark = False
+	random.seed(1234)
+	# torch.backends.cudnn.deterministic = True
+	# torch.backends.cudnn.benchmark = False
 
 if __name__ == '__main__':
 	# init steps
 	init_deterministic()
 
+
 	args = adult_args
 	args['theta'] = 0.1
-	args['n_workers'] = 5
-	args['sample_size_cap'] = 4000
-	args['fl_epochs'] = 20
-	args['fl_individual_epochs'] = 5
+	# args['n_workers'] = 5
+	# args['sample_size_cap'] = 4000
 	# args = cifar_cnn_args
-	# args['n_workers'] = 20
-	# args['sample_size_cap'] = 40000
-	# args['theta'] = 0.1 
 	# args['batch_size'] = 128
-	args['gamma'] = 0.977
+	# args['gamma'] = 1
+	# args['optimizer_fn'] = optim.SGD
+	# args['lr'] = 5e-3
+	# args['fl_epochs'] = 100
+	# args['dssgd_lr'] = 5e-3
 	# args['split']='powerlaw'
 	# args['grad_clip']=0.001
 	# args['pretrain_epochs']=5
 	# args['pretraining_lr']=0.005
 	# args['dssgd_lr']=0.005
 	args['aggregate_mode']='sum'
-
+	# args['n_freeriders'] = 1
 	run_experiments(args, 1)
 	
 	exit()

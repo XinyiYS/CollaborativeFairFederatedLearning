@@ -34,9 +34,9 @@ adult_args = {
 	'n_freeriders': 0,
 
 	# model parameters
-	'model_fn': LogisticRegression,
+	'model_fn': MLP,
 	'optimizer_fn': optim.SGD,
-	'loss_fn': nn.CrossEntropyLoss(),  #CrossEntropyLoss NLLLoss
+	'loss_fn': nn.NLLLoss(),  #CrossEntropyLoss NLLLoss
 	'pretraining_lr' : 5e-3,  # only used during pretraining for CFFL models, no decay
 	'dssgd_lr': 1e-2, # used for dssgd model, no decay	
 	'std_lr': 1e-2,

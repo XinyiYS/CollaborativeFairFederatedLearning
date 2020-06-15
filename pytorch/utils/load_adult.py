@@ -4,27 +4,23 @@ import sklearn
 import sklearn.preprocessing as preprocessing
 
 # Source: https://www.valentinmihov.com/2015/04/17/adult-income-data-set/
-def data_transform(df):
-	"""Normalize features."""
-	binary_data = pd.get_dummies(df)
-	feature_cols = binary_data[binary_data.columns[:-2]]
-	scaler = preprocessing.StandardScaler()
-	data = pd.DataFrame(scaler.fit_transform(feature_cols), columns=feature_cols.columns)
-	return data
-
-
 def split_and_transform(original, labels, train_test_ratio):
-
 	num_train = int(train_test_ratio * len(original))
+	# original = data_transform(original)
 	
-	original = data_transform(original)
 
-	train_data = original[:num_train]
+	"""Normalize only the real-valued features."""	
+	real_value_cols = ['Age', 'Education-Num', 'Capital Gain', 'Capital Loss', 'Hours per week']
+
+	scaler = preprocessing.StandardScaler()
+
+	train_data = original[:num_train].copy(deep=True)
+	train_data[real_value_cols] = scaler.fit_transform(train_data[real_value_cols])
 	train_labels = labels[:num_train]
 
-	test_data = original[num_train:]
+	test_data =  original[num_train:].copy(deep=True)
+	test_data[real_value_cols] = scaler.transform(test_data[real_value_cols])
 	test_labels = labels[num_train:]
-
 	return train_data, train_labels, test_data, test_labels
 
 def get_train_test(dataset_dir='datasets/adult.csv', train_dir='datasets/adult.data', test_dir='datasets/adult.test', train_test_ratio=0.8):
@@ -41,14 +37,13 @@ def get_train_test(dataset_dir='datasets/adult.csv', train_dir='datasets/adult.d
 	import os
 	if os.path.isfile(dataset_dir):
 		df = pd.read_csv(dataset_dir)
-
-		positives = df[df['income']==1]
-		negatives = df[df['income']==0][:len(positives)]
+		positives = df[df['Target']==1]
+		negatives = df[df['Target']==0][:len(positives)]
 
 		df = pd.concat([positives, negatives])
 		df = df.sample(frac=1).reset_index(drop=True)
-		labels = df['income'].astype('float')
-		del df["income"]
+		labels = df['Target'].astype('float')
+		del df["Target"]
 
 		return split_and_transform(df, labels, train_test_ratio)
 
@@ -86,6 +81,16 @@ def get_train_test(dataset_dir='datasets/adult.csv', train_dir='datasets/adult.d
 	# Redundant column
 	# there is an Education-Num column that captures the info in Education
 	del original["Education"]
+	del original['fnlwgt']
+
+	real_value_cols = ['Age', 'Education-Num', 'Capital Gain', 'Capital Loss', 'Hours per week']
+	label_col = ['Target']
+	binary_cols = [col for col in original if col not in real_value_cols + label_col]
+	
+	original = pd.get_dummies(data=original, columns=binary_cols)
+
+	# save to csv dir
+	original.to_csv(dataset_dir, index=False)
 
 	# Remove target variable
 	del original["Target"]
