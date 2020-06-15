@@ -386,7 +386,7 @@ if opt.dataset == 'mnist' then
 end
 
 if opt.dataset == 'adult' then
-  ninputs   = 85
+  ninputs   = 86
   -- nhiddens  = 128 -- ninputs / 6
   -- nhiddens2 = 64 -- ninputs / 12
   nhiddens=32
