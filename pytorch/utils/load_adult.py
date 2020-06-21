@@ -41,7 +41,7 @@ def get_train_test(dataset_dir='datasets/adult.csv', train_dir='datasets/adult.d
 		negatives = df[df['Target']==0][:len(positives)]
 
 		df = pd.concat([positives, negatives])
-		df = df.sample(frac=1).reset_index(drop=True)
+		df = df.sample(frac=1, random_state=1234).reset_index(drop=True) # random_state fixes the seed
 		labels = df['Target'].astype('float')
 		del df["Target"]
 
@@ -74,7 +74,7 @@ def get_train_test(dataset_dir='datasets/adult.csv', train_dir='datasets/adult.d
 
 	original  = pd.concat([positives, negatives])
 	# shuffle the data set
-	original = original.sample(frac=1).reset_index(drop=True)
+	original = original.sample(frac=1, random_state=1234).reset_index(drop=True)
 
 	labels = original['Target'].astype('float')
 

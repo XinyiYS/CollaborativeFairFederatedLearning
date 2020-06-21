@@ -4,6 +4,7 @@ import json
 import copy
 import time
 import datetime
+import random
 from itertools import product
 
 import numpy as np
@@ -52,6 +53,7 @@ def write_aggregate_dict(performance_dicts, filename):
 
 def run_experiments(args, repeat=5, logs_dir='logs'):
 	update_gpu(args)
+	init_deterministic()
 
 	# init steps
 	model_name = str(args['model_fn']).split('.')[-1][:-2]
@@ -146,69 +148,71 @@ def init_deterministic():
 	np.random.seed(1234)
 	torch.backends.cudnn.deterministic = True
 	torch.backends.cudnn.benchmark = False
+	random.seed(1234)
 
 if __name__ == '__main__':
 	# init steps	
-	init_deterministic()
+
+	# call init_deterministic() in each run_experiments function call
 
 
 	experiment_args = []	
-	args = copy.deepcopy(mr_args)
-	for n_workers in [5]:
+	args = copy.deepcopy(adult_args)
+	for n_workers, sample_size_cap in [[5, 4000], [10, 8000], [20, 16000]]:
 		args['n_workers'] = n_workers
+		args['sample_size_cap'] = sample_size_cap
+		for theta in [0.1, 1]:
+			args['theta'] = theta
 
-		experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args)
+			experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args, repeat=1)
+
+	experiment_args = []	
+	args = copy.deepcopy(adult_args)
+	for n_workers, sample_size_cap in [[5, 4000], [10, 8000], [20, 16000]]:
+		args['n_workers'] = n_workers
+		args['sample_size_cap'] = sample_size_cap
+		for theta in [0.1, 1]:
+			args['n_freeriders'] = 1
+			args['theta'] = theta
+
+			experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args, repeat=1)
+
 
 	'''
+
+
+	experiment_args = []	
+	args = copy.deepcopy(cifar_cnn_args)
+	for n_workers, sample_size_cap in [[5, 10000],[10, 20000], [20, 40000]]:
+		
+		for theta in [1]:
+			args['n_workers'] = n_workers
+			args['sample_size_cap'] = sample_size_cap
+			args['aggregate_mode'] = 'sum'
+			args['theta'] = theta
+			args['fl_individual_epochs'] = 1
+			args['fl_epochs'] = 200
+			args['dssgd_lr'] = 0.1
+			args['std_lr'] = 0.1
+			args['lr'] = 5e-2
+			args['pretraining_lr'] = 5e-3
+
+			experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args, repeat=1)
+
 
 	experiment_args = []	
 	args = copy.deepcopy(cifar_cnn_args)
 	for n_workers, sample_size_cap in [[5, 10000],[10, 20000], [20, 40000]]:
 		args['n_workers'] = n_workers
 		args['sample_size_cap'] = sample_size_cap
-		args['largest_criterion'] = 'layer'
-		args['fl_individual_epochs'] = 1
 
 		experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args, repeat=1)
 
 
-
-	experiment_args = []	
-	args = copy.deepcopy(mnist_args)
-	for n_workers, sample_size_cap in [[5, 3000], [10, 6000], [20, 12000]]:
-		
-		for theta in [0.1, 1]:
-			args['n_workers'] = n_workers
-			args['sample_size_cap'] = sample_size_cap
-			args['aggregate_mode'] = 'sum'
-			args['theta'] = theta
-			args['split'] ='classimbalance'
-			args['fl_individual_epochs'] = 1
-			args['dssgd_lr'] = 5e-2
-			args['std_lr'] = 5e-2
-			args['lr'] = 5e-2
-
-			experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args, repeat=1)
-
-
-
-	experiment_args = []	
-	args = copy.deepcopy(mnist_args)
-	for n_workers, sample_size_cap in [[5, 3000], [10, 6000], [20, 12000]]:
-		
-		for theta in [0.1, 1]:
-			args['n_workers'] = n_workers
-			args['sample_size_cap'] = sample_size_cap
-			args['aggregate_mode'] = 'sum'
-			args['theta'] = theta
-
-			experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args, repeat=1)
-
-	
 
 	experiment_args = []	
 	args = copy.deepcopy(adult_args)
@@ -223,33 +227,11 @@ if __name__ == '__main__':
 		experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args, repeat=1)
 
-
-
-	experiment_args = []	
-	args = copy.deepcopy(cifar_cnn_args)
-	for n_workers, sample_size_cap in [[5, 10000], [10, 20000], [20, 40000]]:
-		args['n_workers'] = n_workers
-		args['sample_size_cap'] = sample_size_cap
-		args['largest_criterion'] = 'layer'
-			
-		experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args, repeat=1)
-
-
-	experiment_args = []	
-	args = copy.deepcopy(mr_args)
-	for n_workers in [5, 10, 20]:
-		args['n_workers'] = n_workers
-
-		experiment_args.append(copy.deepcopy(args))
-	run_experiments_full(experiment_args)
-
-
 	experiment_args = []	
 	args = copy.deepcopy(sst_args)
 	for n_workers in [5]:
 		args['n_workers'] = n_workers
-		args['alpha'] = 5
+		args['lr'] = 1e-3
 
 		experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args)

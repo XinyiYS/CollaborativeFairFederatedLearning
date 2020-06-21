@@ -38,7 +38,7 @@ def plot(df, save_dir=None, name='adult', plot_type=1, show=False, **kwargs):
 			plt.plot(index, column, fmt, data=df, label=column, )
 
 	if len(df.columns) > 10:
-		plt.legend(loc='lower right',fontsize=8)
+		plt.legend(loc='lower left',fontsize=8)
 	else:
 		plt.legend(loc='lower right')
 

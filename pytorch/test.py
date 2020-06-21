@@ -14,6 +14,7 @@ from utils.Federated_Learner import Federated_Learner
 
 def run_experiments(args, repeat=5, logs_dir='logs'):
 	update_gpu(args)
+	init_deterministic()
 
 	# init steps
 	print("Experimental settings are: ", args)
@@ -85,24 +86,30 @@ def init_deterministic():
 	torch.manual_seed(1234)
 	np.random.seed(1234)
 	random.seed(1234)
-	# torch.backends.cudnn.deterministic = True
-	# torch.backends.cudnn.benchmark = False
+	torch.backends.cudnn.deterministic = True
+	torch.backends.cudnn.benchmark = False
 
 if __name__ == '__main__':
 	# init steps
-	init_deterministic()
-
 
 	args = adult_args
 	args['theta'] = 0.1
-	# args['n_workers'] = 5
-	# args['sample_size_cap'] = 4000
+	args['n_workers'] = 5
+	args['sample_size_cap'] = 4000
+	args['fl_epochs'] = 20
+	args['aggregate_mode']='sum'
+	run_experiments(args, 1)
+
+	args = adult_args
+	args['theta'] = 1
+	args['n_workers'] = 5
+	args['sample_size_cap'] = 4000
 	# args = cifar_cnn_args
 	# args['batch_size'] = 128
 	# args['gamma'] = 1
 	# args['optimizer_fn'] = optim.SGD
 	# args['lr'] = 5e-3
-	# args['fl_epochs'] = 100
+	args['fl_epochs'] = 20
 	# args['dssgd_lr'] = 5e-3
 	# args['split']='powerlaw'
 	# args['grad_clip']=0.001
