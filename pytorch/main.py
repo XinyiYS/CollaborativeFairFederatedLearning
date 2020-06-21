@@ -28,7 +28,7 @@ def init_mp():
 
 def write_aggregate_dict(performance_dicts, filename):
 
-	keys = ['standalone_vs_final', 'standlone_vs_rrdssgd',
+	keys = ['standalone_vs_final', 'standalone_vs_rrdssgd',
 			'rr_dssgd_best', 'CFFL_best_worker', 'standalone_best_worker',
 			# 'sharingcontribution_vs_improvements', 'sharingcontribution_vs_final'
 			 ]

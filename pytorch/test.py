@@ -41,7 +41,7 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 		performance_dicts_pretrain.append(federated_learner.performance_dict_pretrain)
 
 	
-	keys = ['standalone_vs_final', 'standlone_vs_rrdssgd',
+	keys = ['standalone_vs_final', 'standalone_vs_rrdssgd',
 			'rr_dssgd_best', 'CFFL_best_worker', 'standalone_best_worker',
 			 ]
 

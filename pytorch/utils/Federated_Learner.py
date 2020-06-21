@@ -543,7 +543,7 @@ class Federated_Learner:
 
 		from scipy.stats import pearsonr
 		corrs = pearsonr(worker_standalone_test_accs, DSSGD_model_test_accs)
-		self.performance_dict['standlone_vs_rrdssgd'].append(corrs[0])
+		self.performance_dict['standalone_vs_rrdssgd'].append(corrs[0])
 
 		corrs = pearsonr(worker_standalone_test_accs, cffl_test_accs)
 		self.performance_dict['standalone_vs_final'].append(corrs[0])
@@ -560,7 +560,7 @@ class Federated_Learner:
 		cffl_test_accs = self.performance_dict_pretrain['cffl_test_accs'][-1]
 
 		corrs = pearsonr(worker_standalone_test_accs, DSSGD_model_test_accs)
-		self.performance_dict_pretrain['standlone_vs_rrdssgd'].append(corrs[0])
+		self.performance_dict_pretrain['standalone_vs_rrdssgd'].append(corrs[0])
 
 		corrs = pearsonr(worker_standalone_test_accs, cffl_test_accs)
 		self.performance_dict_pretrain['standalone_vs_final'].append(corrs[0])
@@ -572,7 +572,7 @@ class Federated_Learner:
 		self.performance_dict_pretrain['rr_dssgd_best'] = DSSGD_model_test_accs[best_worker_id]
 
 
-		keys = ['standalone_best_worker', 'CFFL_best_worker', 'rr_dssgd_best', 'standlone_vs_rrdssgd', 'standalone_vs_final']
+		keys = ['standalone_best_worker', 'CFFL_best_worker', 'rr_dssgd_best', 'standalone_vs_rrdssgd', 'standalone_vs_final']
 		print("----Results without pretrain")
 		for key in keys:
 			print(key, ' - ', self.performance_dict[key])			
