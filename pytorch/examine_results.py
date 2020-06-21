@@ -8,7 +8,7 @@ import numpy as np
 from read_convergence import plot_convergence, parse, get_cffl_best
 
 fairness_keys = [
-		'standlone_vs_rrdssgd_mean',
+		'standalone_vs_rrdssgd_mean',
 		'standalone_vs_final_mean',
 		]
 
