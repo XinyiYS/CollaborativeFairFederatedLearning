@@ -163,6 +163,8 @@ if __name__ == '__main__':
 		args['sample_size_cap'] = sample_size_cap
 		for theta in [0.1, 1]:
 			args['theta'] = theta
+			args['aggregate_mode'] = 'mean'
+			args['grad_clip'] = float('inf')
 
 			experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args, repeat=1)
@@ -175,13 +177,55 @@ if __name__ == '__main__':
 		for theta in [0.1, 1]:
 			args['n_freeriders'] = 1
 			args['theta'] = theta
+			args['aggregate_mode'] = 'mean'
+			args['grad_clip'] = float('inf')
+
+			experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args, repeat=1)
+	'''
+
+	experiment_args = []	
+	args = copy.deepcopy(mnist_args)
+	for n_workers, sample_size_cap in [[5, 3000], [10, 6000], [20, 12000]]:
+		args['n_workers'] = n_workers
+		args['sample_size_cap'] = sample_size_cap
+		for theta in [0.1, 1]:
+			args['theta'] = theta
+			args['aggregate_mode'] = 'mean'
+			args['grad_clip'] = float('inf')
 
 			experiment_args.append(copy.deepcopy(args))
 	run_experiments_full(experiment_args, repeat=1)
 
 
-	'''
 
+
+	experiment_args = []	
+	args = copy.deepcopy(adult_args)
+	for n_workers, sample_size_cap in [[5, 4000], [10, 8000], [20, 16000]]:
+		args['n_workers'] = n_workers
+		args['sample_size_cap'] = sample_size_cap
+		for theta in [0.1, 1]:
+			args['theta'] = theta
+			args['aggregate_mode'] = 'mean'
+			args['grad_clip'] = float('inf')
+
+			experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args, repeat=1)
+
+	experiment_args = []	
+	args = copy.deepcopy(adult_args)
+	for n_workers, sample_size_cap in [[5, 4000], [10, 8000], [20, 16000]]:
+		args['n_workers'] = n_workers
+		args['sample_size_cap'] = sample_size_cap
+		for theta in [0.1, 1]:
+			args['n_freeriders'] = 1
+			args['theta'] = theta
+			args['aggregate_mode'] = 'mean'
+			args['grad_clip'] = float('inf')
+
+			experiment_args.append(copy.deepcopy(args))
+	run_experiments_full(experiment_args, repeat=1)
 
 	experiment_args = []	
 	args = copy.deepcopy(cifar_cnn_args)

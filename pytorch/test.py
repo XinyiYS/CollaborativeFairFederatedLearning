@@ -92,14 +92,18 @@ def init_deterministic():
 if __name__ == '__main__':
 	# init steps
 
-	args = adult_args
+	args = mnist_args
 	args['theta'] = 0.1
 	args['n_workers'] = 5
-	args['sample_size_cap'] = 4000
-	args['fl_epochs'] = 20
-	args['aggregate_mode']='sum'
+	args['sample_size_cap'] = 3000
+	args['fl_epochs'] = 100
+	args['download'] = 'random'
+	args['largest_criterion'] = 'all'
+	args['aggregate_mode'] = 'mean'
+	args['grad_clip'] = float('inf')
 	run_experiments(args, 1)
 
+	exit()
 	args = adult_args
 	args['theta'] = 1
 	args['n_workers'] = 5

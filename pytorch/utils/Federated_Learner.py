@@ -32,8 +32,8 @@ class Federated_Learner:
 
 		self.worker_train_loaders = self.data_prepper.get_train_loaders(
 			self.args['n_workers'], self.args['split'])
-		self.shard_sizes = self.data_prepper.shard_sizes
-		print("Shard sizes are: ", self.shard_sizes)
+		self.shard_sizes = torch.tensor(self.data_prepper.shard_sizes).float()
+		print("Shard sizes are: ", self.shard_sizes.tolist())
 		self.init_workers()
 		self.performance_dict = defaultdict(list)
 		self.performance_dict_pretrain = defaultdict(list)
@@ -80,10 +80,14 @@ class Federated_Learner:
 							device=device,
 							is_free_rider=True
 							)
-			for i in range(self.n_freeriders):
-				self.workers.append(freerider)
-				self.shard_sizes.insert(0, 0)
-				self.n_workers+=1
+
+			self.workers += [freerider] * self.n_freeriders
+			self.n_workers += self.n_freeriders
+			self.shard_sizes = torch.cat([torch.zeros(self.n_freeriders), self.shard_sizes])
+			# for i in range(self.n_freeriders):
+			# 	self.workers.append(freerider)
+			# 	self.shard_sizes.insert(0, 0)
+			# 	self.n_workers+=1
 		
 		# possible to enumerate through various model_fns, optimizer_fns, lrs,
 		# thetas, or even devices
@@ -270,8 +274,8 @@ class Federated_Learner:
 		device = self.args['device']
 		fl_individual_epochs = self.args['fl_individual_epochs']
 
-		self.performance_dict['shard_sizes'] = self.shard_sizes
-		self.performance_dict_pretrain['shard_sizes'] = self.shard_sizes
+		self.performance_dict['shard_sizes'] = self.shard_sizes.tolist()
+		self.performance_dict_pretrain['shard_sizes'] = self.shard_sizes.tolist()
 
 		# print("Start local pretraining ")
 		self.timestamp = time.time()
@@ -430,40 +434,70 @@ class Federated_Learner:
 		and filter out its own updates in the local model
 		and apply to its local model
 		"""
+		if self.args['aggregate_mode'] == 'mean':
+			weights = torch.div(self.shard_sizes , sum(self.shard_sizes) ) # fed_avg
+		else:
+			weights = torch.ones(self.n_workers)  
+
+		# default download mode is 'topk'
+		download = 'topk' if 'download' not in self.args else self.args['download']
 
 		if self.args['largest_criterion'] == 'all':
 
 			# preprocess to get the topk largest values for all (only need sort it once for the highest credit)
 			# no pretrain
 			absolute_values = torch.cat([update.data.view(-1).abs() for update in self.aggregated_gradient_updates])
-			topk, _ = torch.topk(absolute_values, int(len(absolute_values) * max(self.credits)))
+
+			if download == 'random':
+				random_permuted_indices = torch.randperm(len(absolute_values))
+			else:
+				topk, _ = torch.topk(absolute_values, int(len(absolute_values) * max(self.credits)))
 
 			# pretrain
 			absolute_values = torch.cat([update.data.view(-1).abs() for update in self.aggregated_gradient_updates_pretrain])
-			topk_pretrain, _ = torch.topk(absolute_values, int(len(absolute_values) * max(self.credits_pretrain)))
-			del absolute_values, _
+			if download == 'random':
+				random_permuted_pretrain_indices = torch.randperm(len(absolute_values)) if download == 'random' else None
+			else:
+				topk_pretrain, _ = torch.topk(absolute_values, int(len(absolute_values) * max(self.credits_pretrain)))
+				del _
 
+			del absolute_values
+			
 			for i, worker in enumerate(self.workers):
 
 				# no pretrain
 				if i in self.R:
 					agg_grad_update = copy.deepcopy(self.aggregated_gradient_updates)
-					# num_param_downloads = int(self.credits[i] * worker.param_count)
-					num_downloads  = int(self.credits[i] * worker.param_count)
-					allocated_grad = mask_grad_update_by_magnitude(agg_grad_update, topk[num_downloads-1])
+					
+					# num_downloads  = int(self.credits[i] * worker.param_count)
+					# NEW LOGIC FOR determining how many parameters to download
+					num_downloads  = int(self.credits[i]*1. / max(self.credits) *self.shard_sizes[i] *1. / max(self.shard_sizes) * worker.param_count)
+					# print("worker {}, no pretrain, download quota {}".format(i, num_downloads))
+					# print("total random indices len {}, download quota {}, zero count shoud be {}".format(len(random_permuted_indices), num_downloads, worker.param_count - num_downloads ))
+					if download == 'random':
+						assert random_permuted_indices is not None, "Uninitialized <random_permuted_indices>"
+						allocated_grad = mask_grad_update_by_indices(agg_grad_update, indices=random_permuted_indices[:num_downloads])
+					else:
+						allocated_grad = mask_grad_update_by_magnitude(agg_grad_update, topk[num_downloads-1])
 					
 					add_update_to_model(worker.model, allocated_grad)
-					add_update_to_model(worker.model, self.filtered_updates[i], weight=-1.0)
-
-
+					add_update_to_model(worker.model, self.filtered_updates[i], weight=-weights[i])
+					
 				# with pretrain
 				if i in self.R_pretrain:
 					agg_grad_update = copy.deepcopy(self.aggregated_gradient_updates_pretrain)
-					num_downloads  = int(self.credits_pretrain[i] * worker.param_count)
-					allocated_grad = mask_grad_update_by_magnitude(agg_grad_update, topk_pretrain[num_downloads-1])
+					# num_downloads  = int(self.credits_pretrain[i] * worker.param_count)
+					
+					num_downloads  = int(self.credits[i]*1. / max(self.credits) *self.shard_sizes[i] *1. / max(self.shard_sizes) * worker.param_count)
+					if download == 'random':
+						assert random_permuted_pretrain_indices is not None, "Uninitialized <random_permuted_pretrain_indices>"
+						allocated_grad = mask_grad_update_by_indices(agg_grad_update, indices=random_permuted_pretrain_indices[:num_downloads])
+
+					else:				
+						allocated_grad = mask_grad_update_by_magnitude(agg_grad_update, topk_pretrain[num_downloads-1])
 
 					add_update_to_model(worker.model_pretrain, allocated_grad)
-					add_update_to_model(worker.model_pretrain, self.filtered_updates_pretrain[i], weight=-1.0)
+					add_update_to_model(worker.model_pretrain, self.filtered_updates_pretrain[i], weight=-weights[i])
 
 		elif self.args['largest_criterion'] == 'layer':
 			
@@ -472,13 +506,13 @@ class Federated_Learner:
 				if i in self.R:
 					allocated_grad = mask_grad_update_by_order(self.aggregated_gradient_updates, mask_order=None, mask_percentile=self.credits[i], mode='layer')
 					add_update_to_model(worker.model, allocated_grad)
-					add_update_to_model(worker.model, self.filtered_updates[i], weight=-1.0)
+					add_update_to_model(worker.model, self.filtered_updates[i], weight=-weights[i])
 
 				# with pretrain
 				if i in self.R_pretrain:
 					allocated_grad = mask_grad_update_by_order(self.aggregated_gradient_updates_pretrain, mask_order=None, mask_percentile=self.credits_pretrain[i], mode='layer')
 					add_update_to_model(worker.model_pretrain, allocated_grad)
-					add_update_to_model(worker.model_pretrain, self.filtered_updates_pretrain[i], weight=-1.0)
+					add_update_to_model(worker.model_pretrain, self.filtered_updates_pretrain[i], weight=-weights[i])
 		return
 
 	def performance_summary(self, to_print=False):
@@ -682,6 +716,37 @@ def mask_grad_update_by_magnitude(grad_update, mask_constant):
 	grad_update = copy.deepcopy(grad_update)
 	for i, update in enumerate(grad_update):
 		grad_update[i].data[update.data.abs() < mask_constant] = 0
+	return grad_update
+
+def mask_grad_update_by_indices(grad_update, indices=None):
+	"""
+	Mask the grad.data to be 0, if the position is not in the list of indices
+	If indicies is empty, mask nothing.
+	
+	Arguments: 
+	grad_update: as in the shape of the model parameters. A list of tensors.
+	indices: a tensor of integers, corresponding to the specific individual scalar values in the grad_update, 
+	as if the entire grad_update is flattened.
+
+	e.g. 
+	grad_update = [[1, 2, 3], [3, 2, 1]]
+	indices = [4, 5]
+	returning masked grad_update = [[0, 0, 0], [0, 2, 1]]
+	"""
+
+	grad_update = copy.deepcopy(grad_update)
+	if indices is None or len(indices)==0: return grad_update
+
+	#flatten and unflatten
+	flattened = torch.cat([update.data.view(-1) for update in grad_update])	
+	masked = torch.zeros_like(torch.arange(len(flattened)), device=flattened.device).float()
+	masked.data[indices] = flattened.data[indices]
+
+	pointer = 0
+	for m, update in enumerate(grad_update):
+		size_of_update = torch.prod(torch.tensor(update.shape)).long()
+		grad_update[m].data = masked[pointer: pointer + size_of_update].reshape(update.shape)
+		pointer += size_of_update
 	return grad_update
 
 def compute_credit_threshold(R_size, split, coef=1.0/3.0):
