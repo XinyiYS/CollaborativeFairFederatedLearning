@@ -76,6 +76,7 @@ class Federated_Learner:
 							model_pretrain = copy.deepcopy(self.federated_model),
 							standalone_model=copy.deepcopy(self.federated_model),
 							dssgd_model=copy.deepcopy(self.federated_model),
+							fedavg_model=copy.deepcopy(self.federated_model),
 							theta=theta,
 							device=device,
 							is_free_rider=True
@@ -112,6 +113,11 @@ class Federated_Learner:
 			# 0.977 ** 100 ~= 0.1    a smaller decay rate
 			dssgd_scheduler = torch.optim.lr_scheduler.ExponentialLR(dssgd_optimizer, gamma = gamma)
 
+			fedavg_model = copy.deepcopy(self.federated_model)
+			fedavg_optimizer = optimizer_fn(fedavg_model.parameters(), lr=dssgd_lr)
+			fedavg_scheduler = torch.optim.lr_scheduler.ExponentialLR(fedavg_optimizer, gamma = gamma)
+
+
 			worker = Worker(train_loader=worker_train_loader,
 							model=model, optimizer=optimizer, scheduler=scheduler,
 							model_pretrain=model_pretrain, optimizer_pretrain=optimizer_pretrain,scheduler_pretrain=scheduler_pretrain,
@@ -119,6 +125,7 @@ class Federated_Learner:
 
 							standalone_model=standalone_model, standalone_optimizer=standalone_optimizer, standalone_scheduler=standalone_scheduler,
 							dssgd_model=dssgd_model, dssgd_optimizer=dssgd_optimizer,dssgd_scheduler=dssgd_scheduler,
+							fedavg_model=fedavg_model, fedavg_optimizer=fedavg_optimizer, fedavg_scheduler=fedavg_scheduler,
 							loss_fn=loss_fn, theta=theta,
 							grad_clip=grad_clip, epoch_sample_size=epoch_sample_size,
 							device=device,
@@ -143,6 +150,7 @@ class Federated_Learner:
 		worker_val_accs = []
 		worker_val_accs_pretrain = []
 		dssgd_val_accs = []
+		fedavg_val_accs = []
 
 		for i, worker in enumerate(self.workers):
 			self.timestamp = time.time()
@@ -150,11 +158,13 @@ class Federated_Learner:
 			model_before = copy.deepcopy(worker.model)
 			dssgd_model_before = copy.deepcopy(worker.dssgd_model)
 			model_pretrain_before = copy.deepcopy(worker.model_pretrain)
+			fedavg_model_before = copy.deepcopy(worker.fedavg_model)
 
 			worker.train(epochs, is_pretrain=is_pretrain, save_gpu=save_gpu)
 			model_after = copy.deepcopy(worker.model)
 			dssgd_model_after = copy.deepcopy(worker.dssgd_model)
 			model_pretrain_after = copy.deepcopy(worker.model_pretrain)
+			fedavg_model_after = copy.deepcopy(worker.fedavg_model)
 
 			self.clock('workers local training')
 
@@ -244,17 +254,35 @@ class Federated_Learner:
 
 			# this is executed in a fixed sequence, so the self.dssgd_model gets gradually updated and 'downloaded' by each worker
 			worker.dssgd_model.load_state_dict(add_update_to_model(self.dssgd_model, filtered_grad_update).state_dict(), strict=False)
+		
 			dssgd_val_acc = evaluate(worker.dssgd_model, self.valid_loader, self.device, verbose=False)[1]
 			dssgd_val_accs.append(dssgd_val_acc)
 
 			self.clock('server aggregation dssgd')
+
+
+			# for fedavg model
+
+			fedavg_grad_update = compute_grad_update(fedavg_model_before, fedavg_model_after, device=self.device)
+			del fedavg_model_before, fedavg_model_after  # to free up memory immediately
+
+			# this is executed in a fixed sequence, so the self.dssgd_model gets gradually updated and 'downloaded' by each worker
+			# to follow fedavg method, incorporate the weighting via the shardsize
+
+			weight = torch.div(self.shard_sizes[i], self.shard_sizes.sum())
+			worker.fedavg_model.load_state_dict(add_update_to_model(self.fedavg_model, fedavg_grad_update, weight = weight).state_dict(), strict=False)
+			
+			fedavg_val_acc = evaluate(worker.fedavg_model, self.valid_loader, self.device, verbose=False)[1]
+			fedavg_val_accs.append(fedavg_val_acc)
+
+			self.clock('server aggregation fedavg')
 
 			'''
 			# clipped stats
 			print(pd.DataFrame(data=data_rows, columns=columns))
 			'''
 
-		return worker_val_accs, worker_val_accs_pretrain, dssgd_val_accs
+		return worker_val_accs, worker_val_accs_pretrain, dssgd_val_accs, fedavg_val_accs
 
 
 	def train(self):
@@ -284,7 +312,6 @@ class Federated_Learner:
 
 		self.clock('pretraining')
 
-
 		self.worker_model_test_accs_before = self.evaluate_workers_performance(self.test_loader)
 		self.performance_dict['worker_model_test_accs_before'] = self.worker_model_test_accs_before
 
@@ -293,6 +320,8 @@ class Federated_Learner:
 
 		self.dssgd_model = copy.deepcopy(self.federated_model).to(device)
 		# each worker needs a dssgd model to compute final fairness
+
+		self.fedavg_model = copy.deepcopy(self.federated_model).to(device)
 
 		_, federated_val_acc = evaluate(
 			self.federated_model, self.valid_loader, device, verbose=False)
@@ -310,7 +339,7 @@ class Federated_Learner:
 
 
 			# 1. training locally
-			worker_val_accs, worker_val_accs_pretrain, dssgd_val_accs = self.train_locally(fl_individual_epochs,save_gpu=self.save_gpu)
+			worker_val_accs, worker_val_accs_pretrain, dssgd_val_accs, fedavg_val_accs = self.train_locally(fl_individual_epochs,save_gpu=self.save_gpu)
 
 			# 2. update the credits and credit_threshold
 			# and update the reputable parties set
@@ -348,6 +377,8 @@ class Federated_Learner:
 
 			self.performance_dict['dssgd_val_accs'].append(dssgd_val_accs)
 			self.performance_dict_pretrain['dssgd_val_accs'].append(dssgd_val_accs)
+			self.performance_dict['fedavg_val_accs'].append(fedavg_val_accs)
+			self.performance_dict_pretrain['fedavg_val_accs'].append(fedavg_val_accs)
 
 			self.performance_dict['credits'].append(self.credits)
 			self.performance_dict['credit_threshold'].append(self.credit_threshold)
@@ -472,7 +503,7 @@ class Federated_Learner:
 					# num_downloads  = int(self.credits[i] * worker.param_count)
 					# NEW LOGIC FOR determining how many parameters to download
 					num_downloads  = int(self.credits[i]*1. / max(self.credits) *self.shard_sizes[i] *1. / max(self.shard_sizes) * worker.param_count)
-					# print("worker {}, no pretrain, download quota {}".format(i, num_downloads))
+
 					# print("total random indices len {}, download quota {}, zero count shoud be {}".format(len(random_permuted_indices), num_downloads, worker.param_count - num_downloads ))
 					if download == 'random':
 						assert random_permuted_indices is not None, "Uninitialized <random_permuted_indices>"
@@ -487,8 +518,8 @@ class Federated_Learner:
 				if i in self.R_pretrain:
 					agg_grad_update = copy.deepcopy(self.aggregated_gradient_updates_pretrain)
 					# num_downloads  = int(self.credits_pretrain[i] * worker.param_count)
-					
-					num_downloads  = int(self.credits[i]*1. / max(self.credits) *self.shard_sizes[i] *1. / max(self.shard_sizes) * worker.param_count)
+					num_downloads  = int(self.credits_pretrain[i]*1. / max(self.credits_pretrain) *self.shard_sizes[i] *1. / max(self.shard_sizes) * worker.param_count)
+
 					if download == 'random':
 						assert random_permuted_pretrain_indices is not None, "Uninitialized <random_permuted_pretrain_indices>"
 						allocated_grad = mask_grad_update_by_indices(agg_grad_update, indices=random_permuted_pretrain_indices[:num_downloads])
@@ -517,30 +548,34 @@ class Federated_Learner:
 
 	def performance_summary(self, to_print=False):
 		self.dssgd_models_test_accs = self.evaluate_workers_performance(self.test_loader, mode='dssgd')
+		self.fedavg_models_test_accs = self.evaluate_workers_performance(self.test_loader, mode='fedavg')
 		self.worker_standalone_test_accs = self.evaluate_workers_performance(self.test_loader, mode='standalone')
 		self.cffl_test_accs = self.evaluate_workers_performance(self.test_loader)
 		self.cffl_test_accs_w_pretrain = self.evaluate_workers_performance(self.test_loader, mode='pretrain')
 
 		# no pretrain
 		self.performance_dict['DSSGD_model_test_accs'].append(self.dssgd_models_test_accs)
+		self.performance_dict['fedavg_model_test_accs'].append(self.fedavg_models_test_accs)
 		self.performance_dict['worker_standalone_test_accs'].append(self.worker_standalone_test_accs)
 		self.performance_dict['cffl_test_accs'].append(self.cffl_test_accs)
 
 		# with pretrain
 		self.performance_dict_pretrain['DSSGD_model_test_accs'].append(self.dssgd_models_test_accs)
+		self.performance_dict_pretrain['fedavg_model_test_accs'].append(self.fedavg_models_test_accs)
 		self.performance_dict_pretrain['worker_standalone_test_accs'].append(self.worker_standalone_test_accs)
 		self.performance_dict_pretrain['cffl_test_accs'].append(self.cffl_test_accs_w_pretrain)
 
 		if to_print:
-			print('Below are testset accuracies: ---')
+			print('Below are testset  accuracies: ---')
 			print('Workers standalone accuracies: ', ["{:.3%}".format(acc_std) for acc_std in self.worker_standalone_test_accs])
-			print('Workers DSSGD     accuracies: ', ["{:.3%}".format(dssgd_acc) for dssgd_acc in self.dssgd_models_test_accs])
+			print('Workers DSSGD      accuracies: ', ["{:.3%}".format(dssgd_acc) for dssgd_acc in self.dssgd_models_test_accs])
+			print('Workers Fedavg     accuracies: ', ["{:.3%}".format(fedavg_acc) for fedavg_acc in self.fedavg_models_test_accs])
 			print()
-			print('Workers before    accuracies: ', ["{:.3%}".format(acc_b4) for acc_b4 in self.worker_model_test_accs_before])
-			print('Workers CFFL      accuracies: ', ["{:.3%}".format(acc_aft) for acc_aft in self.cffl_test_accs])
+			print('Workers before     accuracies: ', ["{:.3%}".format(acc_b4) for acc_b4 in self.worker_model_test_accs_before])
+			print('Workers CFFL       accuracies: ', ["{:.3%}".format(acc_aft) for acc_aft in self.cffl_test_accs])
 			print()
-			print('Workers before pr accuracies: ', ["{:.3%}".format(acc_b4) for acc_b4 in self.worker_model_test_accs_before_w_pretrain])
-			print('Workers CFFL pret accuracies: ', ["{:.3%}".format(acc_aft) for acc_aft in self.cffl_test_accs_w_pretrain])
+			print('Workers before pr  accuracies: ', ["{:.3%}".format(acc_b4) for acc_b4 in self.worker_model_test_accs_before_w_pretrain])
+			print('Workers CFFL pret  accuracies: ', ["{:.3%}".format(acc_aft) for acc_aft in self.cffl_test_accs_w_pretrain])
 
 		return
 
@@ -573,6 +608,7 @@ class Federated_Learner:
 		# no pretrain
 		worker_standalone_test_accs = self.performance_dict['worker_standalone_test_accs'][-1]
 		DSSGD_model_test_accs = self.performance_dict['DSSGD_model_test_accs'][-1]
+		fedavg_model_test_accs = self.performance_dict['fedavg_model_test_accs'][-1]
 		cffl_test_accs = self.performance_dict['cffl_test_accs'][-1]
 
 		from scipy.stats import pearsonr
@@ -581,16 +617,20 @@ class Federated_Learner:
 
 		corrs = pearsonr(worker_standalone_test_accs, cffl_test_accs)
 		self.performance_dict['standalone_vs_final'].append(corrs[0])
+		
+		corrs = pearsonr(worker_standalone_test_accs, fedavg_model_test_accs)
+		self.performance_dict['standalone_vs_fedavg'].append(corrs[0])
 
 		self.performance_dict['CFFL_best_worker'] = max(cffl_test_accs)
 		best_worker_id = np.argmax(cffl_test_accs)
 		self.performance_dict['standalone_best_worker'] = worker_standalone_test_accs[best_worker_id]
 		self.performance_dict['rr_dssgd_best'] = DSSGD_model_test_accs[best_worker_id]
-
+		self.performance_dict['rr_fedavg_best'] = fedavg_model_test_accs[best_worker_id]
 
 		# with pretrain
 		worker_standalone_test_accs = self.performance_dict_pretrain['worker_standalone_test_accs'][-1]
 		DSSGD_model_test_accs = self.performance_dict_pretrain['DSSGD_model_test_accs'][-1]
+		fedavg_model_test_accs = self.performance_dict_pretrain['fedavg_model_test_accs'][-1]
 		cffl_test_accs = self.performance_dict_pretrain['cffl_test_accs'][-1]
 
 		corrs = pearsonr(worker_standalone_test_accs, DSSGD_model_test_accs)
@@ -599,14 +639,19 @@ class Federated_Learner:
 		corrs = pearsonr(worker_standalone_test_accs, cffl_test_accs)
 		self.performance_dict_pretrain['standalone_vs_final'].append(corrs[0])
 
+		corrs = pearsonr(worker_standalone_test_accs, fedavg_model_test_accs)
+		self.performance_dict_pretrain['standalone_vs_fedavg'].append(corrs[0])
+
 		self.performance_dict_pretrain['CFFL_best_worker'] = max(cffl_test_accs)
 		best_worker_id = np.argmax(cffl_test_accs)
 
 		self.performance_dict_pretrain['standalone_best_worker'] = worker_standalone_test_accs[best_worker_id]
 		self.performance_dict_pretrain['rr_dssgd_best'] = DSSGD_model_test_accs[best_worker_id]
+		self.performance_dict_pretrain['rr_fedavg_best'] = fedavg_model_test_accs[best_worker_id]
 
 
-		keys = ['standalone_best_worker', 'CFFL_best_worker', 'rr_dssgd_best', 'standalone_vs_rrdssgd', 'standalone_vs_final']
+		keys = ['standalone_best_worker', 'CFFL_best_worker', 'rr_dssgd_best', 'rr_fedavg_best',
+			'standalone_vs_rrdssgd', 'standalone_vs_final', 'standalone_vs_fedavg']
 		print("----Results without pretrain")
 		for key in keys:
 			print(key, ' - ', self.performance_dict[key])			
@@ -627,6 +672,8 @@ class Federated_Learner:
 			return [evaluate(worker.dssgd_model, eval_loader, device, verbose=False)[1] for worker in self.workers]
 		elif mode == 'pretrain':
 			return [evaluate(worker.model_pretrain, eval_loader, device, verbose=False)[1] for worker in self.workers]
+		elif mode == 'fedavg':
+			return [evaluate(worker.fedavg_model, eval_loader, device, verbose=False)[1] for worker in self.workers]
 		else:
 			return [evaluate(worker.model, eval_loader, device, verbose=False)[1] for worker in self.workers]
 	def clock(self, key):
@@ -635,7 +682,13 @@ class Federated_Learner:
 		self.timestamp = self.timestamp_
 
 
-def compute_credits_sinh(credits, credit_threshold, R, val_accs, alpha=5, credit_fade=1, split='powerlaw'):
+	def update_credits(self, worker_val_accs, worker_val_accs_pretrain):
+		
+		self.credits, self.credit_threshold, self.R  = compute_credits_sinh(self.credits, self.credit_threshold, self.R, worker_val_accs, alpha=self.args['alpha'], split=self.args['split'], credit_threshold_coef=self.credit_threshold_coef)
+		self.credits_pretrain, self.credit_threshold_pretrain, self.R_pretrain = compute_credits_sinh(self.credits_pretrain, self.credit_threshold_pretrain, self.R_pretrain, worker_val_accs_pretrain, alpha=self.args['alpha'],split=self.args['split'],credit_threshold_coef=self.credit_threshold_coef)
+
+
+def compute_credits_sinh(credits, credit_threshold, R, val_accs, alpha=5, credit_fade=1, split='powerlaw', credit_threshold_coef=1.0/3.0):
 	# print('alpha used is :', alpha, ' current credits are : ', credits, ' current threshold: ', credit_threshold)
 	R_size = len(R)
 	total_val_accs = sum([val_accs[i] for i in R])

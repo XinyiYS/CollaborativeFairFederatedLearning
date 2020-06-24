@@ -10,7 +10,8 @@ class Worker():
 	def __init__(self, train_loader, model=None, optimizer=None,scheduler=None,
 		model_pretrain=None, optimizer_pretrain=None, pretraining_lr=None, scheduler_pretrain=None,
 		standalone_model=None, standalone_optimizer=None, standalone_scheduler=None,
-		dssgd_model=None, dssgd_optimizer=None,dssgd_scheduler=None,
+		dssgd_model=None, dssgd_optimizer=None, dssgd_scheduler=None,
+		fedavg_model=None, fedavg_optimizer=None, fedavg_scheduler=None,
 		loss_fn=None, theta=0.1, grad_clip=0.01, epoch_sample_size=-1,
 		device=None,id=None,is_free_rider=False):
 
@@ -28,6 +29,9 @@ class Worker():
 		self.dssgd_model = dssgd_model
 		self.dssgd_optimizer = dssgd_optimizer
 		self.dssgd_scheduler = dssgd_scheduler
+		self.fedavg_model = fedavg_model
+		self.fedavg_optimizer = fedavg_optimizer
+		self.fedavg_scheduler = fedavg_scheduler
 		self.loss_fn = loss_fn
 		self.theta = theta
 		self.grad_clip = grad_clip		
@@ -57,6 +61,9 @@ class Worker():
 
 		self.dssgd_model.train()
 		self.dssgd_model = self.dssgd_model.to(self.device)
+
+		self.fedavg_model.train()
+		self.fedavg_model = self.fedavg_model.to(self.device)
 		for epoch in range(int(epochs)):
 			iter = 0
 			for i, batch in enumerate(self.train_loader):
@@ -88,8 +95,8 @@ class Worker():
 					continue
 
 				iter += len(batch_data)
-				for optimizer, model in zip([self.optimizer_pretrain, self.optimizer, self.standalone_optimizer, self.dssgd_optimizer] ,
-											[self.model_pretrain, self.model, self.standalone_model, self.dssgd_model]):
+				for optimizer, model in zip([self.optimizer_pretrain, self.optimizer, self.standalone_optimizer, self.dssgd_optimizer, self.fedavg_optimizer] ,
+											[self.model_pretrain, self.model, self.standalone_model, self.dssgd_model, self.fedavg_model]):
 					optimizer.zero_grad()
 					self.loss_fn(model(batch_data), batch_target).backward()
 					optimizer.step()
@@ -108,9 +115,10 @@ class Worker():
 			# print('no pretrain', self.scheduler.get_last_lr())
 
 			self.standalone_scheduler.step()
-			self.dssgd_scheduler.step()
 			self.scheduler_pretrain.step()
 			self.scheduler.step()
+			self.dssgd_scheduler.step()
+			self.fedavg_scheduler.step()
 
 
 		if 'cuda' in str(self.device) and save_gpu:
@@ -119,3 +127,5 @@ class Worker():
 			self.model = self.model.to(cpu)
 			self.standalone_model = self.standalone_model.to(cpu)
 			self.dssgd_model = self.dssgd_model.to(cpu)
+			self.fedavg_model = self.fedavg_model.to(cpu)
+

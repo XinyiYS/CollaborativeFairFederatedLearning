@@ -8,15 +8,17 @@ import numpy as np
 from read_convergence import plot_convergence, parse, get_cffl_best
 
 fairness_keys = [
+		'standalone_vs_fedavg_mean',
 		'standalone_vs_rrdssgd_mean',
 		'standalone_vs_final_mean',
 		]
 
-performance_keys = [
-		'dssgd',
-		'standalone',
-		'cffl',
-		]
+# performance_keys = [
+# 		'dssgd',
+# 		'fedavg',
+# 		'standalone',
+# 		'cffl',
+# 		]
 
 def collect_and_compile_performance(dirname):
 
@@ -41,15 +43,20 @@ def collect_and_compile_performance(dirname):
 			f_data_row = ['P' + str(n_workers) + '_' + str(theta)] + [aggregate_dict[f_key][0] for f_key in fairness_keys]
 			f_data_row.append(aggregate_dict_pretrain['standalone_vs_final_mean'][0])
 
-			p_data_row = ['P' + str(n_workers) + '_' + str(theta)] + [aggregate_dict['rr_dssgd_best'][0], aggregate_dict['standalone_best_worker'][0], aggregate_dict['CFFL_best_worker'][0], aggregate_dict_pretrain['CFFL_best_worker'][0]]
-			# p_data_row = ['P' + str(n_workers) + '_' + str(theta)] + get_cffl_best(dirname, folder)
+			p_data_row = ['P' + str(n_workers) + '_' + str(theta)] + [aggregate_dict['rr_fedavg_best'][0],
+																	aggregate_dict['rr_dssgd_best'][0], 
+																	aggregate_dict['standalone_best_worker'][0], 
+																	aggregate_dict['CFFL_best_worker'][0], 
+																	aggregate_dict_pretrain['CFFL_best_worker'][0]
+																	]
+
 			fairness_rows.append(f_data_row)
 			performance_rows.append(p_data_row)
 		except Exception as e:
 			print("Compiling fairness and accuracy csvs")
 			print(e)
 
-	shorthand_f_keys = ['Distriubted', 'CFFL', 'CFFL pretrain']
+	shorthand_f_keys = ['Fedavg', 'DSSGD', 'CFFL', 'CFFL pretrain']
 	fair_df = pd.DataFrame(fairness_rows, columns=[' '] + shorthand_f_keys).set_index(' ')
 	fair_df = fair_df.sort_values(' ')
 	print(fair_df.to_markdown())
@@ -57,7 +64,7 @@ def collect_and_compile_performance(dirname):
 	print(os.path.join(dirname, 'fairness.csv'))
 	fair_df.to_csv( os.path.join(dirname, 'fairness.csv'))
 
-	shorthand_p_keys = ['Distributed', 'Standalone', 'CFFL', 'CFFL pretrain']
+	shorthand_p_keys = ['Fedavg', 'DSSGD', 'Standalone', 'CFFL', 'CFFL pretrain']
 	pd.options.display.float_format = '{:,.2f}'.format
 	perf_df = pd.DataFrame(performance_rows, columns=[' '] + shorthand_p_keys).set_index(' ').T
 	perf_df = perf_df[sorted(perf_df.columns)]

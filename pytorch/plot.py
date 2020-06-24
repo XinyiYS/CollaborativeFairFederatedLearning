@@ -9,7 +9,7 @@ all_party_fmt_styles = ['', '--','-.', 'o-', 'v-',
 			 'h-', 'H-', '+-', 'X-','D-',
 			 '8-','P-','d-','|','_-']
 
-best_worker_fmt_styles = ['ro-', 'c.-', 'm<-', 'b<-']
+best_worker_fmt_styles = ['ro-', 'c.-', 'gv-','m<-', 'b<-']
 
 acc_top_bottom_limits = {'adult':[0.70, 0.85],
 						'mr':  [0.5, 0.8],

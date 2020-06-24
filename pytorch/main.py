@@ -28,10 +28,8 @@ def init_mp():
 
 def write_aggregate_dict(performance_dicts, filename):
 
-	keys = ['standalone_vs_final', 'standalone_vs_rrdssgd',
-			'rr_dssgd_best', 'CFFL_best_worker', 'standalone_best_worker',
-			# 'sharingcontribution_vs_improvements', 'sharingcontribution_vs_final'
-			 ]
+	keys = ['standalone_best_worker', 'CFFL_best_worker', 'rr_dssgd_best', 'rr_fedavg_best',
+		'standalone_vs_rrdssgd', 'standalone_vs_final', 'standalone_vs_fedavg']
 
 	aggregate_dict = {}
 	for key in keys:
