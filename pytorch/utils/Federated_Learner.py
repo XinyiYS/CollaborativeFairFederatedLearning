@@ -430,6 +430,22 @@ class Federated_Learner:
 		return fed_val_acc
 
 	def aggregate_gradients_and_update_federated_model(self, eta=1):
+		"""
+		collect all the gradients and aggregate them in the specified way
+		sum: direct sum all the gradients from all parties
+		credit-sum: credit-weighted sum over all gradients
+		mean: fedavg
+			NOTE: in the original fedavg, the weights are relative shard_size, i.e.  weight = (num_samples by party-i) / (total num_samples of all parties).
+			We follow this logic for 'random', 'equal', 'powerlaw' split of the datasets.
+
+			We follow a modified logic for 'classimbalance' split for the datasets. This is because in 'classimbalance', we enforce that each party has the same
+			number of samples, but different classes of samples. As a result, the original fedavg logic is clearly not very robust.
+
+
+		Arguments: 
+		eta: is used as a way to manually introduce complex learning rate or lr scheduler.Default:1
+
+		"""
 		self.aggregated_gradient_updates = [torch.zeros(param.shape).to(self.device) for param in self.federated_model.parameters()]
 		self.aggregated_gradient_updates_pretrain = [torch.zeros(param.shape).to(self.device) for param in self.federated_model.parameters()]
 
@@ -440,7 +456,15 @@ class Federated_Learner:
 			elif self.args['aggregate_mode'] == 'credit-sum':
 				weight = self.credits[i]
 			else: # default average
-				weight = self.shard_sizes[i] * 1. / sum(self.shard_sizes)
+				if self.args['split'] != 'classimbalance':
+					weight = self.shard_sizes[i] * 1. / sum(self.shard_sizes)
+				else:
+					assert self.args['dataset'] in ['mnist', 'cifar10'], "Fedavg and classimbalance Not supported for this dataset {}".format(self.args['dataset'])
+					# currently only for cifar10 and mnist, so a total of 10 classes
+					n_classes = 10
+					class_sizes = np.linspace(1, n_classes, self.n_workers, dtype='int')
+					weight = class_sizes[i] / n_classes
+
 			add_gradient_updates(self.aggregated_gradient_updates, filtered_grad_update, weight)
 
 		add_update_to_model(self.federated_model, self.aggregated_gradient_updates, weight=eta, device=self.device)
@@ -453,7 +477,14 @@ class Federated_Learner:
 			elif self.args['aggregate_mode'] == 'credit-sum':
 				weight = self.credits_pretrain[i]
 			else: # default fedavg
-				weight = self.shard_sizes[i] *1. / sum(self.shard_sizes)
+				if self.args['split'] != 'classimbalance':
+					weight = self.shard_sizes[i] * 1. / sum(self.shard_sizes)
+				else:
+					assert self.args['dataset'] in ['mnist', 'cifar10'], "Fedavg and classimbalance Not supported for this dataset {}".format(self.args['dataset'])
+					# currently only for cifar10 and mnist, so a total of 10 classes
+					n_classes = 10
+					class_sizes = np.linspace(1, n_classes, self.n_workers, dtype='int')
+					weight = class_sizes[i] / n_classes
 			add_gradient_updates(self.aggregated_gradient_updates_pretrain, filtered_grad_update, weight)
 
 		add_update_to_model(self.federated_model_pretrain, self.aggregated_gradient_updates_pretrain, weight=eta, device=self.device)
