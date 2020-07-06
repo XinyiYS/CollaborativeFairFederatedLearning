@@ -513,17 +513,20 @@ class Federated_Learner:
 			if download == 'random':
 				random_permuted_indices = torch.randperm(len(absolute_values))
 			else:
-				topk, _ = torch.topk(absolute_values, int(len(absolute_values) * max(self.credits)))
+				topk, _ = torch.topk(absolute_values, int(len(absolute_values))) 
+				# topk, _ = torch.topk(absolute_values, int(len(absolute_values) * max(self.credits)))
 
 			# pretrain
 			absolute_values = torch.cat([update.data.view(-1).abs() for update in self.aggregated_gradient_updates_pretrain])
 			if download == 'random':
 				random_permuted_pretrain_indices = torch.randperm(len(absolute_values)) if download == 'random' else None
 			else:
-				topk_pretrain, _ = torch.topk(absolute_values, int(len(absolute_values) * max(self.credits_pretrain)))
+				topk_pretrain, _ = torch.topk(absolute_values, int(len(absolute_values))) 
+				# topk_pretrain, _ = torch.topk(absolute_values, int(len(absolute_values) * max(self.credits_pretrain)))
 				del _
 
 			del absolute_values
+
 			
 			for i, worker in enumerate(self.workers):
 
@@ -535,8 +538,8 @@ class Federated_Learner:
 					# NEW LOGIC FOR determining how many parameters to download
 					num_downloads  = int(self.credits[i]*1. / max(self.credits) *self.shard_sizes[i] *1. / max(self.shard_sizes) * worker.param_count)
 
-					# print("total random indices len {}, download quota {}, zero count shoud be {}".format(len(random_permuted_indices), num_downloads, worker.param_count - num_downloads ))
 					if download == 'random':
+						# print("total random indices len {}, download quota {}, zero count shoud be {}".format(len(random_permuted_indices), num_downloads, worker.param_count - num_downloads ))
 						assert random_permuted_indices is not None, "Uninitialized <random_permuted_indices>"
 						allocated_grad = mask_grad_update_by_indices(agg_grad_update, indices=random_permuted_indices[:num_downloads])
 					else:
