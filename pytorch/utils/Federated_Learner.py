@@ -188,7 +188,10 @@ class Federated_Learner:
 			# directly add the raw gradient to the model
 			add_update_to_model(worker.model, raw_grad_update, device=self.device)
 
-			clipped_grad_update = clip_gradient_update(raw_grad_update, self.args['grad_clip'])
+			if self.args['aggregate_mode'] == 'mean':
+				clipped_grad_update = copy.deepcopy(raw_grad_update)
+			else:
+				clipped_grad_update = clip_gradient_update(raw_grad_update, self.args['grad_clip'])
 			# add the clipped grad to local model
 			# add_update_to_model(worker.model, clipped_grad_update, device=self.device)
 
@@ -222,7 +225,10 @@ class Federated_Learner:
 			'''
 			add_update_to_model(worker.model_pretrain, raw_grad_update, device=self.device)
 
-			clipped_grad_update = clip_gradient_update(raw_grad_update, self.args['grad_clip'])
+			if self.args['aggregate_mode'] == 'mean':
+				clipped_grad_update = copy.deepcopy(raw_grad_update)
+			else:
+				clipped_grad_update = clip_gradient_update(raw_grad_update, self.args['grad_clip'])
 			# add_update_to_model(worker.model_pretrain, clipped_grad_update, device=self.device)
 
 			filtered_grad_update = mask_grad_update_by_order(clipped_grad_update, mask_order=None, mask_percentile=worker.theta, mode=self.args['largest_criterion']) 
