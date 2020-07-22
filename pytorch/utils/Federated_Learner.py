@@ -45,6 +45,7 @@ class Federated_Learner:
 		model_fn = self.args['model_fn']
 		optimizer_fn = self.args['optimizer_fn']
 		lr = self.args['lr']
+		fed_lr = self.args['fed_lr'] if 'fed_lr' in self.args else lr
 		dssgd_lr = self.args['dssgd_lr']
 		std_lr = self.args['std_lr'] if 'std_lr' in self.args else dssgd_lr
 
@@ -63,8 +64,11 @@ class Federated_Learner:
 		self.load_locked_model_initializations()
 
 		if len(self.args['device_ids']) > 1:
-			print("From Federaed Learner - Let's use {} gpus.".format(len(self.args['device_ids'])))
+			print("From Federated Learner - Let's use {} gpus.".format(len(self.args['device_ids'])))
 			self.federated_model = 	nn.DataParallel(self.federated_model, device_ids=self.args['device_ids'])
+
+		self.param_count = sum([p.numel() for p in self.federated_model.parameters()])
+		print("From Federated Learner - Param count is {}".format(self.param_count))
 
 		self.federated_model_pretrain = copy.deepcopy(self.federated_model)
 
@@ -114,7 +118,7 @@ class Federated_Learner:
 			dssgd_scheduler = torch.optim.lr_scheduler.ExponentialLR(dssgd_optimizer, gamma = gamma)
 
 			fedavg_model = copy.deepcopy(self.federated_model)
-			fedavg_optimizer = optimizer_fn(fedavg_model.parameters(), lr=dssgd_lr)
+			fedavg_optimizer = optimizer_fn(fedavg_model.parameters(), lr=fed_lr)
 			fedavg_scheduler = torch.optim.lr_scheduler.ExponentialLR(fedavg_optimizer, gamma = gamma)
 
 
@@ -185,15 +189,13 @@ class Federated_Learner:
 			data_rows.append([ 'w/o pretrain: ', all_update_mod.mean().item(), n_clipped, torch.true_divide(n_clipped, len(all_update_mod)).item() ])
 			'''
 
-			# directly add the raw gradient to the model
-			add_update_to_model(worker.model, raw_grad_update, device=self.device)
 
-			if self.args['aggregate_mode'] == 'mean':
-				clipped_grad_update = copy.deepcopy(raw_grad_update)
-			else:
-				clipped_grad_update = clip_gradient_update(raw_grad_update, self.args['grad_clip'])
+			# if self.args['aggregate_mode'] == 'mean':
+				# clipped_grad_update = copy.deepcopy(raw_grad_update)
+			# else:
+			clipped_grad_update = clip_gradient_update(raw_grad_update, self.args['grad_clip'])
 			# add the clipped grad to local model
-			# add_update_to_model(worker.model, clipped_grad_update, device=self.device)
+			add_update_to_model(worker.model, clipped_grad_update, device=self.device)
 
 			filtered_grad_update = mask_grad_update_by_order(clipped_grad_update, mask_order=None, mask_percentile=worker.theta, mode=self.args['largest_criterion']) 
 
@@ -223,13 +225,12 @@ class Federated_Learner:
 			n_clipped = (all_update_mod > self.args['grad_clip']).sum().item()
 			data_rows.append([ 'w pretrain: ', all_update_mod.mean().item(), n_clipped, torch.true_divide(n_clipped, len(all_update_mod)).item() ])
 			'''
-			add_update_to_model(worker.model_pretrain, raw_grad_update, device=self.device)
 
-			if self.args['aggregate_mode'] == 'mean':
-				clipped_grad_update = copy.deepcopy(raw_grad_update)
-			else:
-				clipped_grad_update = clip_gradient_update(raw_grad_update, self.args['grad_clip'])
-			# add_update_to_model(worker.model_pretrain, clipped_grad_update, device=self.device)
+			# if self.args['aggregate_mode'] == 'mean':
+				# clipped_grad_update = copy.deepcopy(raw_grad_update)
+			# else:
+			clipped_grad_update = clip_gradient_update(raw_grad_update, self.args['grad_clip'])
+			add_update_to_model(worker.model_pretrain, clipped_grad_update, device=self.device)
 
 			filtered_grad_update = mask_grad_update_by_order(clipped_grad_update, mask_order=None, mask_percentile=worker.theta, mode=self.args['largest_criterion']) 
 			
@@ -308,6 +309,9 @@ class Federated_Learner:
 		device = self.args['device']
 		fl_individual_epochs = self.args['fl_individual_epochs']
 
+		self.alpha = self.args['alpha'] if 'alpha' in self.args else 5
+		self.credit_fade = self.args['credit_fade'] if 'credit_fade' in self.args else 1
+
 		self.performance_dict['shard_sizes'] = self.shard_sizes.tolist()
 		self.performance_dict_pretrain['shard_sizes'] = self.shard_sizes.tolist()
 
@@ -347,10 +351,17 @@ class Federated_Learner:
 			# 1. training locally
 			worker_val_accs, worker_val_accs_pretrain, dssgd_val_accs, fedavg_val_accs = self.train_locally(fl_individual_epochs,save_gpu=self.save_gpu)
 
+			if 'alpha_decay' in self.args and self.args['alpha_decay']:
+				alpha = self.alpha * (1 + epoch/fl_epochs)
+			else:
+				alpha = self.alpha
+
 			# 2. update the credits and credit_threshold
 			# and update the reputable parties set
-			self.credits, self.credit_threshold, self.R  = compute_credits_sinh(self.credits, self.credit_threshold, self.R, worker_val_accs, alpha=self.args['alpha'], split=self.args['split'], credit_threshold_coef=self.credit_threshold_coef)
-			self.credits_pretrain, self.credit_threshold_pretrain, self.R_pretrain = compute_credits_sinh(self.credits_pretrain, self.credit_threshold_pretrain, self.R_pretrain, worker_val_accs_pretrain, alpha=self.args['alpha'],split=self.args['split'],credit_threshold_coef=self.credit_threshold_coef)
+			self.credits, self.credit_threshold, self.R  = compute_credits_sinh(self.credits, self.credit_threshold, self.R, worker_val_accs, 
+				alpha=alpha, credit_fade=self.credit_fade, split=self.args['split'], credit_threshold_coef=self.credit_threshold_coef)
+			self.credits_pretrain, self.credit_threshold_pretrain, self.R_pretrain = compute_credits_sinh(self.credits_pretrain, self.credit_threshold_pretrain, self.R_pretrain, worker_val_accs_pretrain, 
+				alpha=alpha, credit_fade=self.credit_fade, split=self.args['split'], credit_threshold_coef=self.credit_threshold_coef)
 
 			self.clock('credit updates')
 
@@ -503,7 +514,9 @@ class Federated_Learner:
 		and apply to its local model
 		"""
 		if self.args['aggregate_mode'] == 'mean':
-			weights = torch.div(self.shard_sizes , sum(self.shard_sizes) ) # fed_avg
+			# new weights logic 
+			weights = torch.div(self.shard_sizes , max(self.shard_sizes) )
+			# weights = torch.div(self.shard_sizes , sum(self.shard_sizes) ) # fed_avg
 		else:
 			weights = torch.ones(self.n_workers)  
 
@@ -552,6 +565,7 @@ class Federated_Learner:
 						allocated_grad = mask_grad_update_by_magnitude(agg_grad_update, topk[num_downloads-1])
 					
 					add_update_to_model(worker.model, allocated_grad)
+					# add_update_to_model(worker.model, self.filtered_updates[i], weight=-1.0)
 					add_update_to_model(worker.model, self.filtered_updates[i], weight=-weights[i])
 					
 				# with pretrain
@@ -569,6 +583,8 @@ class Federated_Learner:
 
 					add_update_to_model(worker.model_pretrain, allocated_grad)
 					add_update_to_model(worker.model_pretrain, self.filtered_updates_pretrain[i], weight=-weights[i])
+					# add_update_to_model(worker.model_pretrain, self.filtered_updates_pretrain[i], weight=-1.0)
+
 
 		elif self.args['largest_criterion'] == 'layer':
 			
