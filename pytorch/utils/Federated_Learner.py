@@ -189,16 +189,10 @@ class Federated_Learner:
 			data_rows.append([ 'w/o pretrain: ', all_update_mod.mean().item(), n_clipped, torch.true_divide(n_clipped, len(all_update_mod)).item() ])
 			'''
 
-
-			# if self.args['aggregate_mode'] == 'mean':
-				# clipped_grad_update = copy.deepcopy(raw_grad_update)
-			# else:
 			clipped_grad_update = clip_gradient_update(raw_grad_update, self.args['grad_clip'])
 			# add the clipped grad to local model
 			add_update_to_model(worker.model, clipped_grad_update, device=self.device)
-
 			filtered_grad_update = mask_grad_update_by_order(clipped_grad_update, mask_order=None, mask_percentile=worker.theta, mode=self.args['largest_criterion']) 
-
 
 			fed_val_acc = self.one_on_one_evaluate(self.federated_model, worker.model, filtered_grad_update, worker.theta)
 			worker_val_accs.append(fed_val_acc)
@@ -226,14 +220,9 @@ class Federated_Learner:
 			data_rows.append([ 'w pretrain: ', all_update_mod.mean().item(), n_clipped, torch.true_divide(n_clipped, len(all_update_mod)).item() ])
 			'''
 
-			# if self.args['aggregate_mode'] == 'mean':
-				# clipped_grad_update = copy.deepcopy(raw_grad_update)
-			# else:
 			clipped_grad_update = clip_gradient_update(raw_grad_update, self.args['grad_clip'])
 			add_update_to_model(worker.model_pretrain, clipped_grad_update, device=self.device)
-
-			filtered_grad_update = mask_grad_update_by_order(clipped_grad_update, mask_order=None, mask_percentile=worker.theta, mode=self.args['largest_criterion']) 
-			
+			filtered_grad_update = mask_grad_update_by_order(clipped_grad_update, mask_order=None, mask_percentile=worker.theta, mode=self.args['largest_criterion']) 			
 
 			fed_val_acc = self.one_on_one_evaluate(self.federated_model_pretrain, worker.model_pretrain, filtered_grad_update, worker.theta, is_pretrain=True)
 			worker_val_accs_pretrain.append(fed_val_acc)
@@ -485,6 +474,7 @@ class Federated_Learner:
 			add_gradient_updates(self.aggregated_gradient_updates, filtered_grad_update, weight)
 
 		add_update_to_model(self.federated_model, self.aggregated_gradient_updates, weight=eta, device=self.device)
+	
 		# self.federated_val_acc = evaluate(self.federated_model, self.valid_loader, device=self.device, verbose=False)[1]
 
 		for i in self.R_pretrain:
@@ -533,7 +523,6 @@ class Federated_Learner:
 				random_permuted_indices = torch.randperm(len(absolute_values))
 			else:
 				topk, _ = torch.topk(absolute_values, int(len(absolute_values))) 
-				# topk, _ = torch.topk(absolute_values, int(len(absolute_values) * max(self.credits)))
 
 			# pretrain
 			absolute_values = torch.cat([update.data.view(-1).abs() for update in self.aggregated_gradient_updates_pretrain])
@@ -541,7 +530,6 @@ class Federated_Learner:
 				random_permuted_pretrain_indices = torch.randperm(len(absolute_values)) if download == 'random' else None
 			else:
 				topk_pretrain, _ = torch.topk(absolute_values, int(len(absolute_values))) 
-				# topk_pretrain, _ = torch.topk(absolute_values, int(len(absolute_values) * max(self.credits_pretrain)))
 				del _
 
 			del absolute_values
@@ -553,8 +541,6 @@ class Federated_Learner:
 				if i in self.R:
 					agg_grad_update = copy.deepcopy(self.aggregated_gradient_updates)
 					
-					# num_downloads  = int(self.credits[i] * worker.param_count)
-					# NEW LOGIC FOR determining how many parameters to download
 					num_downloads  = int(self.credits[i]*1. / max(self.credits) *self.shard_sizes[i] *1. / max(self.shard_sizes) * worker.param_count)
 
 					if download == 'random':
@@ -565,13 +551,11 @@ class Federated_Learner:
 						allocated_grad = mask_grad_update_by_magnitude(agg_grad_update, topk[num_downloads-1])
 					
 					add_update_to_model(worker.model, allocated_grad)
-					# add_update_to_model(worker.model, self.filtered_updates[i], weight=-1.0)
 					add_update_to_model(worker.model, self.filtered_updates[i], weight=-weights[i])
 					
 				# with pretrain
 				if i in self.R_pretrain:
 					agg_grad_update = copy.deepcopy(self.aggregated_gradient_updates_pretrain)
-					# num_downloads  = int(self.credits_pretrain[i] * worker.param_count)
 					num_downloads  = int(self.credits_pretrain[i]*1. / max(self.credits_pretrain) *self.shard_sizes[i] *1. / max(self.shard_sizes) * worker.param_count)
 
 					if download == 'random':
@@ -583,8 +567,6 @@ class Federated_Learner:
 
 					add_update_to_model(worker.model_pretrain, allocated_grad)
 					add_update_to_model(worker.model_pretrain, self.filtered_updates_pretrain[i], weight=-weights[i])
-					# add_update_to_model(worker.model_pretrain, self.filtered_updates_pretrain[i], weight=-1.0)
-
 
 		elif self.args['largest_criterion'] == 'layer':
 			

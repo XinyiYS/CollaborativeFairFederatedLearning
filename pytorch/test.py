@@ -40,11 +40,9 @@ def run_experiments(args, repeat=5, logs_dir='logs'):
 		performance_dicts.append(federated_learner.performance_dict)
 		performance_dicts_pretrain.append(federated_learner.performance_dict_pretrain)
 
-	
-	keys = ['standalone_vs_final', 'standalone_vs_rrdssgd',
-			'rr_dssgd_best', 'CFFL_best_worker', 'standalone_best_worker',
-			 ]
 
+	keys = ['standalone_best_worker', 'CFFL_best_worker', 'rr_dssgd_best', 'rr_fedavg_best',
+		'standalone_vs_rrdssgd', 'standalone_vs_final', 'standalone_vs_fedavg']
 
 	print("for all without pretraining:")
 	aggregate_dict = {}

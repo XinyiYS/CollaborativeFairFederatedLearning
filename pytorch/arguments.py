@@ -27,7 +27,7 @@ adult_args = {
 	'n_workers': 5,
 	'split': 'powerlaw',
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size': 64,
+	'batch_size': 128,
 	'train_val_split_ratio': 0.9,
 	'alpha': 5,
 	'epoch_sample_size':float("Inf"),
@@ -40,7 +40,7 @@ adult_args = {
 	'pretraining_lr' : 5e-3,  # only used during pretraining for CFFL models, no decay
 	'dssgd_lr': 5e-3, # used for dssgd model, no decay	
 	'std_lr': 5e-3,
-	'lr': 5e-3, # initial lr, with decay
+	'lr': 1e-2, # initial lr, with decay
 	'grad_clip': 0.001,
 	'gamma':0.977,  #0.977**100 ~= 0.1
 	'credit_threshold_coef': 2.0/3.0,
@@ -52,6 +52,8 @@ adult_args = {
 	'aggregate_mode':'mean',  # 'mean', 'sum'
 	'largest_criterion': 'all', #'layer'
 	'download':'random',
+	'credit_fade':1,
+	'alpha_decay':True,
 
 }
 
@@ -79,6 +81,7 @@ mnist_args = {
 	'pretraining_lr' : 5e-3, # only used during pretraining for CFFL models, no decay
 	'dssgd_lr': 1e-2, # used for dssgd model, no decay
 	'std_lr': 1e-2,
+	'fed_lr': 2e-2,
 	'lr': 1e-2,
 	'grad_clip':1e-3,
 	'gamma':0.977,   #0.955**100 ~= 0.01
@@ -92,6 +95,8 @@ mnist_args = {
 	'aggregate_mode':'sum',  # 'mean', 'sum'
 	'largest_criterion': 'all', #'layer'
 	'download':'random',
+	'credit_fade':1,
+	'alpha_decay':True,
 }
 
 names_args = {
