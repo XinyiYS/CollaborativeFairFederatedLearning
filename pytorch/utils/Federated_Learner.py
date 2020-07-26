@@ -246,7 +246,7 @@ class Federated_Learner:
 			data_rows.append([ 'dssgd:', all_update_mod.mean().item(), n_clipped, torch.true_divide(n_clipped, len(all_update_mod)).item() ])
 			'''
 
-			filtered_grad_update = mask_grad_update_by_order(clip_gradient_update(dssgd_grad_update, self.args['grad_clip']), mask_order=None, mask_percentile=worker.theta, mode=self.args['largest_criterion'])
+			filtered_grad_update = mask_grad_update_by_order(clip_gradient_update(dssgd_grad_update, 0.001), mask_order=None, mask_percentile=worker.theta, mode=self.args['largest_criterion'])
 
 			# this is executed in a fixed sequence, so the self.dssgd_model gets gradually updated and 'downloaded' by each worker
 			worker.dssgd_model.load_state_dict(add_update_to_model(self.dssgd_model, filtered_grad_update).state_dict(), strict=False)
@@ -335,8 +335,6 @@ class Federated_Learner:
 
 		# print("\nStart federated learning \n")
 		for epoch in range(fl_epochs):
-
-
 			# 1. training locally
 			worker_val_accs, worker_val_accs_pretrain, dssgd_val_accs, fedavg_val_accs = self.train_locally(fl_individual_epochs,save_gpu=self.save_gpu)
 
@@ -366,7 +364,7 @@ class Federated_Learner:
 
 
 			# update the performance dict as log
-			if epoch % 20 == 0:
+			if (epoch+1) % 20 == 0:
 				print()
 				print('Epoch {}:'.format(epoch + 1))
 				print("credits, credit threshold:", self.credit_threshold)
@@ -378,7 +376,7 @@ class Federated_Learner:
 				print("Reputable parties pretrain: ", self.R_pretrain)
 
 
-			self.performance_summary(to_print=(epoch%20==0))
+			self.performance_summary(to_print=((epoch+1)%20==0))
 
 
 			self.performance_dict['dssgd_val_accs'].append(dssgd_val_accs)
@@ -464,6 +462,7 @@ class Federated_Learner:
 			else: # default average
 				if self.args['split'] != 'classimbalance':
 					weight = self.shard_sizes[i] * 1. / sum(self.shard_sizes)
+
 				else:
 					assert self.args['dataset'] in ['mnist', 'cifar10'], "Fedavg and classimbalance Not supported for this dataset {}".format(self.args['dataset'])
 					# currently only for cifar10 and mnist, so a total of 10 classes
@@ -474,7 +473,6 @@ class Federated_Learner:
 			add_gradient_updates(self.aggregated_gradient_updates, filtered_grad_update, weight)
 
 		add_update_to_model(self.federated_model, self.aggregated_gradient_updates, weight=eta, device=self.device)
-	
 		# self.federated_val_acc = evaluate(self.federated_model, self.valid_loader, device=self.device, verbose=False)[1]
 
 		for i in self.R_pretrain:
@@ -486,6 +484,7 @@ class Federated_Learner:
 			else: # default fedavg
 				if self.args['split'] != 'classimbalance':
 					weight = self.shard_sizes[i] * 1. / sum(self.shard_sizes)
+
 				else:
 					assert self.args['dataset'] in ['mnist', 'cifar10'], "Fedavg and classimbalance Not supported for this dataset {}".format(self.args['dataset'])
 					# currently only for cifar10 and mnist, so a total of 10 classes
@@ -504,9 +503,12 @@ class Federated_Learner:
 		and apply to its local model
 		"""
 		if self.args['aggregate_mode'] == 'mean':
-			# new weights logic 
-			weights = torch.div(self.shard_sizes , max(self.shard_sizes) )
-			# weights = torch.div(self.shard_sizes , sum(self.shard_sizes) ) # fed_avg
+			if self.args['split']!='classimbalance':
+				weights = torch.div(self.shard_sizes , max(self.shard_sizes) )
+			else:
+				n_classes=10
+				class_sizes = np.linspace(1, n_classes, self.n_workers, dtype='int')
+				weights = torch.div(torch.tensor(class_sizes).float(), max(class_sizes) )
 		else:
 			weights = torch.ones(self.n_workers)  
 
@@ -540,11 +542,14 @@ class Federated_Learner:
 				# no pretrain
 				if i in self.R:
 					agg_grad_update = copy.deepcopy(self.aggregated_gradient_updates)
+					if self.args['split']!='classimbalance':
+						num_downloads  = int(self.credits[i]*1. / max(self.credits) *self.shard_sizes[i] *1. / max(self.shard_sizes) * worker.param_count)
+					else:
+						n_classes = 10
+						class_sizes = np.linspace(1, n_classes, self.n_workers, dtype='int')
+						num_downloads  = int(self.credits[i]*1. / max(self.credits) *class_sizes[i] / n_classes * worker.param_count)
 					
-					num_downloads  = int(self.credits[i]*1. / max(self.credits) *self.shard_sizes[i] *1. / max(self.shard_sizes) * worker.param_count)
-
 					if download == 'random':
-						# print("total random indices len {}, download quota {}, zero count shoud be {}".format(len(random_permuted_indices), num_downloads, worker.param_count - num_downloads ))
 						assert random_permuted_indices is not None, "Uninitialized <random_permuted_indices>"
 						allocated_grad = mask_grad_update_by_indices(agg_grad_update, indices=random_permuted_indices[:num_downloads])
 					else:
@@ -556,12 +561,16 @@ class Federated_Learner:
 				# with pretrain
 				if i in self.R_pretrain:
 					agg_grad_update = copy.deepcopy(self.aggregated_gradient_updates_pretrain)
-					num_downloads  = int(self.credits_pretrain[i]*1. / max(self.credits_pretrain) *self.shard_sizes[i] *1. / max(self.shard_sizes) * worker.param_count)
-
+					if self.args['split']!='classimbalance':
+						num_downloads  = int(self.credits_pretrain[i]*1. / max(self.credits_pretrain) *self.shard_sizes[i] *1. / max(self.shard_sizes) * worker.param_count)
+					else:
+						n_classes = 10
+						class_sizes = np.linspace(1, n_classes, self.n_workers, dtype='int')
+						num_downloads  = int(self.credits_pretrain[i]*1. / max(self.credits_pretrain) *class_sizes[i] / n_classes * worker.param_count)
+					
 					if download == 'random':
 						assert random_permuted_pretrain_indices is not None, "Uninitialized <random_permuted_pretrain_indices>"
 						allocated_grad = mask_grad_update_by_indices(agg_grad_update, indices=random_permuted_pretrain_indices[:num_downloads])
-
 					else:				
 						allocated_grad = mask_grad_update_by_magnitude(agg_grad_update, topk_pretrain[num_downloads-1])
 
@@ -721,7 +730,6 @@ class Federated_Learner:
 
 
 	def update_credits(self, worker_val_accs, worker_val_accs_pretrain):
-		
 		self.credits, self.credit_threshold, self.R  = compute_credits_sinh(self.credits, self.credit_threshold, self.R, worker_val_accs, alpha=self.args['alpha'], split=self.args['split'], credit_threshold_coef=self.credit_threshold_coef)
 		self.credits_pretrain, self.credit_threshold_pretrain, self.R_pretrain = compute_credits_sinh(self.credits_pretrain, self.credit_threshold_pretrain, self.R_pretrain, worker_val_accs_pretrain, alpha=self.args['alpha'],split=self.args['split'],credit_threshold_coef=self.credit_threshold_coef)
 
@@ -732,10 +740,9 @@ def compute_credits_sinh(credits, credit_threshold, R, val_accs, alpha=5, credit
 	total_val_accs = sum([val_accs[i] for i in R])
 	for i in R:
 		credit_epoch = val_accs[i] / total_val_accs
-		# credit_epoch = math.sinh(alpha * val_accs[i] / total_val_accs)
 
 		if credit_fade == 1:
-			credits[i] = credits[i] * 0.2 + credit_epoch * 0.8
+			credits[i] = credits[i] * 0.8 + credit_epoch * 0.2
 		else:
 			credits[i] = (credits[i] + credit_epoch) * 0.5
 
