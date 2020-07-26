@@ -1,2 +1,3 @@
-# FairAndPrivateFederatedLearning
-Dedicated to a project for implement a fair and (differentially) private federated learning.
+# CollaborativeFairnFederatedLearning
+
+Code repository for our paper [arXiv](https://example.com)
