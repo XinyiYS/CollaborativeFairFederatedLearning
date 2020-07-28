@@ -86,7 +86,7 @@ opt-einsum=3.2.0=pypi_0
 pandas=1.0.3=py37h0573a6f_0
 pcre=8.44=he1b5a44_0
 phe=1.4.0=pypi_0
-pillow=6.2.2=pypi_0
+pillow=7.2.0=py37hb39fc2d_0
 pip=20.1.1=pypi_0
 plac=0.9.6=py37_0
 preshed=3.0.2=py37h3340039_2
