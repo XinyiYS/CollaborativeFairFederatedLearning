@@ -7,9 +7,9 @@ astor=0.8.1=pypi_0
 attrs=19.3.0=py_0
 blas=1.0=mkl
 brotlipy=0.7.0=py37h8f50634_1000
-ca-certificates=2020.1.1=0
+ca-certificates=2020.6.24=0
 catalogue=1.0.0=py_0
-certifi=2020.4.5.1=py37_0
+certifi=2020.6.20=py37_0
 cffi=1.14.0=py37hd463f26_0
 chardet=3.0.4=py37hc8dfbb8_1006
 click=7.1.1=pypi_0
@@ -50,6 +50,7 @@ jsonschema=3.2.0=py37hc8dfbb8_1
 keras-applications=1.0.8=pypi_0
 keras-preprocessing=1.1.0=pypi_0
 kiwisolver=1.2.0=py37h99015e2_0
+lcms2=2.11=h396b838_0
 ld_impl_linux-64=2.33.1=h53a641e_7
 libedit=3.1.20181209=hc058e9b_0
 libffi=3.2.1=hd88cf55_4
@@ -58,6 +59,7 @@ libgfortran-ng=7.3.0=hdf63c60_0
 libiconv=1.15=h516909a_1006
 libpng=1.6.37=hed695b0_1
 libstdcxx-ng=9.1.0=hdf63c60_0
+libtiff=4.1.0=h2733197_0
 libuuid=2.32.1=h14c3975_1000
 libxcb=1.13=h14c3975_1002
 libxml2=2.9.9=hea5a465_1
@@ -78,6 +80,7 @@ ninja=1.9.0=py37hfd86e86_0
 nltk=3.4.5=py37_0
 numpy=1.18.2=pypi_0
 numpy-base=1.18.1=py37hde5b4d6_1
+olefile=0.46=py37_0
 openssl=1.1.1g=h7b6447c_0
 opt-einsum=3.2.0=pypi_0
 pandas=1.0.3=py37h0573a6f_0
@@ -126,7 +129,7 @@ tensorflow-estimator=1.15.1=pypi_0
 termcolor=1.1.0=pypi_0
 tf-encrypted=0.5.9=pypi_0
 thinc=7.3.0=py37hc9558a2_0
-tk=8.6.8=hbc83047_0
+tk=8.6.10=hbc83047_0
 torch=1.4.0=pypi_0
 torchsummary=1.5.1=pypi_0
 torchtext=0.5.0=pypi_0
@@ -145,3 +148,4 @@ xorg-libxdmcp=1.1.3=h516909a_0
 xz=5.2.4=h14c3975_4
 zipp=3.1.0=py_0
 zlib=1.2.11=h7b6447c_3
+zstd=1.3.7=h0b5b093_0
