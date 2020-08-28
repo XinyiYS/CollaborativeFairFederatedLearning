@@ -10,12 +10,12 @@ from torch.utils.data.sampler import SubsetRandomSampler
 from torchtext.data import Field, LabelField, BucketIterator
 
 class Data_Prepper:
-	def __init__(self, name, train_batch_size, n_workers, sample_size_cap=-1, test_batch_size=100, valid_batch_size=None, train_val_split_ratio=0.8, device=None,args_dict=None):
+	def __init__(self, name, train_batch_size, n_participants, sample_size_cap=-1, test_batch_size=100, valid_batch_size=None, train_val_split_ratio=0.8, device=None,args_dict=None):
 		self.args = None
 		self.args_dict = args_dict
 		self.name = name
 		self.device = device
-		self.n_workers = n_workers
+		self.n_participants = n_participants
 		self.sample_size_cap = sample_size_cap
 		self.train_val_split_ratio = train_val_split_ratio
 
@@ -39,8 +39,8 @@ class Data_Prepper:
 			self.args.static = self.args_dict['static']
 			
 			train_size = sum([len(train_dataset) for train_dataset in self.train_datasets])
-			if self.n_workers > 5:
-				print("Splitting all {} train data to {} parties. Caution against this due to the limited training size.".format(train_size, self.n_workers))
+			if self.n_participants > 5:
+				print("Splitting all {} train data to {} parties. Caution against this due to the limited training size.".format(train_size, self.n_participants))
 			print("Model embedding arguments:", self.args)
 			print('------')
 			print("Train to split size: {}. Validation size: {}. Test size: {}".format(train_size, len(self.validation_dataset), len(self.test_dataset)))
@@ -69,7 +69,7 @@ class Data_Prepper:
 	def get_test_loader(self):
 		return self.test_loader
 
-	def get_train_loaders(self, n_workers, split='powerlaw', batch_size=None):
+	def get_train_loaders(self, n_participants, split='powerlaw', batch_size=None):
 		if not batch_size:
 			batch_size = self.train_batch_size
 
@@ -79,9 +79,9 @@ class Data_Prepper:
 
 			n_classes = 10			
 			data_indices = [(self.train_dataset.targets == class_id).nonzero().view(-1).tolist() for class_id in range(n_classes)]
-			class_sizes = np.linspace(1, n_classes, n_workers, dtype='int')
+			class_sizes = np.linspace(1, n_classes, n_participants, dtype='int')
 			print("class_sizes for each party", class_sizes)
-			party_mean = self.sample_size_cap // self.n_workers
+			party_mean = self.sample_size_cap // self.n_participants
 
 			from collections import defaultdict
 			party_indices = defaultdict(list)
@@ -117,24 +117,24 @@ class Data_Prepper:
 				return self.train_loaders
 
 			else:
-				indices_list = powerlaw(list(range(len(self.train_dataset))), n_workers)
+				indices_list = powerlaw(list(range(len(self.train_dataset))), n_participants)
 
 		elif split in ['balanced','equal']:
 			from utils.utils import random_split
-			indices_list = random_split(sample_indices=list(range(len(self.train_dataset))), m_bins=n_workers, equal=True)
+			indices_list = random_split(sample_indices=list(range(len(self.train_dataset))), m_bins=n_participants, equal=True)
 		
 		elif split == 'random':
 			from utils.utils import random_split
-			indices_list = random_split(sample_indices=list(range(len(self.train_dataset))), m_bins=n_workers, equal=False)
+			indices_list = random_split(sample_indices=list(range(len(self.train_dataset))), m_bins=n_participants, equal=False)
 
 		# from collections import Counter
 		# for indices in indices_list:
 		# 	print(Counter(self.train_dataset.targets[indices].tolist()))
 
 		self.shard_sizes = [len(indices) for indices in indices_list]
-		worker_train_loaders = [DataLoader(self.train_dataset, batch_size=batch_size, sampler=SubsetRandomSampler(indices)) for indices in indices_list]
+		participant_train_loaders = [DataLoader(self.train_dataset, batch_size=batch_size, sampler=SubsetRandomSampler(indices)) for indices in indices_list]
 
-		return worker_train_loaders
+		return participant_train_loaders
 
 	def prepare_dataset(self, name='adult'):
 		if name == 'adult':
@@ -222,7 +222,7 @@ class Data_Prepper:
 			import torchtext.datasets as datasets
 			train_data, validation_data, test_data = datasets.SST.splits(text_field, label_field, fine_grained=True)
 
-			indices_list = powerlaw(list(range(len(train_data))), self.n_workers)
+			indices_list = powerlaw(list(range(len(train_data))), self.n_participants)
 			ratios = [len(indices) / len(train_data) for indices in indices_list]
 
 			train_datasets = split_torchtext_dataset_ratios(train_data, ratios)
@@ -249,7 +249,7 @@ class Data_Prepper:
 
 			validation_data, test_data = dev_data.split(split_ratio=0.5, random_state = random.seed(1234))
 			
-			indices_list = powerlaw(list(range(len(train_data))), self.n_workers)
+			indices_list = powerlaw(list(range(len(train_data))), self.n_participants)
 			ratios = [len(indices) / len(train_data) for indices in  indices_list]
 
 			train_datasets = split_torchtext_dataset_ratios(train_data, ratios)
@@ -292,7 +292,7 @@ class Data_Prepper:
 
 			# train_data, valid_data = train_data.split(split_ratio=self.train_val_split_ratio ,random_state = random.seed(1234))
 
-			indices_list = powerlaw(list(range(len(train_data))), self.n_workers)
+			indices_list = powerlaw(list(range(len(train_data))), self.n_participants)
 			ratios = [len(indices) / len(train_data) for indices in  indices_list]
 
 			train_datasets = split_torchtext_dataset_ratios(train_data, ratios)
@@ -401,7 +401,7 @@ class FastCIFAR10(CIFAR10):
 
 		return img, target
 
-def powerlaw(sample_indices, n_workers, alpha=1.65911332899, shuffle=False):
+def powerlaw(sample_indices, n_participants, alpha=1.65911332899, shuffle=False):
 	# the smaller the alpha, the more extreme the division
 	if shuffle:
 		random.seed(1234)
@@ -409,14 +409,14 @@ def powerlaw(sample_indices, n_workers, alpha=1.65911332899, shuffle=False):
 
 	from scipy.stats import powerlaw
 	import math
-	party_size = int(len(sample_indices) / n_workers)
-	b = np.linspace(powerlaw.ppf(0.01, alpha), powerlaw.ppf(0.99, alpha), n_workers)
-	shard_sizes = list(map(math.ceil, b/sum(b)*party_size*n_workers))
+	party_size = int(len(sample_indices) / n_participants)
+	b = np.linspace(powerlaw.ppf(0.01, alpha), powerlaw.ppf(0.99, alpha), n_participants)
+	shard_sizes = list(map(math.ceil, b/sum(b)*party_size*n_participants))
 	indices_list = []
 	accessed = 0
-	for worker_id in range(n_workers):
-		indices_list.append(sample_indices[accessed:accessed + shard_sizes[worker_id]])
-		accessed += shard_sizes[worker_id]
+	for participant_id in range(n_participants):
+		indices_list.append(sample_indices[accessed:accessed + shard_sizes[participant_id]])
+		accessed += shard_sizes[participant_id]
 	return indices_list
 
 
@@ -459,7 +459,7 @@ def get_df(pos, neg):
 		data_rows.append(['negative', text.rstrip()])
 	return pd.DataFrame(data=data_rows, columns=['label', 'text'])
 
-def create_data_txts_for_sst(n_workers, dirname='.data/sst'):
+def create_data_txts_for_sst(n_participants, dirname='.data/sst'):
 	train_txt = 'trees/train.txt'
 	with open(os.path.join(dirname, train_txt), 'r') as file:
 		train_samples = file.readlines()
@@ -467,9 +467,9 @@ def create_data_txts_for_sst(n_workers, dirname='.data/sst'):
 	all_indices = list(range(len(train_samples)))
 	random.seed(1111)
 	n_samples_each = 8000 // 20
-	sample_indices = random.sample(all_indices, n_samples_each * n_workers)
+	sample_indices = random.sample(all_indices, n_samples_each * n_participants)
 
-	foldername = "P{}_powerlaw".format(n_workers)
+	foldername = "P{}_powerlaw".format(n_participants)
 	if foldername in os.listdir(dirname):
 		pass
 	else:
@@ -478,21 +478,21 @@ def create_data_txts_for_sst(n_workers, dirname='.data/sst'):
 		except:
 			pass
 
-		indices_list = powerlaw(sample_indices, n_workers)
+		indices_list = powerlaw(sample_indices, n_participants)
 		for i, indices in enumerate(indices_list):
 			with open(os.path.join(dirname, foldername,'P{}.txt'.format(i)) , 'w') as file:
 				[file.write(train_samples[index]) for index in indices]
 
 	return
 
-def create_powerlaw_csvs(n_workers, dirname, train_df):
+def create_powerlaw_csvs(n_participants, dirname, train_df):
 
 	# shuffle the train samples
 	train_df = train_df.sample(frac=1)
 
 	n_samples_each = len(train_df) // 20
-	sample_indices = list(range(n_samples_each * n_workers))
-	foldername = "P{}_powerlaw".format(n_workers)
+	sample_indices = list(range(n_samples_each * n_participants))
+	foldername = "P{}_powerlaw".format(n_participants)
 	foldername = os.path.join(dirname, foldername)
 	if foldername in os.listdir(dirname):
 		pass
@@ -501,7 +501,7 @@ def create_powerlaw_csvs(n_workers, dirname, train_df):
 			os.mkdir(foldername)
 		except:
 			pass
-		indices_list = powerlaw(sample_indices, n_workers)
+		indices_list = powerlaw(sample_indices, n_participants)
 		for i, indices in enumerate(indices_list):
 			sub_df = train_df.iloc[indices]
 			sub_df.to_csv(os.path.join(foldername,'P{}.csv'.format(i)), index=False)
@@ -519,7 +519,7 @@ def read_samples(samples_dir):
 	
 	return [sample.rstrip() for sample in samplesl]
 
-def create_data_csvs_for_mr(n_workers, dirname='.data/mr'):
+def create_data_csvs_for_mr(n_participants, dirname='.data/mr'):
 	pos = 'rt-polaritydata/rt-polarity.pos'
 	neg = 'rt-polaritydata/rt-polarity.neg'
 
@@ -547,11 +547,11 @@ def create_data_csvs_for_mr(n_workers, dirname='.data/mr'):
 	val_df.to_csv( os.path.join(dirname, 'val.csv') , index=False)
 	test_df.to_csv( os.path.join(dirname, 'test.csv') , index=False)
 
-	create_powerlaw_csvs(n_workers, dirname, train_df)
+	create_powerlaw_csvs(n_participants, dirname, train_df)
 
 	return
 
-def create_data_csvs_for_IMDB(n_workers, dirname):
+def create_data_csvs_for_IMDB(n_participants, dirname):
 
 
 	train_dir = os.path.join(dirname, 'train')
@@ -581,6 +581,6 @@ def create_data_csvs_for_IMDB(n_workers, dirname):
 	val_df.to_csv( os.path.join(dirname, 'val.csv') , index=False)
 	test_df.to_csv( os.path.join(dirname, 'test.csv') , index=False)
 
-	create_powerlaw_csvs(n_workers, dirname, train_df)
+	create_powerlaw_csvs(n_participants, dirname, train_df)
 	return
 '''

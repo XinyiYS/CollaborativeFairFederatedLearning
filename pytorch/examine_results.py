@@ -5,20 +5,13 @@ import pandas as pd
 import ast
 import numpy as np
 
-from read_convergence import plot_convergence, parse, get_cffl_best
+from utils.read_convergence import plot_convergence, parse, get_cffl_best
 
 fairness_keys = [
 		'standalone_vs_fedavg_mean',
 		'standalone_vs_rrdssgd_mean',
 		'standalone_vs_final_mean',
 		]
-
-# performance_keys = [
-# 		'dssgd',
-# 		'fedavg',
-# 		'standalone',
-# 		'cffl',
-# 		]
 
 def collect_and_compile_performance(dirname):
 
@@ -29,7 +22,7 @@ def collect_and_compile_performance(dirname):
 			continue
 
 		setup = parse(dirname, folder)
-		n_workers = setup['P']
+		n_participants = setup['P']
 		fl_epochs = setup['Communication Rounds']
 		theta = setup['theta']
 
@@ -40,14 +33,14 @@ def collect_and_compile_performance(dirname):
 			with open(os.path.join(dirname, folder, 'aggregate_dict_pretrain.txt')) as dict_log:
 				aggregate_dict_pretrain = json.loads(dict_log.read())
 
-			f_data_row = ['P' + str(n_workers) + '_' + str(theta)] + [aggregate_dict[f_key][0] for f_key in fairness_keys]
+			f_data_row = ['P' + str(n_participants) + '_' + str(theta)] + [aggregate_dict[f_key][0] for f_key in fairness_keys]
 			f_data_row.append(aggregate_dict_pretrain['standalone_vs_final_mean'][0])
 
-			p_data_row = ['P' + str(n_workers) + '_' + str(theta)] + [aggregate_dict['rr_fedavg_best'][0],
+			p_data_row = ['P' + str(n_participants) + '_' + str(theta)] + [aggregate_dict['rr_fedavg_best'][0],
 																	aggregate_dict['rr_dssgd_best'][0], 
-																	aggregate_dict['standalone_best_worker'][0], 
-																	aggregate_dict['CFFL_best_worker'][0], 
-																	aggregate_dict_pretrain['CFFL_best_worker'][0]
+																	aggregate_dict['standalone_best_participant'][0], 
+																	aggregate_dict['CFFL_best_participant'][0], 
+																	aggregate_dict_pretrain['CFFL_best_participant'][0]
 																	]
 
 			fairness_rows.append(f_data_row)
@@ -83,12 +76,9 @@ def collate_pngs(dirname):
 			continue
 
 		setup = parse(dirname, directory)
-		# if compiling_both and setup['pretrain_epochs'] == 0: continue
 
 		subdir = os.path.join(dirname, directory)
 
-		# convert figure.png to
-		# adult_LR_p5e100_cffl_localepoch5_localbatch16_lr0001_upload1
 		figure_name = '{}_{}_p{}e{}_cffl_localepoch{}_localbatch{}_lr{}_upload{}_pretrain0.png'.format(
 			setup['dataset'],  setup['model'],
 			setup['P'], setup['Communication Rounds'],
@@ -101,15 +91,11 @@ def collate_pngs(dirname):
 		shutil.copy(os.path.join(subdir,'figure.png'),  os.path.join(figures_dir, figure_name) )
 		shutil.copy(os.path.join(subdir,'figure_pretrain.png'),  os.path.join(figures_dir, figure_name.replace('pretrain0','pretrain1')) )
 
-		# convert standalone.png to
-		# adult_LR_p5e100_standalone
 		standalone_name = '{}_{}_p{}e{}_standalone.png'.format(
 			setup['dataset'],  setup['model'],
 			setup['P'], setup['Communication Rounds'])
 		shutil.copy(os.path.join(subdir,'standlone.png'),   os.path.join(figures_dir, standalone_name) )
 
-		# convert convergence_for_one.png to
-		# adult_LR_p5e100_upload1_convergence
 		convergence_name = '{}_{}_p{}e{}_upload{}_convergence.png'.format(
 			setup['dataset'], setup['model'],
 			setup['P'], setup['Communication Rounds'],
@@ -124,11 +110,10 @@ def examine(dirname):
 	collate_pngs(dirname)
 	fair_df, perf_df = collect_and_compile_performance(dirname)
 
-
 if __name__ == '__main__':
-		dirname = 'mr/Experiments_2020-06-05-01:07'
-		examine(dirname)
-		exit()
-		import os
-		for dirname in os.listdir('cifar10'):
-			examine(os.path.join('cifar10', dirname))
+		
+	"""
+	Give the directory to the experiment to dirname
+	"""
+	dirname = 'cifar10/Experiments_2020-08-06-01:21'
+	examine(dirname)

@@ -139,11 +139,11 @@ def evaluate(model, eval_loader, device, loss_fn=None, verbose=True):
 	return loss, accuracy
 
 '''
-def one_on_one_evaluate(workers, federated_model, grad_updates, unfiltererd_grad_updates, eval_loader, device):
+def one_on_one_evaluate(participants, federated_model, grad_updates, unfiltererd_grad_updates, eval_loader, device):
 	val_accs = []
-	for i, worker in enumerate(workers):
-		if worker.theta == 1:
-			model_to_eval = copy.deepcopy(worker.model)
+	for i, participant in enumerate(participants):
+		if participant.theta == 1:
+			model_to_eval = copy.deepcopy(participant.model)
 			add_update_to_model(model_to_eval, unfiltererd_grad_updates[i], device=device)
 		else:
 			model_to_eval = copy.deepcopy(federated_model)
@@ -191,8 +191,8 @@ import random
 from itertools import permutations
 
 def compute_shapley(grad_updates, federated_model, test_loader, device, Max_num_sequences=50):
-	num_workers = len(grad_updates)
-	all_sequences = list(permutations(range(num_workers)))
+	num_participants = len(grad_updates)
+	all_sequences = list(permutations(range(num_participants)))
 	if len(all_sequences) > Max_num_sequences:
 		random.shuffle(all_sequences)
 		all_sequences = all_sequences[:Max_num_sequences]
@@ -200,25 +200,20 @@ def compute_shapley(grad_updates, federated_model, test_loader, device, Max_num_
 	test_loss_prev, test_acc_prev = evaluate(federated_model, test_loader, device, verbose=False)
 	prev_contribution = test_acc_prev.data
 	
-	marginal_contributions = torch.zeros((num_workers))
+	marginal_contributions = torch.zeros((num_participants))
 	for sequence in all_sequences:
 		running_model = copy.deepcopy(federated_model)
 		curr_contributions = []
-		for worker_id in sequence:
-			running_model = add_update_to_model(running_model, grad_updates[worker_id])
+		for participant_id in sequence:
+			running_model = add_update_to_model(running_model, grad_updates[participant_id])
 			test_loss, test_acc = evaluate(running_model, test_loader, device, verbose=False)
 			contribution = test_acc.data
 
 			if not curr_contributions:
-				marginal_contributions[worker_id] +=  contribution - prev_contribution
+				marginal_contributions[participant_id] +=  contribution - prev_contribution
 			else:
-				marginal_contributions[worker_id] +=  contribution - curr_contributions[-1]
+				marginal_contributions[participant_id] +=  contribution - curr_contributions[-1]
 
 			curr_contributions.append(contribution)
 
 	return marginal_contributions / len(all_sequences)
-
-
-
-
-

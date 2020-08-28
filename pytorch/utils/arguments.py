@@ -24,10 +24,10 @@ adult_args = {
 	# setting parameters
 	'dataset': 'adult',
 	'sample_size_cap': 4000,
-	'n_workers': 5,
+	'n_participants': 5,
 	'split': 'powerlaw',
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size': 128,
+	'batch_size': 16,
 	'train_val_split_ratio': 0.9,
 	'alpha': 5,
 	'epoch_sample_size':float("Inf"),
@@ -40,19 +40,19 @@ adult_args = {
 	'pretraining_lr' : 5e-3,  # only used during pretraining for CFFL models, no decay
 	'dssgd_lr': 5e-3, # used for dssgd model, no decay	
 	'std_lr': 5e-3,
-	'lr': 1e-2, # initial lr, with decay
-	'grad_clip': 0.001,
+	'lr': 3e-2, # initial lr, with decay
+	'grad_clip': 0.01,
 	'gamma':0.977,  #0.977**100 ~= 0.1
-	'credit_threshold_coef': 2.0/3.0,
+	'reputation_threshold_coef': 1.0/3.0,
 
 	# training parameters
 	'pretrain_epochs': 5,
-	'fl_epochs': 100,
-	'fl_individual_epochs': 5,
+	'fl_epochs': 50,
+	'fl_individual_epochs': 2,
 	'aggregate_mode':'mean',  # 'mean', 'sum'
 	'largest_criterion': 'all', #'layer'
-	'download':'random',
-	'credit_fade':1,
+	'download':'topk',
+	'reputation_fade':1,
 	'alpha_decay':True,
 
 }
@@ -64,10 +64,10 @@ mnist_args = {
 	# setting parameters
 	'dataset': 'mnist',
 	'sample_size_cap': 3000,
-	'n_workers': 5,
+	'n_participants': 5,
 	'split': 'powerlaw', #or 'classimbalance'
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
-	'batch_size' : 64, 
+	'batch_size' : 16, 
 	'train_val_split_ratio': 0.9,
 	'alpha': 5,
 	'epoch_sample_size':float("Inf"),
@@ -82,20 +82,20 @@ mnist_args = {
 	'dssgd_lr': 1e-2, # used for dssgd model, no decay
 	'std_lr': 1e-2,
 	'fed_lr': 2e-2,
-	'lr': 1e-2,
-	'grad_clip':1e-3,
-	'gamma':0.977,   #0.955**100 ~= 0.01
-	'credit_threshold_coef': 1.0/3.0,
+	'lr': 0.15,
+	'grad_clip': 1e-2,
+	'gamma': 0.977,   #0.955**100 ~= 0.01
+	'reputation_threshold_coef': 1.0/3.0,
 
 
 	# training parameters
 	'pretrain_epochs': 5,
-	'fl_epochs': 100,
-	'fl_individual_epochs': 5,
+	'fl_epochs': 30,
+	'fl_individual_epochs': 2,
 	'aggregate_mode':'sum',  # 'mean', 'sum'
 	'largest_criterion': 'all', #'layer'
 	'download':'random',
-	'credit_fade':1,
+	'reputation_fade':1,
 	'alpha_decay':True,
 }
 
@@ -106,7 +106,7 @@ names_args = {
 	# setting parameters
 	'dataset': 'names',
 	'sample_size_cap': 5000,
-	'n_workers': 5,
+	'n_participants': 5,
 	'split': 'powerlaw', #or 'powerlaw' classimbalance
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
 	'batch_size' : 1, 
@@ -130,7 +130,7 @@ names_args = {
 	'pretrain_epochs': 0,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
-	'aggregate_mode':'sum',  # 'mean', 'sum', credit-sum
+	'aggregate_mode':'sum',  # 'mean', 'sum', reputation-sum
 	'largest_criterion': 'all', #'layer'
 
 }
@@ -144,7 +144,7 @@ imdb_args = {
 	# setting parameters
 	'dataset': 'imdb',
 	'sample_size_cap': 5000,
-	'n_workers': 5,
+	'n_participants': 5,
 	'split': 'powerlaw', #or 'powerlaw' classimbalance
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
 	'batch_size' : 64, 
@@ -175,7 +175,7 @@ imdb_args = {
 	'pretrain_epochs': 5,
 	'fl_epochs': 100,
 	'fl_individual_epochs': 5,
-	'aggregate_mode':'credit-sum',  # 'mean', 'sum', credit-sum
+	'aggregate_mode':'reputation-sum',  # 'mean', 'sum', reputation-sum
 	'largest_criterion': 'all', #'layer'
 
 }
@@ -190,7 +190,7 @@ sst_args = {
 	# setting parameters
 	'dataset': 'sst',
 	'sample_size_cap': 5000,
-	'n_workers': 5,
+	'n_participants': 5,
 	'split': 'powerlaw', #or 'powerlaw' classimbalance
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
 	'batch_size' : 128, 
@@ -234,7 +234,7 @@ mr_args = {
 	# setting parameters
 	'dataset': 'mr',
 	'sample_size_cap': 5000,
-	'n_workers': 5,
+	'n_participants': 5,
 	'split': 'powerlaw', #or 'powerlaw' classimbalance
 	'theta': 0.1,  # privacy level -> at most (theta * num_of_parameters) updates
 	'batch_size' : 128, 
@@ -279,7 +279,7 @@ cifar_cnn_args = {
 	# setting parameters
 	'dataset': 'cifar10',
 	'sample_size_cap': 10000,
-	'n_workers': 5,
+	'n_participants': 5,
 	'split': 'powerlaw', #or 'classimbalance'
 	'theta': 0.1,  # privacy levzel -> at most (theta * num_of_parameters) updates
 	'batch_size' : 128, 

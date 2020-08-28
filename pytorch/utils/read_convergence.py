@@ -4,18 +4,19 @@ import pandas as pd
 import ast
 import numpy as np
 
-from plot import plot
-
 import matplotlib.pyplot as plt
-
 
 from collections import defaultdict
 
+
+from .plot import plot
+
+
 key_map = {'DSSGD_model_test_accs': 'DSSGD',
 			'fedavg_model_test_accs' : 'Fedavg',
-			'worker_standalone_test_accs': 'Standalone',
+			'participant_standalone_test_accs': 'Standalone',
 			'cffl_test_accs': 'CFFL',
-			'credits': 'credits',
+			'reputations': 'reputations',
 		   }
 
 
@@ -34,7 +35,7 @@ def parse(dirname, folder):
 
 	if setup:
 		setup['model'] = setup['model_fn'].split('.')[-1][:-2]
-		setup['P'] = int(setup['n_workers'])
+		setup['P'] = int(setup['n_participants'])
 		setup['E'] = int(setup['fl_individual_epochs'])
 		setup['Communication Rounds'] = int(setup['fl_epochs'])
 		setup['size'] = int(setup['sample_size_cap'])
@@ -87,13 +88,13 @@ def get_cffl_best(dirname, folder):
 	dssgd_accs = avg_accs['DSSGD']
 	fedavg_accs = avg_accs['Fedavg']
 
-	best_worker_ind = cffl_accs[-1].argmax()
+	best_participant_ind = cffl_accs[-1].argmax()
 
 	cffl_accs_pretrain = np.asarray(performance_dict_pretrain['cffl_test_accs']).mean(axis=0)
 	cffl_accs_pretrain = cffl_accs_pretrain[:-1][:, 1:]
 
 
-	return  [ fedavg_accs[-1][best_worker_ind], dssgd_accs[-1][best_worker_ind], standalone_accs[-1][best_worker_ind], cffl_accs[-1][best_worker_ind], cffl_accs_pretrain[-1][best_worker_ind] ]
+	return  [ fedavg_accs[-1][best_participant_ind], dssgd_accs[-1][best_participant_ind], standalone_accs[-1][best_participant_ind], cffl_accs[-1][best_participant_ind], cffl_accs_pretrain[-1][best_participant_ind] ]
 
 
 def save_acc_dfs(dirname, folder, dfs):
@@ -102,7 +103,7 @@ def save_acc_dfs(dirname, folder, dfs):
 		os.mkdir(directory)
 	except:
 		pass
-	[df.to_csv(os.path.join(directory, csv_name), index=False) for df, csv_name in zip(dfs, ['cffl.csv', 'standalone.csv', 'worker.csv'])]
+	[df.to_csv(os.path.join(directory, csv_name), index=False) for df, csv_name in zip(dfs, ['cffl.csv', 'standalone.csv', 'participant.csv'])]
 	print('saving computed csvs to: ', directory)
 	
 	return
@@ -140,60 +141,60 @@ def plot_convergence(dirname):
 		performance_dict_pretrain = performance_dicts[1]
 
 		setup = parse(dirname, folder)
-		n_workers = setup['P']
-		columns = ['party' + str(i + 1) for i in range(n_workers)]
+		n_participants = setup['P']
+		columns = ['party' + str(i + 1) for i in range(n_participants)]
 
 		n_freeriders = 0
 		free_riders = []
 		avg_dfs = {}
 		for key in key_map:
 			avg_accs = np.asarray(performance_dict[key]).mean(axis=0)
-			if key != 'credits':
+			if key != 'reputations':
 				avg_accs = avg_accs[:-1]  # exclude the last repeated line
 
-			n_freeriders = avg_accs.shape[1] - n_workers
+			n_freeriders = avg_accs.shape[1] - n_participants
 			if n_freeriders > 0:
 				free_riders  =  ['free' + str(i + 1) for i in range(n_freeriders)]
 
 
 			avg_dfs[key_map[key]] = pd.DataFrame(data=avg_accs, columns=free_riders + columns)
 
-		credit_threshold = np.asarray(performance_dict['credit_threshold']).mean(axis=0)
-		credit_threshold_pretrain = np.asarray(performance_dict_pretrain['credit_threshold']).mean(axis=0)
+		reputation_threshold = np.asarray(performance_dict['reputation_threshold']).mean(axis=0)
+		reputation_threshold_pretrain = np.asarray(performance_dict_pretrain['reputation_threshold']).mean(axis=0)
 
-		credits_df = avg_dfs['credits']
-		credits_df['threshold'] = credit_threshold
+		reputations_df = avg_dfs['reputations']
+		reputations_df['threshold'] = reputation_threshold
 
 		cffl_df = avg_dfs['CFFL']
 		standalone_df = avg_dfs['Standalone']
 		dssgd_df = avg_dfs['DSSGD']
 		fedavg_df = avg_dfs['Fedavg']
 
-		best_worker_ind = cffl_df.iloc[-1].argmax()
+		best_participant_ind = cffl_df.iloc[-1].argmax()
 
-		credits_avg_pretrain = np.nanmean(np.asarray(performance_dict_pretrain['credits']), axis=0)
+		reputations_avg_pretrain = np.nanmean(np.asarray(performance_dict_pretrain['reputations']), axis=0)
 
-		credits_df_pretrain = pd.DataFrame(data=credits_avg_pretrain, columns = free_riders + columns)
-		credits_df_pretrain['threshold'] = credit_threshold_pretrain
+		reputations_df_pretrain = pd.DataFrame(data=reputations_avg_pretrain, columns = free_riders + columns)
+		reputations_df_pretrain['threshold'] = reputation_threshold_pretrain
 
 
 		cffl_avg_acc_pretrain = np.asarray(performance_dict_pretrain['cffl_test_accs']).mean(axis=0)[:-1]
 		cffl_df_pretrain = pd.DataFrame(data=cffl_avg_acc_pretrain, columns=free_riders + columns)
 
-		worker_df = pd.DataFrame(data={'Standlone': standalone_df.iloc[:, best_worker_ind],
-									   'DSSGD': dssgd_df.iloc[:, best_worker_ind],
-									   'FedAvg':fedavg_df.iloc[:, best_worker_ind],
-									   'CFFL (w pretrain)': cffl_df_pretrain.iloc[:, best_worker_ind],
-									   'CFFL (w/o pretrain)': cffl_df.iloc[:, best_worker_ind],
+		participant_df = pd.DataFrame(data={'Standlone': standalone_df.iloc[:, best_participant_ind],
+									   'DSSGD': dssgd_df.iloc[:, best_participant_ind],
+									   'FedAvg':fedavg_df.iloc[:, best_participant_ind],
+									   'CFFL (w pretrain)': cffl_df_pretrain.iloc[:, best_participant_ind],
+									   'CFFL (w/o pretrain)': cffl_df.iloc[:, best_participant_ind],
 									   })
 
-		credits_figure_dir = os.path.join(dirname, folder, 'credits.png')
-		credits_pretrain_figure_dir = os.path.join(dirname, folder, 'credits_pretrain.png')
+		reputations_figure_dir = os.path.join(dirname, folder, 'reputations.png')
+		reputations_pretrain_figure_dir = os.path.join(dirname, folder, 'reputations_pretrain.png')
 		cffl_figure_dir = os.path.join(dirname, folder, 'figure.png')
 		cffl_pretrain_figure_dir = os.path.join(dirname, folder, 'figure_pretrain.png')
 
 		standlone_figure_dir = os.path.join(dirname, folder, 'standlone.png')
-		worker_figure_dir = os.path.join(dirname, folder, 'convergence_for_one.png')
+		participant_figure_dir = os.path.join(dirname, folder, 'convergence_for_one.png')
 
 
 		if os.path.exists(cffl_figure_dir):
@@ -204,28 +205,23 @@ def plot_convergence(dirname):
 
 
 
-		if os.path.exists(credits_figure_dir):
-			os.remove(credits_figure_dir)
+		if os.path.exists(reputations_figure_dir):
+			os.remove(reputations_figure_dir)
 
-		credit_top = 1. / n_workers * 1.5
-		credit_bottom = -0.01
+		reputation_top = 1. / n_participants * 1.5
+		reputation_bottom = -0.01
 
-		plot(credits_df, credits_figure_dir, name=setup['dataset'].capitalize(), plot_type=0, ylabel='Reputations', top=credit_top, bottom=credit_bottom)
-		plot(credits_df_pretrain, credits_pretrain_figure_dir, name=setup['dataset'].capitalize() + ' pretrain', plot_type=0, ylabel='Reputations',top=credit_top, bottom=credit_bottom)
+		plot(reputations_df, reputations_figure_dir, name=setup['dataset'].capitalize(), plot_type=0, ylabel='Reputations', top=reputation_top, bottom=reputation_bottom)
+		plot(reputations_df_pretrain, reputations_pretrain_figure_dir, name=setup['dataset'].capitalize() + ' pretrain', plot_type=0, ylabel='Reputations',top=reputation_top, bottom=reputation_bottom)
 
-		# plot(credits_df, credits_figure_dir, name=setup['dataset'], plot_type=0)
+		# plot(reputations_df, reputations_figure_dir, name=setup['dataset'], plot_type=0)
 
 		if os.path.exists(standlone_figure_dir):
 			os.remove(standlone_figure_dir)
 		plot(standalone_df, standlone_figure_dir, name=setup['dataset'], plot_type=1)
 
-		if os.path.exists(worker_figure_dir):
-			os.remove(worker_figure_dir)
-		plot(worker_df, worker_figure_dir, name=setup['dataset'], plot_type=2)
+		if os.path.exists(participant_figure_dir):
+			os.remove(participant_figure_dir)
+		plot(participant_df, participant_figure_dir, name=setup['dataset'], plot_type=2)
 
 	return
-
-
-if __name__ == '__main__':
-	dirname = 'adult/Experiments_2020-06-24-15:14'
-	experiment_results = plot_convergence(dirname)

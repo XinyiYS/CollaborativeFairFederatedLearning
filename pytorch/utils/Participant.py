@@ -5,7 +5,7 @@ from torchtext.data import Batch
 import utils
 import torch.nn as nn
 
-class Worker():
+class Participant():
 
 	def __init__(self, train_loader, model=None, optimizer=None,scheduler=None,
 		model_pretrain=None, optimizer_pretrain=None, pretraining_lr=None, scheduler_pretrain=None,
@@ -107,12 +107,6 @@ class Worker():
 
 		if not is_pretrain:
 			# NO lr decay during pretraining
-
-			# print()
-			# print('standalone' , self.standalone_scheduler.get_last_lr())
-			# print('dssgd      ', self.dssgd_scheduler.get_last_lr())
-			# print('pretrain   ', self.scheduler_pretrain.get_last_lr())
-			# print('no pretrain', self.scheduler.get_last_lr())
 
 			self.standalone_scheduler.step()
 			self.scheduler_pretrain.step()
