@@ -23,7 +23,7 @@ If you have found our work to be useful in your research, please consider citing
 To install requirements:
 
 ```setup
-conda create --name <env> --file requirements.txt
+conda env create -f environment.yml
 ```
 >📋  We recommend managing your environment using Anaconda, both for the versions of the packages used here and for easy management. 
 
