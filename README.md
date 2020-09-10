@@ -2,7 +2,7 @@
 
 This repository is the official implementation of [Collaborative Fair Federated Learning](https://example.com). 
 
->📋 In this work, we propose a Collaborative Fair Federated Learning (CFFL) framework which modifies the existing FL paradigm in order to encourage collaborative fairness (defined in our paper) and still maintain a competitive performance. You can find a [blog placeholder](placeholder) of our work.
+>📋 In this work, we propose a Collaborative Fair Federated Learning (CFFL) framework which modifies the existing FL paradigm in order to encourage collaborative fairness (defined in our paper) and still maintain a competitive performance.
 
 ## Citing
 If you have found our work to be useful in your research, please consider citing it with the following bibtex:
@@ -62,6 +62,8 @@ You can download pretrained models here:
 --->
 
 ## Results
+We expect the algorithm to perform consistently on the same machine, but might achieve slightly different results over different machines.
+
 Our CFFL achieves the following performance on:
 ### [MNIST](http://yann.lecun.com/exdb/mnist/)
 
