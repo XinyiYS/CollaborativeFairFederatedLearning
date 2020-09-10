@@ -1,18 +1,20 @@
-# Collaborative Fair Federated Learning
+# Collaborative Fairness in Federated Learning
 
-This repository is the official implementation of [Collaborative Fair Federated Learning](https://example.com). 
+This repository is the official implementation of [Collaborative Fairness in Federated Learning
+](https://arxiv.org/abs/2008.12161). Accepted to FL-IJCAI 2020.
 
 >📋 In this work, we propose a Collaborative Fair Federated Learning (CFFL) framework which modifies the existing FL paradigm in order to encourage collaborative fairness (defined in our paper) and still maintain a competitive performance.
 
 ## Citing
 If you have found our work to be useful in your research, please consider citing it with the following bibtex:
 ```
-@misc{CFFL,
-  author = {Lyu, Lingjuan and Xu, Xinyi, and Li, Yitong and Wang, Qian},
-  title = {Collaborative Fair Federated Learning},
-  year = {2020},
-  publisher = {arXiv},
-  journal = {arXiv},
+@misc{lyu2020collaborative,
+    title={Collaborative Fairness in Federated Learning},
+    author={Lingjuan Lyu and Xinyi Xu and Qian Wang},
+    year={2020},
+    eprint={2008.12161},
+    archivePrefix={arXiv},
+    primaryClass={cs.LG}
 }
 ```
 
