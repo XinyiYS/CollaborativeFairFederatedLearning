@@ -8,13 +8,17 @@ This repository is the official implementation of [Collaborative Fairness in Fed
 ## Citing
 If you have found our work to be useful in your research, please consider citing it with the following bibtex:
 ```
-@misc{lyu2020collaborative,
-    title={Collaborative Fairness in Federated Learning},
-    author={Lingjuan Lyu and Xinyi Xu and Qian Wang},
-    year={2020},
-    eprint={2008.12161},
-    archivePrefix={arXiv},
-    primaryClass={cs.LG}
+@Inbook{Lyu2020,
+    author="Lyu, Lingjuan
+    and Xu, Xinyi
+    and Wang, Qian
+    and Yu, Han",
+    title="Collaborative Fairness in Federated Learning",
+    bookTitle="Federated Learning: Privacy and Incentive",
+    year="2020",
+    publisher="Springer International Publishing",
+    address="Cham",
+    pages="189--204",
 }
 ```
 
