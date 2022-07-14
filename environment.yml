@@ -154,5 +154,3 @@ dependencies:
     - websockets==8.1
     - werkzeug==1.0.1
     - wrapt==1.12.1
-prefix: /home/fengzi/anaconda3/envs/cffl
-
