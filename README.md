@@ -1,7 +1,8 @@
 # Collaborative Fairness in Federated Learning
 
 This repository is the official implementation of [Collaborative Fairness in Federated Learning
-](https://arxiv.org/abs/2008.12161). Accepted to FL-IJCAI 2020.
+](https://arxiv.org/abs/2008.12161). **Best Paper at** [International Workshop on Federated Learning for User Privacy and Data Confidentiality
+in Conjunction with IJCAI 2020](http://fl-ijcai20.federated-learning.org/) and in [Federated Learning: Privacy and Incentive](https://link.springer.com/book/10.1007/978-3-030-63076-8).
 
 >📋 In this work, we propose a Collaborative Fair Federated Learning (CFFL) framework which modifies the existing FL paradigm in order to encourage collaborative fairness (defined in our paper) and still maintain a competitive performance.
 
